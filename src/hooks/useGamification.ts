@@ -13,9 +13,18 @@ export const useGamification = () => {
     mutationFn: async () => {
       if (!user) throw new Error('User not authenticated');
       
-      const { data, error } = await supabase.rpc('update_care_streak', {
-        user_id_param: user.id
-      });
+      // For now, just update/create a simple care streak record
+      const { data, error } = await supabase
+        .from('care_streaks' as any)
+        .upsert({
+          user_id: user.id,
+          current_streak: 1,
+          longest_streak: 1,
+          last_care_date: new Date().toISOString().split('T')[0],
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
       
       if (error) throw error;
       return data;
@@ -23,17 +32,10 @@ export const useGamification = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['care-streak'] });
       
-      if (data?.[0]?.is_new_record) {
-        toast({
-          title: "New Record!",
-          description: `Congratulations! You've set a new care streak record of ${data[0].current_streak} days!`,
-        });
-      } else {
-        toast({
-          title: "Streak Updated!",
-          description: `Current streak: ${data?.[0]?.current_streak || 0} days`,
-        });
-      }
+      toast({
+        title: "Streak Updated!",
+        description: `Current streak: ${data?.current_streak || 1} days`,
+      });
     },
     onError: (error) => {
       console.error('Error updating care streak:', error);
@@ -49,11 +51,32 @@ export const useGamification = () => {
     mutationFn: async ({ amount, source }: { amount: number; source?: string }) => {
       if (!user) throw new Error('User not authenticated');
       
-      const { data, error } = await supabase.rpc('award_experience', {
-        user_id_param: user.id,
-        experience_amount: amount,
-        source: source || 'general'
-      });
+      // For now, just update/create user level record
+      const { data: existingLevel, error: fetchError } = await supabase
+        .from('user_levels' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      let newExperience = amount;
+      let newLevel = 1;
+
+      if (!fetchError && existingLevel) {
+        newExperience = existingLevel.total_experience + amount;
+        newLevel = Math.floor(Math.sqrt(newExperience / 100)) + 1;
+      }
+
+      const { data, error } = await supabase
+        .from('user_levels' as any)
+        .upsert({
+          user_id: user.id,
+          total_experience: newExperience,
+          current_level: newLevel,
+          experience_this_level: newExperience - ((newLevel - 1) * (newLevel - 1) * 100),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
       
       if (error) throw error;
       return data;
@@ -61,12 +84,10 @@ export const useGamification = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user-level'] });
       
-      if (data?.[0]?.level_up) {
-        toast({
-          title: "Level Up!",
-          description: `Congratulations! You've reached level ${data[0].new_level}!`,
-        });
-      }
+      toast({
+        title: "Experience Gained!",
+        description: `+${data?.experience_this_level || 0} XP earned`,
+      });
     },
     onError: (error) => {
       console.error('Error awarding experience:', error);
@@ -77,15 +98,16 @@ export const useGamification = () => {
     mutationFn: async (stats: any) => {
       if (!user) throw new Error('User not authenticated');
       
-      // This would contain logic to check and award achievements
-      // For now, we'll just update user stats
+      // Simple stats update for now
       const { data, error } = await supabase
         .from('user_gamification_stats' as any)
         .upsert({
           user_id: user.id,
           ...stats,
           updated_at: new Date().toISOString()
-        });
+        })
+        .select()
+        .single();
       
       if (error) throw error;
       return data;

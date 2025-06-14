@@ -51,14 +51,14 @@ const HeroSection = () => {
           <div className="relative max-w-4xl mx-auto">
             <div className="bg-gradient-to-br from-green-100 to-purple-100 rounded-3xl p-8 shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1469908618397-c1357b3a3e1a?auto=format&fit=crop&w=1200&q=80"
+                src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
                 alt="Beautiful collection of orchid flowers showcasing various species including Phalaenopsis and Dendrobium orchids in elegant purple, pink and white colors"
                 className="w-full h-64 md:h-96 object-cover rounded-2xl shadow-lg"
                 loading="lazy"
                 onError={(e) => {
-                  // Fallback to a different orchid image if the primary fails
+                  // Fallback to alternative orchid images if the primary fails
                   const img = e.target as HTMLImageElement;
-                  if (img.src.includes('1469908618397')) {
+                  if (img.src.includes('1578662996442')) {
                     img.src = "https://images.unsplash.com/photo-1516401266446-6432a8a07d41?auto=format&fit=crop&w=1200&q=80";
                   } else if (img.src.includes('1516401266446')) {
                     img.src = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80";

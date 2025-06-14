@@ -33,6 +33,9 @@ import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import ExpertConsultations from "./pages/ExpertConsultations";
 import Gamification from "./pages/Gamification";
+import Integrations from "./pages/Integrations";
+import MarketingTools from "./pages/MarketingTools";
+import ProductionLaunch from "./pages/ProductionLaunch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -100,7 +103,7 @@ const AppContent = () => {
     };
   }, [toggleListening]);
 
-  const showBottomNav = !['/admin', '/business'].includes(location.pathname);
+  const showBottomNav = !['/admin', '/business', '/launch'].includes(location.pathname);
 
   return (
     <>
@@ -126,6 +129,9 @@ const AppContent = () => {
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/expert-consultations" element={<ExpertConsultations />} />
           <Route path="/gamification" element={<Gamification />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/marketing" element={<MarketingTools />} />
+          <Route path="/launch" element={<ProductionLaunch />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

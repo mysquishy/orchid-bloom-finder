@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { integrationManager } from '@/utils/integrationManager';
 import { ApiIntegration } from './ApiIntegration';
 import { SmartHomeIntegration } from './SmartHomeIntegration';
-import CalendarIntegration from '../export/CalendarIntegration';
 import { CloudStorageIntegration } from './CloudStorageIntegration';
 import { ShoppingIntegration } from './ShoppingIntegration';
 import { WeatherIntegration } from './WeatherIntegration';
@@ -18,6 +17,31 @@ interface Integration {
   name: string;
   isActive: boolean;
 }
+
+// Simple Calendar Integration component
+const CalendarIntegration = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Calendar Integration</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 mb-4">
+          Sync your orchid care schedule with Google Calendar for automated reminders.
+        </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div>
+              <h4 className="font-medium">Google Calendar</h4>
+              <p className="text-sm text-gray-500">Sync care schedules and reminders</p>
+            </div>
+            <Badge variant="secondary">Coming Soon</Badge>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const IntegrationsHub: React.FC = () => {
   const { user } = useAuth();
@@ -138,11 +162,11 @@ const IntegrationsHub: React.FC = () => {
         </TabsList>
 
         <TabsContent value="api">
-          <ApiIntegration integrations={integrations} onToggle={handleToggleIntegration} />
+          <ApiIntegration />
         </TabsContent>
 
         <TabsContent value="smart-home">
-          <SmartHomeIntegration integrations={integrations} onToggle={handleToggleIntegration} />
+          <SmartHomeIntegration />
         </TabsContent>
 
         <TabsContent value="calendar">
@@ -150,15 +174,15 @@ const IntegrationsHub: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="storage">
-          <CloudStorageIntegration integrations={integrations} onToggle={handleToggleIntegration} />
+          <CloudStorageIntegration />
         </TabsContent>
 
         <TabsContent value="shopping">
-          <ShoppingIntegration integrations={integrations} onToggle={handleToggleIntegration} />
+          <ShoppingIntegration />
         </TabsContent>
 
         <TabsContent value="weather">
-          <WeatherIntegration integrations={integrations} onToggle={handleToggleIntegration} />
+          <WeatherIntegration />
         </TabsContent>
       </Tabs>
     </div>

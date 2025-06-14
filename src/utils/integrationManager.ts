@@ -39,9 +39,9 @@ class IntegrationManager {
         id: row.id,
         type: row.type as IntegrationConfig['type'],
         provider: row.provider,
-        settings: row.settings || {},
+        settings: (row.settings as any) || {},
         isActive: row.is_active,
-        credentials: row.credentials || {}
+        credentials: (row.credentials as any) || {}
       }));
 
       return configs;

@@ -1,178 +1,139 @@
 
-import React, { useState } from 'react';
-import { Camera, Droplets, Flower, Bell, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useAuth } from '@/contexts/AuthContext';
-import { offlineManager } from '@/utils/offlineManager';
+import { Button } from '@/components/ui/button';
+import { Droplets, Camera, Calendar, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface QuickAction {
-  id: string;
-  icon: React.ComponentType<any>;
-  label: string;
-  color: string;
-  action: () => void;
-}
+import { offlineManager } from '@/utils/offlineManager';
 
 const QuickActionWidget: React.FC = () => {
-  const { user } = useAuth();
+  const [plantCount, setPlantCount] = useState(0);
   const { toast } = useToast();
-  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    loadPlantCount();
+  }, []);
+
+  const loadPlantCount = async () => {
+    try {
+      const plants = await offlineManager.getStoredPlants();
+      setPlantCount(plants.length);
+    } catch (error) {
+      console.error('Failed to load plant count:', error);
+    }
+  };
 
   const handleQuickWater = async () => {
-    if (!user) return;
-    
     try {
-      const plants = await offlineManager.getPlants();
-      const waterReminder = {
-        id: `water-${Date.now()}`,
-        plantId: 'quick-action',
+      const reminder = {
+        id: `reminder_${Date.now()}`,
+        plantId: 'quick-water',
         type: 'watering' as const,
-        dueDate: new Date().toISOString().split('T')[0],
-        completed: true,
-        timestamp: Date.now(),
-        synced: false
+        dueDate: new Date().toISOString(),
+        completed: true
       };
       
-      await offlineManager.saveReminder(waterReminder);
+      await offlineManager.storeCareReminder(reminder);
       
       toast({
-        title: "Plants watered!",
-        description: `Logged watering for ${plants.length} plants`,
+        title: "Watering logged!",
+        description: "Your plant care has been recorded.",
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to log watering",
-        variant: "destructive"
+        title: "Failed to log watering",
+        description: "Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   const handleQuickPhoto = () => {
-    // This would trigger the camera
+    // Simulate opening camera
     toast({
-      title: "Camera ready",
-      description: "Take a photo to identify your plant",
+      title: "Camera activated",
+      description: "Ready to take a photo of your orchid!",
     });
   };
 
-  const handleQuickReminder = async () => {
+  const handleScheduleReminder = async () => {
     try {
       const reminder = {
-        id: `reminder-${Date.now()}`,
-        plantId: 'general',
-        type: 'checkup' as const,
-        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        completed: false,
-        timestamp: Date.now(),
-        synced: false
+        id: `reminder_${Date.now()}`,
+        plantId: 'scheduled',
+        type: 'watering' as const,
+        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+        completed: false
       };
       
-      await offlineManager.saveReminder(reminder);
+      await offlineManager.storeCareReminder(reminder);
       
       toast({
-        title: "Reminder set",
-        description: "Plant checkup scheduled for tomorrow",
+        title: "Reminder set!",
+        description: "You'll be reminded to water tomorrow.",
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to set reminder",
-        variant: "destructive"
+        title: "Failed to set reminder",
+        description: "Please try again.",
+        variant: "destructive",
       });
     }
   };
 
-  const quickActions: QuickAction[] = [
-    {
-      id: 'water',
-      icon: Droplets,
-      label: 'Water Plants',
-      color: 'text-blue-500',
-      action: handleQuickWater
-    },
-    {
-      id: 'photo',
-      icon: Camera,
-      label: 'Identify Plant',
-      color: 'text-green-500',
-      action: handleQuickPhoto
-    },
-    {
-      id: 'reminder',
-      icon: Bell,
-      label: 'Set Reminder',
-      color: 'text-purple-500',
-      action: handleQuickReminder
-    },
-    {
-      id: 'bloom',
-      icon: Flower,
-      label: 'Log Bloom',
-      color: 'text-pink-500',
-      action: () => toast({ title: "Bloom logged!", description: "Beautiful flower noted" })
-    }
-  ];
-
   return (
-    <>
-      {/* Floating Action Button */}
-      <div className="fixed bottom-20 right-4 z-40 md:bottom-4">
-        <Button
-          onClick={() => setExpanded(!expanded)}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-green-500 to-purple-600 hover:from-green-600 hover:to-purple-700 shadow-lg"
-          size="lg"
-        >
-          <Plus className={`w-6 h-6 transition-transform duration-300 ${expanded ? 'rotate-45' : ''}`} />
-        </Button>
-      </div>
-
-      {/* Quick Actions Panel */}
-      {expanded && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-20 z-30"
-            onClick={() => setExpanded(false)}
-          />
-          
-          {/* Actions */}
-          <div className="fixed bottom-36 right-4 z-40 space-y-3 md:bottom-20">
-            {quickActions.map((action, index) => {
-              const Icon = action.icon;
-              return (
-                <div
-                  key={action.id}
-                  className="flex items-center space-x-3 animate-in slide-in-from-right duration-200"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <Card className="opacity-90 backdrop-blur-sm">
-                    <CardContent className="p-2">
-                      <span className="text-sm font-medium whitespace-nowrap">
-                        {action.label}
-                      </span>
-                    </CardContent>
-                  </Card>
-                  
-                  <Button
-                    onClick={() => {
-                      action.action();
-                      setExpanded(false);
-                    }}
-                    className="w-12 h-12 rounded-full bg-white shadow-lg hover:scale-110 transition-transform"
-                    variant="outline"
-                  >
-                    <Icon className={`w-5 h-5 ${action.color}`} />
-                  </Button>
-                </div>
-              );
-            })}
+    <div className="fixed bottom-20 right-4 md:bottom-4 md:right-4 z-50">
+      <Card className="w-64 shadow-lg">
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            <div className="text-sm font-medium text-gray-700">
+              Quick Actions ({plantCount} plants)
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleQuickWater}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <Droplets className="w-4 h-4" />
+                <span className="text-xs">Water</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleQuickPhoto}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <Camera className="w-4 h-4" />
+                <span className="text-xs">Photo</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleScheduleReminder}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <Calendar className="w-4 h-4" />
+                <span className="text-xs">Remind</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <Zap className="w-4 h-4" />
+                <span className="text-xs">Identify</span>
+              </Button>
+            </div>
           </div>
-        </>
-      )}
-    </>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

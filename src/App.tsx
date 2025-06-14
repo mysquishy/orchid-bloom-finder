@@ -36,6 +36,7 @@ import Gamification from "./pages/Gamification";
 import Integrations from "./pages/Integrations";
 import MarketingTools from "./pages/MarketingTools";
 import ProductionLaunch from "./pages/ProductionLaunch";
+import HelpCenter from "./pages/HelpCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -103,7 +104,7 @@ const AppContent = () => {
     };
   }, [toggleListening]);
 
-  const showBottomNav = !['/admin', '/business', '/launch'].includes(location.pathname);
+  const showBottomNav = !['/admin', '/business', '/launch', '/help'].includes(location.pathname);
   const showQuickActions = ['/', '/dashboard', '/garden'].includes(location.pathname);
 
   return (
@@ -119,6 +120,7 @@ const AppContent = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/garden" element={<MyGarden />} />
           <Route path="/database" element={<OrchidDatabase />} />
+          <Route path="/help" element={<HelpCenter />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/health" element={<HealthMonitoring />} />
           <Route path="/weather" element={<WeatherSystem />} />

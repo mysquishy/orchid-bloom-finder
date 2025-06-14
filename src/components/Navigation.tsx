@@ -22,6 +22,7 @@ const Navigation: React.FC = () => {
   const navItems = [
     { name: 'Home', href: '/' },
     { name: 'Database', href: '/database' },
+    { name: 'Help Center', href: '/help' },
     ...(user ? [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'My Garden', href: '/garden' },

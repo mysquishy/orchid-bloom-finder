@@ -1,141 +1,230 @@
 
-import { QueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
-// Future-ready API configuration
-export const API_CONFIG = {
-  baseURL: process.env.VITE_API_URL || '/api',
-  timeout: 30000,
-  retries: 3,
-  retryDelay: 1000,
+// API Response Types
+export interface ApiResponse<T> {
+  data: T | null;
+  error: string | null;
+  loading: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+// Cache Implementation
+class SimpleCache {
+  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+
+  set(key: string, data: any, ttlMs = 300000): void { // 5 min default
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl: ttlMs
+    });
+  }
+
+  get(key: string): any | null {
+    const item = this.cache.get(key);
+    if (!item) return null;
+
+    if (Date.now() - item.timestamp > item.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return item.data;
+  }
+
+  invalidate(pattern?: string): void {
+    if (pattern) {
+      for (const key of this.cache.keys()) {
+        if (key.includes(pattern)) {
+          this.cache.delete(key);
+        }
+      }
+    } else {
+      this.cache.clear();
+    }
+  }
+}
+
+export const apiCache = new SimpleCache();
+
+// API Helper Functions
+export const createApiEndpoint = (baseUrl: string) => ({
+  get: async <T = any>(path: string, params?: Record<string, any>): Promise<ApiResponse<T>> => {
+    try {
+      const url = new URL(path, baseUrl);
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            url.searchParams.append(key, String(value));
+          }
+        });
+      }
+
+      const cacheKey = url.toString();
+      const cached = apiCache.get(cacheKey);
+      if (cached) {
+        return { data: cached, error: null, loading: false };
+      }
+
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      apiCache.set(cacheKey, data);
+      
+      return { data, error: null, loading: false };
+    } catch (error) {
+      return { 
+        data: null, 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        loading: false 
+      };
+    }
+  },
+
+  post: async <T = any>(path: string, body?: any): Promise<ApiResponse<T>> => {
+    try {
+      const response = await fetch(new URL(path, baseUrl).toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body ? JSON.stringify(body) : undefined
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return { data, error: null, loading: false };
+    } catch (error) {
+      return { 
+        data: null, 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        loading: false 
+      };
+    }
+  },
+
+  put: async <T = any>(path: string, body?: any): Promise<ApiResponse<T>> => {
+    try {
+      const response = await fetch(new URL(path, baseUrl).toString(), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body ? JSON.stringify(body) : undefined
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return { data, error: null, loading: false };
+    } catch (error) {
+      return { 
+        data: null, 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        loading: false 
+      };
+    }
+  },
+
+  delete: async (path: string): Promise<ApiResponse<void>> => {
+    try {
+      const response = await fetch(new URL(path, baseUrl).toString(), {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return { data: null, error: null, loading: false };
+    } catch (error) {
+      return { 
+        data: null, 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        loading: false 
+      };
+    }
+  }
+});
+
+// Error Handler Hook
+export const useApiErrorHandler = () => {
+  const { toast } = useToast();
+
+  return (error: string | Error, context?: string) => {
+    const message = error instanceof Error ? error.message : error;
+    console.error(`API Error${context ? ` in ${context}` : ''}:`, message);
+    
+    toast({
+      title: "Error",
+      description: message,
+      variant: "destructive",
+    });
+  };
 };
 
-// Error types for consistent error handling
-export enum APIErrorType {
-  NETWORK = 'NETWORK_ERROR',
-  VALIDATION = 'VALIDATION_ERROR',
-  AUTHORIZATION = 'AUTHORIZATION_ERROR',
-  NOT_FOUND = 'NOT_FOUND',
-  SERVER = 'SERVER_ERROR',
-  RATE_LIMIT = 'RATE_LIMIT'
-}
+// Retry Logic
+export const withRetry = async <T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  delay = 1000
+): Promise<T> => {
+  let lastError: Error;
 
-export interface APIError {
-  type: APIErrorType;
-  message: string;
-  details?: Record<string, any>;
-  timestamp: string;
-}
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      if (attempt === maxRetries) {
+        throw lastError;
+      }
 
-// Generic API response wrapper
-export interface APIResponse<T = any> {
-  data: T;
-  success: boolean;
-  message?: string;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  meta?: Record<string, any>;
-}
+      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt)));
+    }
+  }
+
+  throw lastError!;
+};
+
+// Data Validation
+export const validateApiResponse = <T>(data: any, validator: (data: any) => data is T): T => {
+  if (!validator(data)) {
+    throw new Error('Invalid API response format');
+  }
+  return data;
+};
 
 // Future API endpoints structure
-export const API_ENDPOINTS = {
-  orchids: {
-    list: '/orchids',
-    search: '/orchids/search',
-    detail: (id: string) => `/orchids/${id}`,
-    similar: (id: string) => `/orchids/${id}/similar`,
-    care: (id: string) => `/orchids/${id}/care-guide`,
-  },
-  user: {
-    profile: '/user/profile',
-    collection: '/user/collection',
-    careHistory: '/user/care-history',
-    achievements: '/user/achievements',
-  },
-  identification: {
-    analyze: '/identification/analyze',
-    history: '/identification/history',
-  },
-  admin: {
-    orchids: '/admin/orchids',
-    users: '/admin/users',
-    analytics: '/admin/analytics',
-  }
-} as const;
-
-// Query key factory for consistent caching
-export const queryKeys = {
-  orchids: {
-    all: ['orchids'] as const,
-    lists: () => [...queryKeys.orchids.all, 'list'] as const,
-    list: (filters: Record<string, any>) => [...queryKeys.orchids.lists(), filters] as const,
-    details: () => [...queryKeys.orchids.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.orchids.details(), id] as const,
-    similar: (id: string) => [...queryKeys.orchids.all, 'similar', id] as const,
-  },
-  user: {
-    all: ['user'] as const,
-    profile: () => [...queryKeys.user.all, 'profile'] as const,
-    collection: () => [...queryKeys.user.all, 'collection'] as const,
-    careHistory: () => [...queryKeys.user.all, 'care-history'] as const,
-  }
-} as const;
-
-// Cache invalidation helpers
-export const invalidateQueries = {
-  orchids: (queryClient: QueryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.orchids.all });
-  },
-  userCollection: (queryClient: QueryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.user.collection() });
-  },
-  userProfile: (queryClient: QueryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
-  }
+export const orchidApiEndpoints = {
+  // These would be connected to real APIs in the future
+  search: '/api/orchids/search',
+  identify: '/api/orchids/identify',
+  details: '/api/orchids/:id',
+  careGuide: '/api/orchids/:id/care',
+  similarSpecies: '/api/orchids/:id/similar'
 };
 
-// Future monitoring and analytics preparation
-export const trackEvent = (eventName: string, properties?: Record<string, any>) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Analytics Event: ${eventName}`, properties);
-  }
-  // Future: Send to analytics service
-};
-
-export const logError = (error: APIError | Error, context?: string) => {
-  console.error(`Error in ${context || 'unknown context'}:`, error);
-  // Future: Send to error monitoring service
-};
-
-// Data validation helpers
-export const validateOrchidData = (data: any): boolean => {
-  return !!(
-    data &&
-    typeof data.id === 'string' &&
-    typeof data.scientific_name === 'string' &&
-    typeof data.common_name === 'string'
-  );
-};
-
-export const sanitizeSearchQuery = (query: string): string => {
-  return query.trim().toLowerCase().replace(/[^\w\s-]/g, '');
-};
-
-// Performance monitoring helpers
-export const measurePerformance = <T>(
-  operation: () => Promise<T>,
-  operationName: string
-): Promise<T> => {
-  const start = performance.now();
-  
-  return operation().finally(() => {
-    const duration = performance.now() - start;
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`${operationName} took ${duration.toFixed(2)}ms`);
-    }
-    // Future: Send performance metrics to monitoring service
-  });
+export const userApiEndpoints = {
+  profile: '/api/user/profile',
+  garden: '/api/user/garden',
+  careHistory: '/api/user/care-history',
+  preferences: '/api/user/preferences'
 };

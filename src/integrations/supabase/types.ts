@@ -159,6 +159,69 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      usage_tracking: {
+        Row: {
+          created_at: string
+          id: string
+          identifications_count: number | null
+          month_year: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identifications_count?: number | null
+          month_year: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identifications_count?: number | null
+          month_year?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_orchid_collection: {
         Row: {
           care_notes: string | null
@@ -214,6 +277,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_identification_limit: {
+        Args: { user_id_param: string }
+        Returns: {
+          can_identify: boolean
+          remaining_count: number
+          is_premium: boolean
+        }[]
+      }
       check_rate_limit: {
         Args: {
           identifier_param: string
@@ -226,6 +297,27 @@ export type Database = {
           current_count: number
           reset_time: string
         }[]
+      }
+      cleanup_old_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      get_database_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_species: number
+          total_users: number
+          total_collections: number
+          total_identifications: number
+          popular_species_count: number
+          user_contributed_count: number
+          recent_signups_7d: number
+          recent_identifications_7d: number
+        }[]
+      }
+      increment_identification_usage: {
+        Args: { user_id_param: string }
+        Returns: undefined
       }
       insert_analytics: {
         Args: {
@@ -248,6 +340,14 @@ export type Database = {
           user_agent?: string
         }
         Returns: undefined
+      }
+      validate_orchid_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          issue_type: string
+          issue_description: string
+          affected_count: number
+        }[]
       }
     }
     Enums: {

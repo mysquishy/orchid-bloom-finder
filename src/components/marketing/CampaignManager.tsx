@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,7 +50,7 @@ const CampaignManager: React.FC = () => {
   const loadCampaigns = async () => {
     try {
       setLoading(true);
-      const campaignData = await marketingAnalytics.getCampaigns(user!.id);
+      const campaignData = await marketingAnalytics.getCampaigns();
       setCampaigns(campaignData);
     } catch (error) {
       console.error('Failed to load campaigns:', error);
@@ -74,7 +73,7 @@ const CampaignManager: React.FC = () => {
       const campaignId = await marketingAnalytics.createCampaign({
         ...newCampaign,
         status: 'draft',
-        metrics: {},
+        metrics: { sent: 0, opened: 0, clicked: 0, converted: 0 },
         createdBy: user!.id
       });
 
@@ -106,7 +105,6 @@ const CampaignManager: React.FC = () => {
       case 'active': return 'bg-green-500';
       case 'completed': return 'bg-blue-500';
       case 'paused': return 'bg-yellow-500';
-      case 'scheduled': return 'bg-purple-500';
       default: return 'bg-gray-500';
     }
   };
@@ -116,7 +114,7 @@ const CampaignManager: React.FC = () => {
       case 'email': return <Mail className="w-4 h-4" />;
       case 'social': return <Users className="w-4 h-4" />;
       case 'content': return <BarChart3 className="w-4 h-4" />;
-      case 'affiliate': return <Users className="w-4 h-4" />;
+      case 'paid': return <Users className="w-4 h-4" />;
       default: return <Mail className="w-4 h-4" />;
     }
   };
@@ -176,7 +174,7 @@ const CampaignManager: React.FC = () => {
                     <SelectItem value="email">Email Marketing</SelectItem>
                     <SelectItem value="social">Social Media</SelectItem>
                     <SelectItem value="content">Content Marketing</SelectItem>
-                    <SelectItem value="affiliate">Affiliate Program</SelectItem>
+                    <SelectItem value="paid">Paid Marketing</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

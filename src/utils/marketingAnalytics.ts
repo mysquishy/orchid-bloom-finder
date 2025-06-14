@@ -23,8 +23,8 @@ export interface MarketingCampaign {
     clicked: number;
     converted: number;
   };
-  scheduledAt?: string;
-  sentAt?: string;
+  scheduledAt?: Date;
+  sentAt?: Date;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +33,7 @@ export interface MarketingCampaign {
 export interface ABTest {
   id: string;
   name: string;
+  description?: string;
   type: 'feature' | 'pricing' | 'ui' | 'content';
   status: 'draft' | 'running' | 'completed';
   variants: {
@@ -40,11 +41,18 @@ export interface ABTest {
     traffic: number;
     config: Record<string, any>;
   }[];
+  targetMetric?: string;
   metrics: {
     participants: number;
     conversions: number;
     conversionRate: number;
   };
+  results?: Record<string, {
+    participants: number;
+    conversions: number;
+    conversionRate: number;
+    significance?: number;
+  }>;
   startDate: string;
   endDate?: string;
 }
@@ -52,12 +60,15 @@ export interface ABTest {
 export interface UserSegment {
   id: string;
   name: string;
+  description?: string;
   criteria: {
     demographics?: Record<string, any>;
     behaviors?: Record<string, any>;
     engagement?: Record<string, any>;
   };
   userCount: number;
+  averageValue?: number;
+  retentionRate?: number;
   createdAt: string;
 }
 
@@ -73,8 +84,8 @@ class MarketingAnalyticsManager {
           status: campaign.status,
           target_audience: campaign.targetAudience,
           content: campaign.content,
-          scheduled_at: campaign.scheduledAt,
-          sent_at: campaign.sentAt,
+          scheduled_at: campaign.scheduledAt?.toISOString(),
+          sent_at: campaign.sentAt?.toISOString(),
           metrics: campaign.metrics,
           created_by: campaign.createdBy
         })
@@ -106,8 +117,8 @@ class MarketingAnalyticsManager {
         targetAudience: (row.target_audience as any) || {},
         content: (row.content as any) || {},
         metrics: (row.metrics as any) || { sent: 0, opened: 0, clicked: 0, converted: 0 },
-        scheduledAt: row.scheduled_at,
-        sentAt: row.sent_at,
+        scheduledAt: row.scheduled_at ? new Date(row.scheduled_at) : undefined,
+        sentAt: row.sent_at ? new Date(row.sent_at) : undefined,
         createdBy: row.created_by,
         createdAt: row.created_at,
         updatedAt: row.updated_at
@@ -132,13 +143,19 @@ class MarketingAnalyticsManager {
       {
         id: 'test_1',
         name: 'Pricing Page Layout',
+        description: 'Testing different pricing page layouts',
         type: 'ui',
         status: 'running',
         variants: [
           { name: 'Control', traffic: 50, config: { layout: 'original' } },
           { name: 'Variant A', traffic: 50, config: { layout: 'simplified' } }
         ],
+        targetMetric: 'conversion_rate',
         metrics: { participants: 1250, conversions: 89, conversionRate: 7.12 },
+        results: {
+          'Control': { participants: 625, conversions: 44, conversionRate: 7.04 },
+          'Variant A': { participants: 625, conversions: 45, conversionRate: 7.2, significance: 0.85 }
+        },
         startDate: '2024-06-01T00:00:00Z'
       }
     ];
@@ -157,15 +174,21 @@ class MarketingAnalyticsManager {
       {
         id: 'segment_1',
         name: 'New Users',
+        description: 'Recently registered users',
         criteria: { engagement: { daysActive: '<7' } },
         userCount: 245,
+        averageValue: 12.5,
+        retentionRate: 65.8,
         createdAt: '2024-06-01T00:00:00Z'
       },
       {
         id: 'segment_2',
         name: 'Power Users',
+        description: 'Highly engaged users',
         criteria: { behaviors: { identificationsPerWeek: '>10' } },
         userCount: 89,
+        averageValue: 45.2,
+        retentionRate: 92.1,
         createdAt: '2024-05-15T00:00:00Z'
       }
     ];

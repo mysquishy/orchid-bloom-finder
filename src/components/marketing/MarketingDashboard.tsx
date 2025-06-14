@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,7 +56,7 @@ const MarketingDashboard: React.FC = () => {
       setLoading(true);
       
       // Load campaigns
-      const campaigns = await marketingAnalytics.getCampaigns(user!.id);
+      const campaigns = await marketingAnalytics.getCampaigns();
       
       // Mock metrics for demonstration
       const mockMetrics: MarketingMetrics = {

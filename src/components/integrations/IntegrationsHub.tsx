@@ -166,7 +166,10 @@ const IntegrationsHub: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="smart-home">
-          <SmartHomeIntegration />
+          <SmartHomeIntegration 
+            integrations={integrations}
+            onToggle={handleToggleIntegration}
+          />
         </TabsContent>
 
         <TabsContent value="calendar">
@@ -174,15 +177,24 @@ const IntegrationsHub: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="storage">
-          <CloudStorageIntegration />
+          <CloudStorageIntegration 
+            integrations={integrations}
+            onToggle={handleToggleIntegration}
+          />
         </TabsContent>
 
         <TabsContent value="shopping">
-          <ShoppingIntegration />
+          <ShoppingIntegration 
+            integrations={integrations}
+            onToggle={handleToggleIntegration}
+          />
         </TabsContent>
 
         <TabsContent value="weather">
-          <WeatherIntegration />
+          <WeatherIntegration 
+            integrations={integrations}
+            onToggle={handleToggleIntegration}
+          />
         </TabsContent>
       </Tabs>
     </div>

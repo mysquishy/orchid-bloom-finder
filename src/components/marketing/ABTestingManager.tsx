@@ -26,14 +26,16 @@ const ABTestingManager: React.FC = () => {
       id: '1',
       name: 'Homepage CTA Button Color',
       description: 'Testing green vs blue call-to-action button',
-      status: 'active',
+      status: 'running',
+      type: 'ui',
       variants: [
-        { name: 'Control (Blue)', weight: 50, config: { buttonColor: 'blue' } },
-        { name: 'Variant (Green)', weight: 50, config: { buttonColor: 'green' } }
+        { name: 'Control (Blue)', traffic: 50, config: { buttonColor: 'blue' } },
+        { name: 'Variant (Green)', traffic: 50, config: { buttonColor: 'green' } }
       ],
       targetMetric: 'conversion_rate',
-      startDate: new Date('2024-01-15'),
-      endDate: new Date('2024-02-15'),
+      startDate: '2024-01-15T00:00:00Z',
+      endDate: '2024-02-15T00:00:00Z',
+      metrics: { participants: 2450, conversions: 197, conversionRate: 8.04 },
       results: {
         'Control (Blue)': { participants: 1250, conversions: 89, conversionRate: 7.12, significance: 0 },
         'Variant (Green)': { participants: 1200, conversions: 108, conversionRate: 9.0, significance: 0.95 }
@@ -44,14 +46,16 @@ const ABTestingManager: React.FC = () => {
       name: 'Email Subject Line',
       description: 'Testing different email subject line approaches',
       status: 'completed',
+      type: 'content',
       variants: [
-        { name: 'Question', weight: 33, config: { subject: 'Need help with your orchids?' } },
-        { name: 'Benefit', weight: 33, config: { subject: 'Grow healthier orchids in 30 days' } },
-        { name: 'Urgency', weight: 34, config: { subject: 'Limited time: Free orchid care guide' } }
+        { name: 'Question', traffic: 33, config: { subject: 'Need help with your orchids?' } },
+        { name: 'Benefit', traffic: 33, config: { subject: 'Grow healthier orchids in 30 days' } },
+        { name: 'Urgency', traffic: 34, config: { subject: 'Limited time: Free orchid care guide' } }
       ],
       targetMetric: 'email_open_rate',
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2024-01-14'),
+      startDate: '2024-01-01T00:00:00Z',
+      endDate: '2024-01-14T00:00:00Z',
+      metrics: { participants: 6040, conversions: 1693, conversionRate: 28.0 },
       results: {
         'Question': { participants: 2000, conversions: 480, conversionRate: 24.0, significance: 0 },
         'Benefit': { participants: 2000, conversions: 560, conversionRate: 28.0, significance: 0.87 },
@@ -66,16 +70,15 @@ const ABTestingManager: React.FC = () => {
     description: '',
     targetMetric: 'conversion_rate',
     variants: [
-      { name: 'Control', weight: 50, config: {} },
-      { name: 'Variant A', weight: 50, config: {} }
+      { name: 'Control', traffic: 50, config: {} },
+      { name: 'Variant A', traffic: 50, config: {} }
     ]
   });
 
   const getStatusColor = (status: ABTest['status']) => {
     switch (status) {
-      case 'active': return 'bg-green-500';
+      case 'running': return 'bg-green-500';
       case 'completed': return 'bg-blue-500';
-      case 'paused': return 'bg-yellow-500';
       default: return 'bg-gray-500';
     }
   };
@@ -93,7 +96,7 @@ const ABTestingManager: React.FC = () => {
       ...prev,
       variants: [
         ...prev.variants,
-        { name: `Variant ${variantLetter}`, weight: 0, config: {} }
+        { name: `Variant ${variantLetter}`, traffic: 0, config: {} }
       ]
     }));
   };
@@ -102,7 +105,7 @@ const ABTestingManager: React.FC = () => {
     setNewTest(prev => ({
       ...prev,
       variants: prev.variants.map((variant, i) => 
-        i === index ? { ...variant, weight } : variant
+        i === index ? { ...variant, traffic: weight } : variant
       )
     }));
   };
@@ -168,7 +171,7 @@ const ABTestingManager: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <Input
                           type="number"
-                          value={variant.weight}
+                          value={variant.traffic}
                           onChange={(e) => updateVariantWeight(index, parseInt(e.target.value) || 0)}
                           placeholder="Weight %"
                           className="w-20"
@@ -217,7 +220,7 @@ const ABTestingManager: React.FC = () => {
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
-                {tests.filter(t => t.status === 'active').length}
+                {tests.filter(t => t.status === 'running').length}
               </p>
               <p className="text-sm text-gray-600">Active Tests</p>
             </div>
@@ -262,7 +265,7 @@ const ABTestingManager: React.FC = () => {
                   <Badge variant="outline" className={getStatusColor(test.status)}>
                     {test.status}
                   </Badge>
-                  {test.status === 'active' && (
+                  {test.status === 'running' && (
                     <Button variant="outline" size="sm">
                       <Pause className="w-3 h-3 mr-1" />
                       Pause
@@ -277,16 +280,16 @@ const ABTestingManager: React.FC = () => {
                 <div className="flex items-center space-x-6 text-sm text-gray-600">
                   <div className="flex items-center">
                     <Target className="w-4 h-4 mr-1" />
-                    Target: {test.targetMetric.replace('_', ' ')}
+                    Target: {test.targetMetric?.replace('_', ' ')}
                   </div>
                   {test.startDate && (
                     <div>
-                      Started: {test.startDate.toLocaleDateString()}
+                      Started: {new Date(test.startDate).toLocaleDateString()}
                     </div>
                   )}
                   {test.endDate && (
                     <div>
-                      Ends: {test.endDate.toLocaleDateString()}
+                      Ends: {new Date(test.endDate).toLocaleDateString()}
                     </div>
                   )}
                 </div>
@@ -302,7 +305,7 @@ const ABTestingManager: React.FC = () => {
                         <div key={variant.name} className="border rounded-lg p-4">
                           <div className="flex items-center justify-between mb-2">
                             <h4 className="font-medium">{variant.name}</h4>
-                            <Badge variant="outline">{variant.weight}%</Badge>
+                            <Badge variant="outline">{variant.traffic}%</Badge>
                           </div>
                           
                           <div className="space-y-2">

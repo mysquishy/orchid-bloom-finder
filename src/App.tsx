@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,12 +11,14 @@ import NetworkStatus from "@/components/NetworkStatus";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
-import OrchidDatabasePage from "./pages/OrchidDatabase";
-import MyGardenPage from "./pages/MyGarden";
+import MyGarden from "./pages/MyGarden";
+import Analytics from "./pages/Analytics";
+import OrchidDatabase from "./pages/OrchidDatabase";
 import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import AdminPage from "./pages/Admin";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,11 +50,12 @@ const App: React.FC = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/database" element={<OrchidDatabasePage />} />
-                <Route path="/garden" element={<MyGardenPage />} />
+                <Route path="/database" element={<OrchidDatabase />} />
+                <Route path="/garden" element={<MyGarden />} />
+                <Route path="/analytics" element={<Analytics />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin" element={<Admin />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -303,7 +302,7 @@ const PremiumEngagement: React.FC = () => {
                       <div className="font-medium">{feature.name}</div>
                       <div className="text-sm text-gray-600">{feature.description}</div>
                     </div>
-                    <Switch checked={feature.isActive} readOnly />
+                    <Switch checked={feature.isActive} disabled />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 mb-3">

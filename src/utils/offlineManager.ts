@@ -16,10 +16,7 @@ interface OrchidAIDB extends DBSchema {
       timestamp: number;
       synced: boolean;
     };
-    indexes: {
-      'by-timestamp': number;
-      'by-synced': boolean;
-    };
+    indexes: { 'by-synced': boolean; 'by-timestamp': number };
   };
   plants: {
     key: string;
@@ -32,16 +29,13 @@ interface OrchidAIDB extends DBSchema {
       notes: string;
       imageUrl: string;
       careSchedule: {
-        watering: number; // days
-        fertilizing: number; // days
+        watering: number;
+        fertilizing: number;
       };
       timestamp: number;
       synced: boolean;
     };
-    indexes: {
-      'by-timestamp': number;
-      'by-synced': boolean;
-    };
+    indexes: { 'by-synced': boolean; 'by-timestamp': number };
   };
   careReminders: {
     key: string;
@@ -54,235 +48,250 @@ interface OrchidAIDB extends DBSchema {
       timestamp: number;
       synced: boolean;
     };
-    indexes: {
-      'by-plantId': string;
-      'by-dueDate': string;
-      'by-synced': boolean;
-    };
+    indexes: { 'by-synced': boolean; 'by-due-date': string };
   };
 }
 
-type StoreNames = keyof OrchidAIDB;
-
 class OfflineManager {
   private db: IDBPDatabase<OrchidAIDB> | null = null;
+  private isOnline: boolean = navigator.onLine;
 
-  async init() {
-    if (this.db) return this.db;
+  constructor() {
+    this.initDB();
+    this.setupOnlineListener();
+  }
 
-    this.db = await openDB<OrchidAIDB>('OrchidAI', 1, {
-      upgrade(db) {
-        // Identifications store
-        if (!db.objectStoreNames.contains('identifications')) {
-          const identificationStore = db.createObjectStore('identifications', { keyPath: 'id' });
-          identificationStore.createIndex('by-timestamp', 'timestamp');
+  private async initDB() {
+    try {
+      this.db = await openDB<OrchidAIDB>('OrchidAI', 1, {
+        upgrade(db) {
+          // Identifications store
+          const identificationStore = db.createObjectStore('identifications', {
+            keyPath: 'id'
+          });
           identificationStore.createIndex('by-synced', 'synced');
-        }
+          identificationStore.createIndex('by-timestamp', 'timestamp');
 
-        // Plants store
-        if (!db.objectStoreNames.contains('plants')) {
-          const plantsStore = db.createObjectStore('plants', { keyPath: 'id' });
-          plantsStore.createIndex('by-timestamp', 'timestamp');
+          // Plants store
+          const plantsStore = db.createObjectStore('plants', {
+            keyPath: 'id'
+          });
           plantsStore.createIndex('by-synced', 'synced');
-        }
+          plantsStore.createIndex('by-timestamp', 'timestamp');
 
-        // Care reminders store
-        if (!db.objectStoreNames.contains('careReminders')) {
-          const remindersStore = db.createObjectStore('careReminders', { keyPath: 'id' });
-          remindersStore.createIndex('by-plantId', 'plantId');
-          remindersStore.createIndex('by-dueDate', 'dueDate');
+          // Care reminders store
+          const remindersStore = db.createObjectStore('careReminders', {
+            keyPath: 'id'
+          });
           remindersStore.createIndex('by-synced', 'synced');
+          remindersStore.createIndex('by-due-date', 'dueDate');
         }
-      },
+      });
+    } catch (error) {
+      console.error('Failed to initialize IndexedDB:', error);
+    }
+  }
+
+  private setupOnlineListener() {
+    window.addEventListener('online', () => {
+      this.isOnline = true;
+      this.syncPendingData();
     });
 
-    return this.db;
+    window.addEventListener('offline', () => {
+      this.isOnline = false;
+    });
   }
 
-  // Identification methods
-  async saveIdentification(identification: OrchidAIDB['identifications']['value']) {
-    const db = await this.init();
-    await db.put('identifications', identification);
-  }
+  // Store identification offline
+  async storeIdentification(identification: any) {
+    if (!this.db) return false;
 
-  async getIdentifications() {
-    const db = await this.init();
-    return db.getAll('identifications');
-  }
+    try {
+      const data = {
+        ...identification,
+        timestamp: Date.now(),
+        synced: this.isOnline
+      };
 
-  async getIdentification(id: string) {
-    const db = await this.init();
-    return db.get('identifications', id);
-  }
-
-  // Plant methods
-  async savePlant(plant: OrchidAIDB['plants']['value']) {
-    const db = await this.init();
-    await db.put('plants', plant);
-  }
-
-  async getPlants() {
-    const db = await this.init();
-    return db.getAll('plants');
-  }
-
-  async getPlant(id: string) {
-    const db = await this.init();
-    return db.get('plants', id);
-  }
-
-  // Care reminder methods
-  async saveReminder(reminder: OrchidAIDB['careReminders']['value']) {
-    const db = await this.init();
-    await db.put('careReminders', reminder);
-  }
-
-  async getReminders() {
-    const db = await this.init();
-    return db.getAll('careReminders');
-  }
-
-  async getPlantReminders(plantId: string) {
-    const db = await this.init();
-    return db.getAllFromIndex('careReminders', 'by-plantId', plantId);
-  }
-
-  async getUpcomingReminders() {
-    const db = await this.init();
-    const all = await db.getAll('careReminders');
-    const today = new Date().toISOString().split('T')[0];
-    
-    return all.filter(reminder => 
-      !reminder.completed && 
-      reminder.dueDate <= today
-    ).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-  }
-
-  // Sync methods
-  async getUnsyncedData() {
-    const db = await this.init();
-    
-    const [identifications, plants, reminders] = await Promise.all([
-      db.getAllFromIndex('identifications', 'by-synced', false),
-      db.getAllFromIndex('plants', 'by-synced', false),
-      db.getAllFromIndex('careReminders', 'by-synced', false)
-    ]);
-
-    return { identifications, plants, reminders };
-  }
-
-  async markAsSynced(store: StoreNames, id: string) {
-    const db = await this.init();
-    
-    if (store === 'identifications') {
-      const item = await db.get('identifications', id);
-      if (item) {
-        await db.put('identifications', { ...item, synced: true });
+      await this.db.add('identifications', data);
+      
+      if (this.isOnline) {
+        this.syncIdentifications();
       }
-    } else if (store === 'plants') {
-      const item = await db.get('plants', id);
-      if (item) {
-        await db.put('plants', { ...item, synced: true });
-      }
-    } else if (store === 'careReminders') {
-      const item = await db.get('careReminders', id);
-      if (item) {
-        await db.put('careReminders', { ...item, synced: true });
-      }
+
+      return true;
+    } catch (error) {
+      console.error('Failed to store identification:', error);
+      return false;
     }
   }
 
-  async clearSyncedData() {
-    const db = await this.init();
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    
-    // Handle identifications
-    const syncedIdentifications = await db.getAllFromIndex('identifications', 'by-synced', true);
-    for (const item of syncedIdentifications) {
-      if (item.timestamp < thirtyDaysAgo) {
-        await db.delete('identifications', item.id);
-      }
-    }
+  // Get all stored identifications
+  async getStoredIdentifications() {
+    if (!this.db) return [];
 
-    // Handle plants
-    const syncedPlants = await db.getAllFromIndex('plants', 'by-synced', true);
-    for (const item of syncedPlants) {
-      if (item.timestamp < thirtyDaysAgo) {
-        await db.delete('plants', item.id);
-      }
-    }
-
-    // Handle care reminders
-    const syncedReminders = await db.getAllFromIndex('careReminders', 'by-synced', true);
-    for (const item of syncedReminders) {
-      if (item.timestamp < thirtyDaysAgo) {
-        await db.delete('careReminders', item.id);
-      }
+    try {
+      return await this.db.getAll('identifications');
+    } catch (error) {
+      console.error('Failed to get identifications:', error);
+      return [];
     }
   }
 
-  // Export/Import for backup
-  async exportData() {
-    const db = await this.init();
-    
-    const [identifications, plants, reminders] = await Promise.all([
-      db.getAll('identifications'),
-      db.getAll('plants'),
-      db.getAll('careReminders')
-    ]);
+  // Store plant data offline
+  async storePlant(plant: any) {
+    if (!this.db) return false;
 
-    return {
-      identifications,
-      plants,
-      reminders,
-      exportDate: new Date().toISOString()
-    };
+    try {
+      const data = {
+        ...plant,
+        timestamp: Date.now(),
+        synced: this.isOnline
+      };
+
+      await this.db.put('plants', data);
+      
+      if (this.isOnline) {
+        this.syncPlants();
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Failed to store plant:', error);
+      return false;
+    }
   }
 
-  async importData(data: any) {
-    const db = await this.init();
-    const tx = db.transaction(['identifications', 'plants', 'careReminders'], 'readwrite');
-    
-    // Clear existing data
-    await tx.objectStore('identifications').clear();
-    await tx.objectStore('plants').clear();
-    await tx.objectStore('careReminders').clear();
-    
-    // Import new data
-    if (data.identifications) {
-      for (const item of data.identifications) {
-        await tx.objectStore('identifications').put(item);
-      }
+  // Get all stored plants
+  async getStoredPlants() {
+    if (!this.db) return [];
+
+    try {
+      return await this.db.getAll('plants');
+    } catch (error) {
+      console.error('Failed to get plants:', error);
+      return [];
     }
-    
-    if (data.plants) {
-      for (const item of data.plants) {
-        await tx.objectStore('plants').put(item);
-      }
-    }
-    
-    if (data.reminders) {
-      for (const item of data.reminders) {
-        await tx.objectStore('careReminders').put(item);
-      }
-    }
-    
-    await tx.done;
   }
 
-  // Storage management
-  async getStorageUsage() {
-    if ('storage' in navigator && 'estimate' in navigator.storage) {
-      return await navigator.storage.estimate();
+  // Store care reminder offline
+  async storeCareReminder(reminder: any) {
+    if (!this.db) return false;
+
+    try {
+      const data = {
+        ...reminder,
+        timestamp: Date.now(),
+        synced: this.isOnline
+      };
+
+      await this.db.put('careReminders', data);
+      
+      if (this.isOnline) {
+        this.syncCareReminders();
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Failed to store care reminder:', error);
+      return false;
     }
-    return null;
   }
 
-  async requestPersistentStorage() {
-    if ('storage' in navigator && 'persist' in navigator.storage) {
-      return await navigator.storage.persist();
+  // Sync pending data when online
+  private async syncPendingData() {
+    if (!this.isOnline || !this.db) return;
+
+    try {
+      await Promise.all([
+        this.syncIdentifications(),
+        this.syncPlants(),
+        this.syncCareReminders()
+      ]);
+    } catch (error) {
+      console.error('Failed to sync pending data:', error);
     }
-    return false;
+  }
+
+  private async syncIdentifications() {
+    if (!this.db) return;
+
+    try {
+      const unsyncedData = await this.db.getAllFromIndex('identifications', 'by-synced', false);
+      
+      for (const item of unsyncedData) {
+        // Here you would sync with your backend API
+        // For now, we'll just mark as synced
+        await this.db.put('identifications', { ...item, synced: true });
+      }
+    } catch (error) {
+      console.error('Failed to sync identifications:', error);
+    }
+  }
+
+  private async syncPlants() {
+    if (!this.db) return;
+
+    try {
+      const unsyncedData = await this.db.getAllFromIndex('plants', 'by-synced', false);
+      
+      for (const item of unsyncedData) {
+        // Here you would sync with your backend API
+        await this.db.put('plants', { ...item, synced: true });
+      }
+    } catch (error) {
+      console.error('Failed to sync plants:', error);
+    }
+  }
+
+  private async syncCareReminders() {
+    if (!this.db) return;
+
+    try {
+      const unsyncedData = await this.db.getAllFromIndex('careReminders', 'by-synced', false);
+      
+      for (const item of unsyncedData) {
+        // Here you would sync with your backend API
+        await this.db.put('careReminders', { ...item, synced: true });
+      }
+    } catch (error) {
+      console.error('Failed to sync care reminders:', error);
+    }
+  }
+
+  // Check if device is online
+  isDeviceOnline(): boolean {
+    return this.isOnline;
+  }
+
+  // Get sync status
+  async getSyncStatus() {
+    if (!this.db) return { pending: 0, synced: 0 };
+
+    try {
+      const [unsyncedIdentifications, unsyncedPlants, unsyncedReminders] = await Promise.all([
+        this.db.getAllFromIndex('identifications', 'by-synced', false),
+        this.db.getAllFromIndex('plants', 'by-synced', false),
+        this.db.getAllFromIndex('careReminders', 'by-synced', false)
+      ]);
+
+      const pending = unsyncedIdentifications.length + unsyncedPlants.length + unsyncedReminders.length;
+      
+      const [allIdentifications, allPlants, allReminders] = await Promise.all([
+        this.db.getAll('identifications'),
+        this.db.getAll('plants'),
+        this.db.getAll('careReminders')
+      ]);
+
+      const total = allIdentifications.length + allPlants.length + allReminders.length;
+      const synced = total - pending;
+
+      return { pending, synced };
+    } catch (error) {
+      console.error('Failed to get sync status:', error);
+      return { pending: 0, synced: 0 };
+    }
   }
 }
 

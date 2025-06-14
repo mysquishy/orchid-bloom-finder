@@ -35,7 +35,16 @@ class IntegrationManager {
 
       if (error) throw error;
 
-      return data || [];
+      const configs = (data || []).map(row => ({
+        id: row.id,
+        type: row.type as IntegrationConfig['type'],
+        provider: row.provider,
+        settings: row.settings || {},
+        isActive: row.is_active,
+        credentials: row.credentials || {}
+      }));
+
+      return configs;
     } catch (error) {
       console.error('Failed to load integrations:', error);
       return [];

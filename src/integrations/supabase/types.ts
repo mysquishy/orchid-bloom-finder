@@ -80,6 +80,75 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_id: string
+          last_used_at: string | null
+          name: string
+          permissions: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_id: string
+          last_used_at?: string | null
+          name: string
+          permissions?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_id?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      api_rate_limits: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          identifier: string
+          request_count: number
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          identifier: string
+          request_count?: number
+          updated_at?: string
+          window_start: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          identifier?: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       api_usage_costs: {
         Row: {
           api_endpoint: string
@@ -116,6 +185,93 @@ export type Database = {
           success?: boolean | null
           usage_count?: number | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      app_analytics: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          is_published: boolean
+          published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          view_count?: number
         }
         Relationships: []
       }
@@ -436,6 +592,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      error_logs: {
+        Row: {
+          context: Json | null
+          created_at: string
+          error_message: string
+          error_type: string
+          id: string
+          stack_trace: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          error_message: string
+          error_type: string
+          id?: string
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          error_message?: string
+          error_type?: string
+          id?: string
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       event_attendances: {
         Row: {
@@ -885,6 +1077,51 @@ export type Database = {
           member_count?: number | null
           name?: string
           website_url?: string | null
+        }
+        Relationships: []
+      }
+      marketing_campaigns: {
+        Row: {
+          campaign_type: string
+          content: Json
+          created_at: string
+          created_by: string
+          id: string
+          metrics: Json
+          name: string
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          target_audience: Json
+          updated_at: string
+        }
+        Insert: {
+          campaign_type?: string
+          content?: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          metrics?: Json
+          name: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          target_audience?: Json
+          updated_at?: string
+        }
+        Update: {
+          campaign_type?: string
+          content?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          metrics?: Json
+          name?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          target_audience?: Json
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1530,6 +1767,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_integrations: {
+        Row: {
+          created_at: string
+          credentials: Json | null
+          id: string
+          is_active: boolean
+          provider: string
+          settings: Json
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credentials?: Json | null
+          id?: string
+          is_active?: boolean
+          provider: string
+          settings?: Json
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credentials?: Json | null
+          id?: string
+          is_active?: boolean
+          provider?: string
+          settings?: Json
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_orchid_collection: {
         Row: {

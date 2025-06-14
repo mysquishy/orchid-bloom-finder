@@ -119,6 +119,153 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_participations: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          image_urls: string[] | null
+          score: number | null
+          submission_data: Json | null
+          submission_text: string | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          score?: number | null
+          submission_data?: Json | null
+          submission_text?: string | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          score?: number | null
+          submission_data?: Json | null
+          submission_text?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "community_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_participations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_challenges: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          description: string
+          end_date: string
+          id: string
+          participant_count: number | null
+          prize_description: string | null
+          start_date: string
+          status: string
+          title: string
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          description: string
+          end_date: string
+          id?: string
+          participant_count?: number | null
+          prize_description?: string | null
+          start_date: string
+          status?: string
+          title: string
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          description?: string
+          end_date?: string
+          id?: string
+          participant_count?: number | null
+          prize_description?: string | null
+          start_date?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      community_posts: {
+        Row: {
+          comments_count: number | null
+          content: string | null
+          created_at: string
+          id: string
+          image_urls: string[] | null
+          likes_count: number | null
+          orchid_species_id: string | null
+          post_type: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          likes_count?: number | null
+          orchid_species_id?: string | null
+          post_type?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comments_count?: number | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          likes_count?: number | null
+          orchid_species_id?: string | null
+          post_type?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_orchid_species_id_fkey"
+            columns: ["orchid_species_id"]
+            isOneToOne: false
+            referencedRelation: "orchid_species"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversion_funnel: {
         Row: {
           completed_at: string | null
@@ -145,6 +292,239 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      discussion_forums: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          member_count: number | null
+          name: string
+          orchid_species_id: string | null
+          post_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_count?: number | null
+          name: string
+          orchid_species_id?: string | null
+          post_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_count?: number | null
+          name?: string
+          orchid_species_id?: string | null
+          post_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discussion_forums_orchid_species_id_fkey"
+            columns: ["orchid_species_id"]
+            isOneToOne: false
+            referencedRelation: "orchid_species"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_attendances: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendances_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "meetup_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expert_verifications: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          expert_id: string
+          id: string
+          identification_id: string
+          status: string
+          verification_notes: string | null
+          verified_species: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          expert_id: string
+          id?: string
+          identification_id: string
+          status?: string
+          verification_notes?: string | null
+          verified_species?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          expert_id?: string
+          id?: string
+          identification_id?: string
+          status?: string
+          verification_notes?: string | null
+          verified_species?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_verifications_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expert_verifications_identification_id_fkey"
+            columns: ["identification_id"]
+            isOneToOne: false
+            referencedRelation: "identifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_replies: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          topic_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          topic_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          topic_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "forum_topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_replies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_topics: {
+        Row: {
+          content: string
+          created_at: string
+          forum_id: string
+          id: string
+          is_locked: boolean | null
+          is_pinned: boolean | null
+          last_reply_at: string | null
+          reply_count: number | null
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          forum_id: string
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_reply_at?: string | null
+          reply_count?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          forum_id?: string
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_reply_at?: string | null
+          reply_count?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_topics_forum_id_fkey"
+            columns: ["forum_id"]
+            isOneToOne: false
+            referencedRelation: "discussion_forums"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_topics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       identifications: {
         Row: {
@@ -178,6 +558,96 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      local_societies: {
+        Row: {
+          contact_info: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          location: string
+          member_count: number | null
+          name: string
+          website_url: string | null
+        }
+        Insert: {
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location: string
+          member_count?: number | null
+          name: string
+          website_url?: string | null
+        }
+        Update: {
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string
+          member_count?: number | null
+          name?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      meetup_events: {
+        Row: {
+          attendee_count: number | null
+          created_at: string
+          description: string | null
+          event_date: string
+          id: string
+          location: string
+          max_attendees: number | null
+          organizer_id: string
+          society_id: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          attendee_count?: number | null
+          created_at?: string
+          description?: string | null
+          event_date: string
+          id?: string
+          location: string
+          max_attendees?: number | null
+          organizer_id: string
+          society_id?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          attendee_count?: number | null
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          id?: string
+          location?: string
+          max_attendees?: number | null
+          organizer_id?: string
+          society_id?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetup_events_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetup_events_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: false
+            referencedRelation: "local_societies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orchid_species: {
         Row: {
@@ -269,29 +739,185 @@ export type Database = {
         }
         Relationships: []
       }
+      plant_trades: {
+        Row: {
+          contact_info: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          image_urls: string[] | null
+          location: string | null
+          orchid_species_id: string | null
+          status: string
+          title: string
+          trade_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          location?: string | null
+          orchid_species_id?: string | null
+          status?: string
+          title: string
+          trade_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          location?: string | null
+          orchid_species_id?: string | null
+          status?: string
+          title?: string
+          trade_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_trades_orchid_species_id_fkey"
+            columns: ["orchid_species_id"]
+            isOneToOne: false
+            referencedRelation: "orchid_species"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_trades_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           first_name: string | null
           id: string
+          is_expert: boolean | null
           last_name: string | null
+          location: string | null
+          orchid_experience_level: string | null
+          privacy_settings: Json | null
+          social_links: Json | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           first_name?: string | null
           id: string
+          is_expert?: boolean | null
           last_name?: string | null
+          location?: string | null
+          orchid_experience_level?: string | null
+          privacy_settings?: Json | null
+          social_links?: Json | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
+          is_expert?: boolean | null
           last_name?: string | null
+          location?: string | null
+          orchid_experience_level?: string | null
+          privacy_settings?: Json | null
+          social_links?: Json | null
           updated_at?: string
         }
         Relationships: []
@@ -334,6 +960,45 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      society_memberships: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          society_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          society_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          society_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "society_memberships_society_id_fkey"
+            columns: ["society_id"]
+            isOneToOne: false
+            referencedRelation: "local_societies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "society_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {
@@ -440,6 +1105,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          description: string | null
+          earned_at: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          description?: string | null
+          earned_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          description?: string | null
+          earned_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_engagement: {
         Row: {
           created_at: string | null
@@ -472,6 +1175,42 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_orchid_collection: {
         Row: {

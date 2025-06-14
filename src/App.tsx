@@ -21,6 +21,7 @@ import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import Admin from "./pages/Admin";
 import BusinessIntelligence from "./pages/BusinessIntelligence";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -84,6 +85,7 @@ const App: React.FC = () => {
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/weather" element={<WeatherSystem />} />
                   <Route path="/export" element={<DataExport />} />
+                  <Route path="/community" element={<Community />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/subscription-success" element={<SubscriptionSuccess />} />
                   <Route path="/admin" element={<Admin />} />

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, FileImage, BookOpen, TrendingUp } from 'lucide-react';
+import { Camera, FileImage, BookOpen, TrendingUp, Database, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Identification {
@@ -23,12 +23,14 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
     total: 0,
     saved: 0,
-    thisWeek: 0
+    thisWeek: 0,
+    gardenCount: 0
   });
 
   useEffect(() => {
     if (user) {
       fetchIdentifications();
+      fetchGardenStats();
     }
   }, [user]);
 
@@ -51,7 +53,7 @@ const Dashboard: React.FC = () => {
       weekAgo.setDate(weekAgo.getDate() - 7);
       const thisWeek = data?.filter(id => new Date(id.created_at) > weekAgo).length || 0;
       
-      setStats({ total, saved, thisWeek });
+      setStats(prev => ({ ...prev, total, saved, thisWeek }));
     } catch (error: any) {
       toast({
         title: "Error",
@@ -60,6 +62,21 @@ const Dashboard: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchGardenStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_orchid_collection')
+        .select('id')
+        .eq('user_id', user!.id);
+
+      if (error) throw error;
+
+      setStats(prev => ({ ...prev, gardenCount: data?.length || 0 }));
+    } catch (error: any) {
+      console.log('Error fetching garden stats:', error);
     }
   };
 
@@ -77,18 +94,38 @@ const Dashboard: React.FC = () => {
             Ready to discover more beautiful orchids today?
           </p>
           
-          <Button
-            onClick={() => window.location.href = '/#identify'}
-            size="lg"
-            className="bg-gradient-to-r from-green-500 to-purple-600 hover:from-green-600 hover:to-purple-700 text-white px-8 py-3"
-          >
-            <Camera className="mr-2 h-5 w-5" />
-            Identify New Orchid
-          </Button>
+          <div className="flex flex-wrap gap-4">
+            <Button
+              onClick={() => window.location.href = '/#identify'}
+              size="lg"
+              className="bg-gradient-to-r from-green-500 to-purple-600 hover:from-green-600 hover:to-purple-700 text-white px-8 py-3"
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              Identify New Orchid
+            </Button>
+            <Button
+              onClick={() => window.location.href = '/database'}
+              size="lg"
+              variant="outline"
+              className="px-8 py-3"
+            >
+              <Database className="mr-2 h-5 w-5" />
+              Browse Database
+            </Button>
+            <Button
+              onClick={() => window.location.href = '/garden'}
+              size="lg"
+              variant="outline"
+              className="px-8 py-3"
+            >
+              <Heart className="mr-2 h-5 w-5" />
+              My Garden
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <Card className="bg-white/80 backdrop-blur-sm border-green-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Total Identifications</CardTitle>
@@ -102,12 +139,23 @@ const Dashboard: React.FC = () => {
 
           <Card className="bg-white/80 backdrop-blur-sm border-purple-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">My Garden</CardTitle>
+              <Heart className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.gardenCount}</div>
+              <p className="text-xs text-gray-500">Orchids in collection</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Saved Plants</CardTitle>
-              <BookOpen className="h-4 w-4 text-purple-600" />
+              <BookOpen className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900">{stats.saved}</div>
-              <p className="text-xs text-gray-500">In your collection</p>
+              <p className="text-xs text-gray-500">From identifications</p>
             </CardContent>
           </Card>
 

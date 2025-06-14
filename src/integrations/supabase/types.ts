@@ -42,6 +42,96 @@ export type Database = {
         }
         Relationships: []
       }
+      orchid_species: {
+        Row: {
+          bloom_time: string
+          care_difficulty: string
+          care_tips: string[] | null
+          common_diseases: string[] | null
+          common_name: string
+          confidence_score: number | null
+          created_at: string
+          description: string
+          family: string
+          fertilizer_schedule: string
+          flower_colors: string[]
+          gbif_id: string | null
+          growing_medium: string
+          high_quality_image_urls: string[] | null
+          humidity_needs: string
+          id: string
+          is_popular: boolean | null
+          light_requirements: string
+          native_region: string
+          plantnet_cache_id: string | null
+          repotting_frequency: string
+          scientific_name: string
+          subfamily: string | null
+          temperature_range: string
+          updated_at: string
+          user_contributed: boolean | null
+          water_frequency: string
+        }
+        Insert: {
+          bloom_time: string
+          care_difficulty: string
+          care_tips?: string[] | null
+          common_diseases?: string[] | null
+          common_name: string
+          confidence_score?: number | null
+          created_at?: string
+          description: string
+          family?: string
+          fertilizer_schedule: string
+          flower_colors: string[]
+          gbif_id?: string | null
+          growing_medium: string
+          high_quality_image_urls?: string[] | null
+          humidity_needs: string
+          id?: string
+          is_popular?: boolean | null
+          light_requirements: string
+          native_region: string
+          plantnet_cache_id?: string | null
+          repotting_frequency: string
+          scientific_name: string
+          subfamily?: string | null
+          temperature_range: string
+          updated_at?: string
+          user_contributed?: boolean | null
+          water_frequency: string
+        }
+        Update: {
+          bloom_time?: string
+          care_difficulty?: string
+          care_tips?: string[] | null
+          common_diseases?: string[] | null
+          common_name?: string
+          confidence_score?: number | null
+          created_at?: string
+          description?: string
+          family?: string
+          fertilizer_schedule?: string
+          flower_colors?: string[]
+          gbif_id?: string | null
+          growing_medium?: string
+          high_quality_image_urls?: string[] | null
+          humidity_needs?: string
+          id?: string
+          is_popular?: boolean | null
+          light_requirements?: string
+          native_region?: string
+          plantnet_cache_id?: string | null
+          repotting_frequency?: string
+          scientific_name?: string
+          subfamily?: string | null
+          temperature_range?: string
+          updated_at?: string
+          user_contributed?: boolean | null
+          water_frequency?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -68,6 +158,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_orchid_collection: {
+        Row: {
+          care_notes: string | null
+          created_at: string
+          current_bloom_status: string | null
+          date_added: string
+          id: string
+          last_fertilized: string | null
+          last_repotted: string | null
+          last_watered: string | null
+          orchid_species_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          care_notes?: string | null
+          created_at?: string
+          current_bloom_status?: string | null
+          date_added?: string
+          id?: string
+          last_fertilized?: string | null
+          last_repotted?: string | null
+          last_watered?: string | null
+          orchid_species_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          care_notes?: string | null
+          created_at?: string
+          current_bloom_status?: string | null
+          date_added?: string
+          id?: string
+          last_fertilized?: string | null
+          last_repotted?: string | null
+          last_watered?: string | null
+          orchid_species_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_orchid_collection_orchid_species_id_fkey"
+            columns: ["orchid_species_id"]
+            isOneToOne: false
+            referencedRelation: "orchid_species"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

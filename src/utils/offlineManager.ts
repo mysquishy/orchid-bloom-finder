@@ -160,26 +160,53 @@ class OfflineManager {
 
   async markAsSynced(store: StoreNames, id: string) {
     const db = await this.init();
-    const item = await db.get(store, id);
-    if (item) {
-      await db.put(store, { ...item, synced: true });
+    
+    if (store === 'identifications') {
+      const item = await db.get('identifications', id);
+      if (item) {
+        await db.put('identifications', { ...item, synced: true });
+      }
+    } else if (store === 'plants') {
+      const item = await db.get('plants', id);
+      if (item) {
+        await db.put('plants', { ...item, synced: true });
+      }
+    } else if (store === 'careReminders') {
+      const item = await db.get('careReminders', id);
+      if (item) {
+        await db.put('careReminders', { ...item, synced: true });
+      }
     }
   }
 
   async clearSyncedData() {
     const db = await this.init();
-    const stores: (keyof OrchidAIDB)[] = ['identifications', 'plants', 'careReminders'];
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
     
-    for (const storeName of stores) {
-      const synced = await db.getAllFromIndex(storeName, 'synced', true);
-      const tx = db.transaction(storeName, 'readwrite');
-      
-      for (const item of synced) {
-        // Keep recent data (last 30 days)
-        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-        if (item.timestamp < thirtyDaysAgo) {
-          await tx.store.delete(item.id);
-        }
+    // Handle identifications
+    const syncedIdentifications = await db.getAllFromIndex('identifications', 'synced', true);
+    const identificationsTx = db.transaction('identifications', 'readwrite');
+    for (const item of syncedIdentifications) {
+      if (item.timestamp < thirtyDaysAgo) {
+        await identificationsTx.store.delete(item.id);
+      }
+    }
+
+    // Handle plants
+    const syncedPlants = await db.getAllFromIndex('plants', 'synced', true);
+    const plantsTx = db.transaction('plants', 'readwrite');
+    for (const item of syncedPlants) {
+      if (item.timestamp < thirtyDaysAgo) {
+        await plantsTx.store.delete(item.id);
+      }
+    }
+
+    // Handle care reminders
+    const syncedReminders = await db.getAllFromIndex('careReminders', 'synced', true);
+    const remindersTx = db.transaction('careReminders', 'readwrite');
+    for (const item of syncedReminders) {
+      if (item.timestamp < thirtyDaysAgo) {
+        await remindersTx.store.delete(item.id);
       }
     }
   }

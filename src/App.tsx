@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -25,6 +24,10 @@ import BusinessIntelligence from "./pages/BusinessIntelligence";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
+import { registerOptimizedServiceWorker } from '@/utils/serviceWorkerOptimizations';
+import { optimizeNetworkRequests, trackPerformanceMetrics } from '@/utils/performance';
+import { errorMonitor } from '@/utils/errorMonitoring';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -41,39 +44,60 @@ const queryClient = new QueryClient({
   },
 });
 
-const App: React.FC = () => (
-  <ErrorBoundary>
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <SubscriptionProvider>
-            <NetworkStatus />
-            <PWAInstallPrompt />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/database" element={<OrchidDatabase />} />
-                <Route path="/garden" element={<MyGarden />} />
-                <Route path="/health" element={<HealthMonitoring />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/weather" element={<WeatherSystem />} />
-                <Route path="/export" element={<DataExport />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/business-intelligence" element={<BusinessIntelligence />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </SubscriptionProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </HelmetProvider>
-  </ErrorBoundary>
-);
+const App: React.FC = () => {
+  // Initialize performance optimizations
+  React.useEffect(() => {
+    // Register enhanced service worker
+    registerOptimizedServiceWorker();
+    
+    // Optimize network requests
+    optimizeNetworkRequests();
+    
+    // Track initial performance metrics
+    setTimeout(trackPerformanceMetrics, 1000);
+    
+    // Request notification permission for error alerts
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    
+    console.log('Performance optimizations initialized');
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <NetworkStatus />
+              <PWAInstallPrompt />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/database" element={<OrchidDatabase />} />
+                  <Route path="/garden" element={<MyGarden />} />
+                  <Route path="/health" element={<HealthMonitoring />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/weather" element={<WeatherSystem />} />
+                  <Route path="/export" element={<DataExport />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/business-intelligence" element={<BusinessIntelligence />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

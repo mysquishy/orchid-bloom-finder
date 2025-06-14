@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -18,6 +17,9 @@ import SupportTicketManager from './SupportTicketManager';
 import ABTestingManager from './ABTestingManager';
 import ConversionFunnelAnalysis from './ConversionFunnelAnalysis';
 import AdminMetrics from '@/components/AdminMetrics';
+import PerformanceMonitor from '../performance/PerformanceMonitor';
+import LoadBalancingManager from '../performance/LoadBalancingManager';
+import { Monitor, Gauge } from 'lucide-react';
 
 const ComprehensiveAdminDashboard: React.FC = () => {
   return (
@@ -34,7 +36,7 @@ const ComprehensiveAdminDashboard: React.FC = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -66,6 +68,14 @@ const ComprehensiveAdminDashboard: React.FC = () => {
             <TabsTrigger value="system" className="flex items-center gap-2">
               <Database className="w-4 h-4" />
               <span className="hidden sm:inline">System</span>
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="flex items-center gap-2">
+              <Gauge className="w-4 h-4" />
+              <span className="hidden sm:inline">Performance</span>
+            </TabsTrigger>
+            <TabsTrigger value="load-balancing" className="flex items-center gap-2">
+              <Monitor className="w-4 h-4" />
+              <span className="hidden sm:inline">Load Balance</span>
             </TabsTrigger>
           </TabsList>
 
@@ -105,6 +115,14 @@ const ComprehensiveAdminDashboard: React.FC = () => {
 
           <TabsContent value="system">
             <AdminMetrics />
+          </TabsContent>
+
+          <TabsContent value="performance">
+            <PerformanceMonitor />
+          </TabsContent>
+
+          <TabsContent value="load-balancing">
+            <LoadBalancingManager />
           </TabsContent>
         </Tabs>
       </div>

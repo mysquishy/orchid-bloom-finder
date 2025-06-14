@@ -18,7 +18,8 @@ import {
   MessageCircle,
   Star,
   Copy,
-  Send
+  Send,
+  Plus
 } from 'lucide-react';
 
 interface ReferralMetrics {

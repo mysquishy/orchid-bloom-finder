@@ -1,6 +1,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import PhotoCapture from '@/components/PhotoCapture';
 
 // Mock file upload
@@ -16,13 +17,13 @@ describe('Photo Upload Integration Tests', () => {
   it('should handle photo capture workflow', async () => {
     const mockOnImageCapture = vi.fn();
     
-    render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
+    const { getByLabelText } = render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
 
     // Test file input
-    const fileInput = screen.getByLabelText('Choose from gallery');
-    fireEvent.change(fileInput, { target: { files: [mockFile] } });
+    const fileInput = getByLabelText('Choose from gallery');
+    await userEvent.upload(fileInput, mockFile);
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(mockOnImageCapture).toHaveBeenCalledWith(mockFile);
     });
   });
@@ -31,12 +32,12 @@ describe('Photo Upload Integration Tests', () => {
     const mockOnImageCapture = vi.fn();
     const invalidFile = new File(['test'], 'document.pdf', { type: 'application/pdf' });
     
-    render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
+    const { getByLabelText } = render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
 
-    const fileInput = screen.getByLabelText('Choose from gallery');
-    fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+    const fileInput = getByLabelText('Choose from gallery');
+    await userEvent.upload(fileInput, invalidFile);
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(mockOnImageCapture).not.toHaveBeenCalled();
     });
   });
@@ -46,12 +47,12 @@ describe('Photo Upload Integration Tests', () => {
     // Create a mock large file (>10MB)
     const largeFile = new File(['x'.repeat(11 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' });
     
-    render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
+    const { getByLabelText } = render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
 
-    const fileInput = screen.getByLabelText('Choose from gallery');
-    fireEvent.change(fileInput, { target: { files: [largeFile] } });
+    const fileInput = getByLabelText('Choose from gallery');
+    await userEvent.upload(fileInput, invalidFile);
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(mockOnImageCapture).not.toHaveBeenCalled();
     });
   });

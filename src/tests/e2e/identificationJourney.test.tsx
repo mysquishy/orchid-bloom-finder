@@ -1,6 +1,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import App from '@/App';
 
@@ -14,31 +15,31 @@ describe('End-to-End Identification Journey', () => {
   });
 
   it('should complete full identification workflow', async () => {
-    render(
+    const { getByText } = render(
       <BrowserRouter>
         <App />
       </BrowserRouter>
     );
 
     // Step 1: User lands on homepage
-    expect(screen.getByText('Identify Your Orchid')).toBeInTheDocument();
+    expect(getByText('Identify Your Orchid')).toBeInTheDocument();
 
     // Step 2: User uploads a photo
-    const uploadButton = screen.getByText('Upload Photo');
-    fireEvent.click(uploadButton);
+    const uploadButton = getByText('Upload Photo');
+    await userEvent.click(uploadButton);
 
     // Step 3: Photo is processed (mock successful identification)
-    await waitFor(() => {
-      expect(screen.getByText('Analyzing')).toBeInTheDocument();
+    await vi.waitFor(() => {
+      expect(getByText('Analyzing')).toBeInTheDocument();
     });
 
     // Step 4: Results are displayed
-    await waitFor(() => {
-      expect(screen.getByText('Identification Complete')).toBeInTheDocument();
+    await vi.waitFor(() => {
+      expect(getByText('Identification Complete')).toBeInTheDocument();
     }, { timeout: 5000 });
 
     // Step 5: User can save to garden
-    const saveButton = screen.getByText('Save to Garden');
+    const saveButton = getByText('Save to Garden');
     expect(saveButton).toBeInTheDocument();
   });
 
@@ -46,17 +47,17 @@ describe('End-to-End Identification Journey', () => {
     // Mock failed identification
     vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
-    render(
+    const { getByText } = render(
       <BrowserRouter>
         <App />
       </BrowserRouter>
     );
 
-    const uploadButton = screen.getByText('Upload Photo');
-    fireEvent.click(uploadButton);
+    const uploadButton = getByText('Upload Photo');
+    await userEvent.click(uploadButton);
 
-    await waitFor(() => {
-      expect(screen.getByText('Error')).toBeInTheDocument();
+    await vi.waitFor(() => {
+      expect(getByText('Error')).toBeInTheDocument();
     });
   });
 });

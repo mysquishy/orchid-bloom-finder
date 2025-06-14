@@ -1,15 +1,21 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import NetworkStatus from "@/components/NetworkStatus";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
-import Gamification from "@/pages/Gamification";
+import BottomNavigation from "@/components/navigation/BottomNavigation";
+import QuickActionWidget from "@/components/widgets/QuickActionWidget";
+import { useSwipeGestures } from "@/hooks/useSwipeGestures";
+import { useVoiceCommands } from "@/hooks/useVoiceCommands";
+import { backgroundSync } from "@/utils/backgroundSync";
+import { useEffect } from "react";
 
 // Pages
 import Index from "./pages/Index";
@@ -26,9 +32,109 @@ import BusinessIntelligence from "./pages/BusinessIntelligence";
 import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import ExpertConsultations from "./pages/ExpertConsultations";
+import Gamification from "./pages/Gamification";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  const location = useLocation();
+
+  // Voice commands
+  const voiceCommands = [
+    {
+      command: /water.*plant/i,
+      action: () => console.log('Voice: Water plants'),
+      description: 'Watering logged'
+    },
+    {
+      command: /take.*photo/i,
+      action: () => console.log('Voice: Take photo'),
+      description: 'Camera activated'
+    },
+    {
+      command: /identify.*plant/i,
+      action: () => window.location.href = '/#identify',
+      description: 'Opening plant identification'
+    }
+  ];
+
+  const { toggleListening } = useVoiceCommands(voiceCommands);
+
+  // Swipe gestures
+  useSwipeGestures({
+    onSwipeLeft: () => console.log('Swiped left'),
+    onSwipeRight: () => console.log('Swiped right'),
+  });
+
+  // Initialize PWA features
+  useEffect(() => {
+    // Initialize background sync
+    backgroundSync.init();
+
+    // Request notification permissions
+    backgroundSync.requestNotificationPermission();
+
+    // Set up keyboard shortcuts
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key) {
+          case 'k':
+            event.preventDefault();
+            toggleListening();
+            break;
+          case '/':
+            event.preventDefault();
+            // Focus search
+            const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+            searchInput?.focus();
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      backgroundSync.stop();
+    };
+  }, [toggleListening]);
+
+  const showBottomNav = !['/admin', '/business'].includes(location.pathname);
+
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+      <NetworkStatus />
+      <PWAInstallPrompt />
+      
+      <div className={showBottomNav ? 'pb-16 md:pb-0' : ''}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/garden" element={<MyGarden />} />
+          <Route path="/database" element={<OrchidDatabase />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/health" element={<HealthMonitoring />} />
+          <Route path="/weather" element={<WeatherSystem />} />
+          <Route path="/export" element={<DataExport />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/business" element={<BusinessIntelligence />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+          <Route path="/expert-consultations" element={<ExpertConsultations />} />
+          <Route path="/gamification" element={<Gamification />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+
+      {showBottomNav && <BottomNavigation />}
+      <QuickActionWidget />
+    </>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -37,29 +143,8 @@ const App = () => (
         <SubscriptionProvider>
           <TooltipProvider>
             <ErrorBoundary>
-              <Toaster />
-              <Sonner />
-              <NetworkStatus />
-              <PWAInstallPrompt />
               <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/garden" element={<MyGarden />} />
-                  <Route path="/database" element={<OrchidDatabase />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/health" element={<HealthMonitoring />} />
-                  <Route path="/weather" element={<WeatherSystem />} />
-                  <Route path="/export" element={<DataExport />} />
-                  <Route path="/community" element={<Community />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/business" element={<BusinessIntelligence />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-                  <Route path="/expert-consultations" element={<ExpertConsultations />} />
-                  <Route path="/gamification" element={<Gamification />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <AppContent />
               </BrowserRouter>
             </ErrorBoundary>
           </TooltipProvider>

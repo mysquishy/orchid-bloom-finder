@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Camera, ArrowUp } from 'lucide-react';
-import PhotoCapture from './PhotoCapture';
+import AdvancedPhotoCapture from './camera/AdvancedPhotoCapture';
 import LoadingAnalysis from './LoadingAnalysis';
 import ResultsPage from './ResultsPage';
 import PremiumGate from './PremiumGate';
@@ -10,6 +9,7 @@ import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { supabase } from '@/integrations/supabase/client';
+import { offlineManager } from '@/utils/offlineManager';
 
 const ImageUploadSection = () => {
   const [dragOver, setDragOver] = useState(false);
@@ -76,6 +76,24 @@ const ImageUploadSection = () => {
 
     setCapturedImage(URL.createObjectURL(file));
     setShowPhotoCapture(false);
+    
+    // Save to offline storage
+    if (user) {
+      const identification = {
+        id: `id-${Date.now()}`,
+        species: mockResult.species,
+        commonName: mockResult.commonName,
+        confidence: mockResult.confidence,
+        description: mockResult.description,
+        careInstructions: mockResult.careInstructions,
+        characteristics: mockResult.characteristics,
+        imageUrl: URL.createObjectURL(file),
+        timestamp: Date.now(),
+        synced: false
+      };
+      
+      await offlineManager.saveIdentification(identification);
+    }
     
     // Increment usage for free users
     if (user && access.reason === 'free-limit') {
@@ -204,26 +222,26 @@ const ImageUploadSection = () => {
                     className="flex items-center justify-center space-x-2 text-gray-700 px-8 py-3 rounded-full font-semibold border-2 border-gray-200 hover:border-green-300 hover:text-green-600 transition-all duration-300"
                   >
                     <Camera className="w-5 h-5" />
-                    <span>Take Photo</span>
+                    <span>Advanced Camera</span>
                   </button>
                 </div>
               </div>
             </div>
           </PremiumGate>
 
-          {/* Tips */}
+          {/* Enhanced Tips */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
             <div className="p-6 bg-green-50 rounded-2xl">
-              <h4 className="font-semibold text-gray-900 mb-2">Clear Photos</h4>
-              <p className="text-gray-600 text-sm">Ensure the orchid is well-lit and in focus</p>
+              <h4 className="font-semibold text-gray-900 mb-2">Pro Camera Tools</h4>
+              <p className="text-gray-600 text-sm">Advanced controls for perfect plant photos</p>
             </div>
             <div className="p-6 bg-purple-50 rounded-2xl">
-              <h4 className="font-semibold text-gray-900 mb-2">Close-up Shots</h4>
-              <p className="text-gray-600 text-sm">Capture the flower details for best results</p>
+              <h4 className="font-semibold text-gray-900 mb-2">Offline Ready</h4>
+              <p className="text-gray-600 text-sm">Works even when you're disconnected</p>
             </div>
             <div className="p-6 bg-green-50 rounded-2xl">
-              <h4 className="font-semibold text-gray-900 mb-2">Multiple Angles</h4>
-              <p className="text-gray-600 text-sm">Try different angles if first attempt isn't clear</p>
+              <h4 className="font-semibold text-gray-900 mb-2">Voice Commands</h4>
+              <p className="text-gray-600 text-sm">Say "take photo" for hands-free capture</p>
             </div>
           </div>
 
@@ -235,9 +253,9 @@ const ImageUploadSection = () => {
                 description="Get unlimited identifications with premium access"
                 features={[
                   "Unlimited plant identifications",
-                  "Disease detection & treatment",
-                  "Advanced plant health analytics",
-                  "Weather-based care recommendations",
+                  "Advanced camera tools",
+                  "Offline functionality",
+                  "Voice commands",
                   "Export your plant data"
                 ]}
               />
@@ -246,9 +264,9 @@ const ImageUploadSection = () => {
         </div>
       </section>
 
-      {/* Photo Capture Modal */}
+      {/* Advanced Photo Capture Modal */}
       {showPhotoCapture && (
-        <PhotoCapture
+        <AdvancedPhotoCapture
           onImageCapture={handleImageCapture}
           onCancel={() => setShowPhotoCapture(false)}
         />

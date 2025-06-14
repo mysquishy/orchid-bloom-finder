@@ -1,10 +1,10 @@
 
-const CACHE_NAME = 'orchidai-v2';
+const CACHE_NAME = 'orchidai-v3';
 const OFFLINE_CACHE = 'orchidai-offline';
 const API_CACHE = 'orchidai-api';
 const IMAGE_CACHE = 'orchidai-images';
 
-// Cache strategies by type
+// Enhanced cache strategies
 const CACHE_STRATEGIES = {
   static: 'cache-first',
   api: 'network-first',
@@ -19,14 +19,19 @@ const STATIC_CACHE_URLS = [
   '/static/js/main.js',
   '/manifest.json',
   '/favicon.ico',
-  '/offline.html'
+  '/offline.html',
+  '/dashboard',
+  '/garden',
+  '/database',
+  '/gamification'
 ];
 
 // API endpoints to cache
 const API_CACHE_PATTERNS = [
   /\/api\/orchid-species/,
   /\/api\/user\/profile/,
-  /\/api\/popular-species/
+  /\/api\/popular-species/,
+  /\/api\/identifications/
 ];
 
 // Install event - cache static assets
@@ -59,7 +64,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - implement caching strategies
+// Enhanced fetch handler
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -77,13 +82,18 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// API request handler with network-first strategy
+// Enhanced API request handler
 async function handleApiRequest(request) {
   const cache = await caches.open(API_CACHE);
   
   try {
-    // Try network first
-    const networkResponse = await fetch(request);
+    // Try network first with timeout
+    const networkResponse = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Network timeout')), 5000)
+      )
+    ]);
     
     if (networkResponse.ok) {
       // Cache successful responses
@@ -103,7 +113,11 @@ async function handleApiRequest(request) {
     
     // Return offline response for API calls
     return new Response(
-      JSON.stringify({ error: 'Offline', cached: false }),
+      JSON.stringify({ 
+        error: 'Offline', 
+        cached: false,
+        timestamp: Date.now()
+      }),
       { 
         status: 503,
         headers: { 'Content-Type': 'application/json' }
@@ -112,7 +126,7 @@ async function handleApiRequest(request) {
   }
 }
 
-// Image request handler with cache-first strategy
+// Enhanced image request handler
 async function handleImageRequest(request) {
   const cache = await caches.open(IMAGE_CACHE);
   
@@ -139,11 +153,11 @@ async function handleImageRequest(request) {
   }
 }
 
-// Static request handler with cache-first strategy
+// Enhanced static request handler
 async function handleStaticRequest(request) {
   const cache = await caches.open(CACHE_NAME);
   
-  // Try cache first
+  // Try cache first for static assets
   const cachedResponse = await cache.match(request);
   if (cachedResponse) {
     return cachedResponse;
@@ -170,6 +184,123 @@ async function handleStaticRequest(request) {
   }
 }
 
+// Enhanced background sync with plant care reminders
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'background-sync') {
+    event.waitUntil(doBackgroundSync());
+  } else if (event.tag === 'plant-care-reminder') {
+    event.waitUntil(handlePlantCareReminder());
+  }
+});
+
+async function doBackgroundSync() {
+  try {
+    // Handle background tasks like uploading cached data
+    const cache = await caches.open('pending-requests');
+    const requests = await cache.keys();
+    
+    for (const request of requests) {
+      try {
+        await fetch(request);
+        await cache.delete(request);
+      } catch (error) {
+        console.error('Background sync failed for:', request.url);
+      }
+    }
+
+    // Sync plant care data
+    await syncPlantCareData();
+  } catch (error) {
+    console.error('Background sync error:', error);
+  }
+}
+
+async function syncPlantCareData() {
+  // This would sync with your offline storage
+  console.log('Syncing plant care data...');
+}
+
+async function handlePlantCareReminder() {
+  // Show plant care reminder notification
+  self.registration.showNotification('Plant Care Reminder', {
+    body: 'Time to check on your orchids!',
+    icon: '/favicon.ico',
+    badge: '/favicon.ico',
+    tag: 'plant-care',
+    requireInteraction: true,
+    actions: [
+      { action: 'mark-done', title: 'Mark as Done' },
+      { action: 'snooze', title: 'Remind Later' }
+    ]
+  });
+}
+
+// Enhanced push notification handler
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  
+  const data = event.data.json();
+  const options = {
+    body: data.body,
+    icon: '/favicon.ico',
+    badge: '/favicon.ico',
+    data: data.data,
+    tag: data.tag || 'orchidai',
+    requireInteraction: data.requireInteraction || false,
+    actions: data.actions || [
+      { action: 'open', title: 'Open App' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// Enhanced notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  const action = event.action;
+  const data = event.notification.data;
+  
+  if (action === 'mark-done') {
+    // Handle plant care completion
+    handleCareCompletion(data);
+  } else if (action === 'snooze') {
+    // Schedule reminder for later
+    scheduleSnoozeReminder(data);
+  } else {
+    // Open app
+    event.waitUntil(
+      clients.openWindow(data?.url || '/')
+    );
+  }
+});
+
+async function handleCareCompletion(data) {
+  // Update care status in offline storage
+  console.log('Marking care as completed:', data);
+}
+
+async function scheduleSnoozeReminder(data) {
+  // Schedule notification for later
+  console.log('Snoozing reminder:', data);
+}
+
+// Periodic background sync for plant care
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'plant-care-check') {
+    event.waitUntil(checkPlantCareSchedule());
+  }
+});
+
+async function checkPlantCareSchedule() {
+  // Check if any plants need care and schedule notifications
+  console.log('Checking plant care schedule...');
+}
+
 // Helper functions
 function isImageRequest(request) {
   return request.destination === 'image' || 
@@ -179,72 +310,4 @@ function isImageRequest(request) {
 function shouldCacheApiResponse(request) {
   const url = new URL(request.url);
   return API_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname));
-}
-
-// Background sync for offline actions
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(doBackgroundSync());
-  }
-});
-
-async function doBackgroundSync() {
-  // Handle background tasks like uploading cached data
-  const cache = await caches.open('pending-requests');
-  const requests = await cache.keys();
-  
-  for (const request of requests) {
-    try {
-      await fetch(request);
-      await cache.delete(request);
-    } catch (error) {
-      console.error('Background sync failed for:', request.url);
-    }
-  }
-}
-
-// Push notification handler
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-  
-  const data = event.data.json();
-  const options = {
-    body: data.body,
-    icon: '/favicon.ico',
-    badge: '/badge.png',
-    data: data.data,
-    actions: data.actions || []
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
-});
-
-// Notification click handler
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  if (event.action) {
-    // Handle action clicks
-    handleNotificationAction(event.action, event.notification.data);
-  } else {
-    // Handle notification click
-    event.waitUntil(
-      clients.openWindow(event.notification.data?.url || '/')
-    );
-  }
-});
-
-function handleNotificationAction(action, data) {
-  switch (action) {
-    case 'view':
-      clients.openWindow(data?.url || '/');
-      break;
-    case 'dismiss':
-      // Just close the notification
-      break;
-    default:
-      clients.openWindow('/');
-  }
 }

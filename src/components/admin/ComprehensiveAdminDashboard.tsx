@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -8,7 +9,13 @@ import {
   Ticket,
   FlaskConical,
   TrendingDown,
-  Database
+  Database,
+  Brain,
+  Target,
+  Monitor,
+  Gauge,
+  Activity,
+  Globe
 } from 'lucide-react';
 import BusinessMetricsDashboard from './BusinessMetricsDashboard';
 import UserSegmentationAnalysis from './UserSegmentationAnalysis';
@@ -19,7 +26,10 @@ import ConversionFunnelAnalysis from './ConversionFunnelAnalysis';
 import AdminMetrics from '@/components/AdminMetrics';
 import PerformanceMonitor from '../performance/PerformanceMonitor';
 import LoadBalancingManager from '../performance/LoadBalancingManager';
-import { Monitor, Gauge } from 'lucide-react';
+import UserJourneyAnalytics from './UserJourneyAnalytics';
+import ProductOptimizationDashboard from './ProductOptimizationDashboard';
+import PredictiveAnalyticsDashboard from './PredictiveAnalyticsDashboard';
+import OperationalInsightsDashboard from './OperationalInsightsDashboard';
 
 const ComprehensiveAdminDashboard: React.FC = () => {
   return (
@@ -36,46 +46,54 @@ const ComprehensiveAdminDashboard: React.FC = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12 gap-1">
+            <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
+              <BarChart3 className="w-3 h-3" />
               <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
+            <TabsTrigger value="users" className="flex items-center gap-1 text-xs">
+              <Users className="w-3 h-3" />
               <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="revenue" className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
+            <TabsTrigger value="journey" className="flex items-center gap-1 text-xs">
+              <Activity className="w-3 h-3" />
+              <span className="hidden sm:inline">Journey</span>
+            </TabsTrigger>
+            <TabsTrigger value="product" className="flex items-center gap-1 text-xs">
+              <Target className="w-3 h-3" />
+              <span className="hidden sm:inline">Product</span>
+            </TabsTrigger>
+            <TabsTrigger value="predictive" className="flex items-center gap-1 text-xs">
+              <Brain className="w-3 h-3" />
+              <span className="hidden sm:inline">Predictive</span>
+            </TabsTrigger>
+            <TabsTrigger value="operational" className="flex items-center gap-1 text-xs">
+              <Globe className="w-3 h-3" />
+              <span className="hidden sm:inline">Operations</span>
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="flex items-center gap-1 text-xs">
+              <DollarSign className="w-3 h-3" />
               <span className="hidden sm:inline">Revenue</span>
             </TabsTrigger>
-            <TabsTrigger value="api" className="flex items-center gap-2">
-              <Zap className="w-4 h-4" />
+            <TabsTrigger value="api" className="flex items-center gap-1 text-xs">
+              <Zap className="w-3 h-3" />
               <span className="hidden sm:inline">API</span>
             </TabsTrigger>
-            <TabsTrigger value="support" className="flex items-center gap-2">
-              <Ticket className="w-4 h-4" />
+            <TabsTrigger value="support" className="flex items-center gap-1 text-xs">
+              <Ticket className="w-3 h-3" />
               <span className="hidden sm:inline">Support</span>
             </TabsTrigger>
-            <TabsTrigger value="testing" className="flex items-center gap-2">
-              <FlaskConical className="w-4 h-4" />
+            <TabsTrigger value="testing" className="flex items-center gap-1 text-xs">
+              <FlaskConical className="w-3 h-3" />
               <span className="hidden sm:inline">A/B Tests</span>
             </TabsTrigger>
-            <TabsTrigger value="funnel" className="flex items-center gap-2">
-              <TrendingDown className="w-4 h-4" />
+            <TabsTrigger value="funnel" className="flex items-center gap-1 text-xs">
+              <TrendingDown className="w-3 h-3" />
               <span className="hidden sm:inline">Funnel</span>
             </TabsTrigger>
-            <TabsTrigger value="system" className="flex items-center gap-2">
-              <Database className="w-4 h-4" />
+            <TabsTrigger value="system" className="flex items-center gap-1 text-xs">
+              <Database className="w-3 h-3" />
               <span className="hidden sm:inline">System</span>
-            </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center gap-2">
-              <Gauge className="w-4 h-4" />
-              <span className="hidden sm:inline">Performance</span>
-            </TabsTrigger>
-            <TabsTrigger value="load-balancing" className="flex items-center gap-2">
-              <Monitor className="w-4 h-4" />
-              <span className="hidden sm:inline">Load Balance</span>
             </TabsTrigger>
           </TabsList>
 
@@ -85,6 +103,22 @@ const ComprehensiveAdminDashboard: React.FC = () => {
 
           <TabsContent value="users">
             <UserSegmentationAnalysis />
+          </TabsContent>
+
+          <TabsContent value="journey">
+            <UserJourneyAnalytics />
+          </TabsContent>
+
+          <TabsContent value="product">
+            <ProductOptimizationDashboard />
+          </TabsContent>
+
+          <TabsContent value="predictive">
+            <PredictiveAnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="operational">
+            <OperationalInsightsDashboard />
           </TabsContent>
 
           <TabsContent value="revenue">
@@ -115,14 +149,6 @@ const ComprehensiveAdminDashboard: React.FC = () => {
 
           <TabsContent value="system">
             <AdminMetrics />
-          </TabsContent>
-
-          <TabsContent value="performance">
-            <PerformanceMonitor />
-          </TabsContent>
-
-          <TabsContent value="load-balancing">
-            <LoadBalancingManager />
           </TabsContent>
         </Tabs>
       </div>

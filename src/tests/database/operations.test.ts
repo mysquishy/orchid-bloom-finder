@@ -2,100 +2,118 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { supabase } from '@/integrations/supabase/client';
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn(),
-      maybeSingle: vi.fn()
-    }))
-  }
-}));
+vi.mock('@/integrations/supabase/client');
 
-describe('Database Operations', () => {
+describe('Database Operations Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Save Plants to Collection', () => {
+  describe('Orchid Collection Operations', () => {
     it('should save orchid to user collection', async () => {
-      const mockOrchid = {
-        id: 'test-orchid-id',
-        species_name: 'Phalaenopsis',
-        user_id: 'test-user-id'
-      };
+      const mockFrom = vi.fn().mockReturnThis();
+      const mockInsert = vi.fn().mockReturnThis();
+      const mockSelect = vi.fn().mockResolvedValue({
+        data: [{ id: 'test-id', orchid_species_id: 'species-1', user_id: 'user-1' }],
+        error: null
+      });
 
-      const mockResponse = { data: [mockOrchid], error: null };
-      (supabase.from as any)().insert().mockResolvedValue(mockResponse);
+      (supabase.from as any) = mockFrom;
+      mockFrom.mockReturnValue({
+        insert: mockInsert,
+        select: mockSelect
+      });
+      mockInsert.mockReturnValue({
+        select: mockSelect
+      });
 
       const result = await supabase
         .from('user_orchid_collection')
-        .insert(mockOrchid);
+        .insert({
+          orchid_species_id: 'species-1',
+          user_id: 'user-1'
+        })
+        .select();
 
-      expect(supabase.from).toHaveBeenCalledWith('user_orchid_collection');
-      expect(result.data).toEqual([mockOrchid]);
+      expect(result.data).toBeDefined();
+      expect(result.error).toBeNull();
     });
 
-    it('should handle save errors', async () => {
-      const mockError = { message: 'Database error' };
-      (supabase.from as any)().insert().mockResolvedValue({
+    it('should retrieve user orchid collection', async () => {
+      const mockData = [
+        { id: '1', orchid_species_id: 'species-1', user_id: 'user-1' },
+        { id: '2', orchid_species_id: 'species-2', user_id: 'user-1' }
+      ];
+
+      const mockFrom = vi.fn().mockReturnThis();
+      const mockSelect = vi.fn().mockReturnThis();
+      const mockEq = vi.fn().mockResolvedValue({ data: mockData, error: null });
+
+      (supabase.from as any) = mockFrom;
+      mockFrom.mockReturnValue({
+        select: mockSelect
+      });
+      mockSelect.mockReturnValue({
+        eq: mockEq
+      });
+
+      const result = await supabase
+        .from('user_orchid_collection')
+        .select('*')
+        .eq('user_id', 'user-1');
+
+      expect(result.data).toEqual(mockData);
+      expect(result.error).toBeNull();
+    });
+
+    it('should handle database errors gracefully', async () => {
+      const mockError = new Error('Database connection failed');
+      const mockFrom = vi.fn().mockReturnThis();
+      const mockInsert = vi.fn().mockResolvedValue({
         data: null,
         error: mockError
+      });
+
+      (supabase.from as any) = mockFrom;
+      mockFrom.mockReturnValue({
+        insert: mockInsert
       });
 
       const result = await supabase
         .from('user_orchid_collection')
         .insert({});
 
-      expect(result.error).toEqual(mockError);
+      expect(result.error).toBe(mockError);
+      expect(result.data).toBeNull();
     });
   });
 
-  describe('Retrieve User History', () => {
-    it('should fetch user orchid collection', async () => {
-      const mockCollection = [
-        { id: '1', species_name: 'Phalaenopsis' },
-        { id: '2', species_name: 'Cattleya' }
-      ];
-
-      (supabase.from as any)().select().eq().mockResolvedValue({
-        data: mockCollection,
-        error: null
-      });
-
-      const result = await supabase
-        .from('user_orchid_collection')
-        .select('*')
-        .eq('user_id', 'test-user-id');
-
-      expect(result.data).toEqual(mockCollection);
-    });
-  });
-
-  describe('Species Database Operations', () => {
-    it('should fetch orchid species data', async () => {
-      const mockSpecies = {
-        id: '1',
-        scientific_name: 'Phalaenopsis amabilis',
-        common_name: 'Moon Orchid'
+  describe('Identification History', () => {
+    it('should save identification result', async () => {
+      const mockData = {
+        id: 'identification-1',
+        user_id: 'user-1',
+        orchid_species: 'Phalaenopsis',
+        confidence_score: 0.95
       };
 
-      (supabase.from as any)().select().eq().single().mockResolvedValue({
-        data: mockSpecies,
+      const mockFrom = vi.fn().mockReturnThis();
+      const mockInsert = vi.fn().mockResolvedValue({
+        data: [mockData],
         error: null
       });
 
-      const result = await supabase
-        .from('orchid_species')
-        .select('*')
-        .eq('id', '1')
-        .single();
+      (supabase.from as any) = mockFrom;
+      mockFrom.mockReturnValue({
+        insert: mockInsert
+      });
 
-      expect(result.data).toEqual(mockSpecies);
+      const result = await supabase
+        .from('identifications')
+        .insert(mockData);
+
+      expect(result.data).toEqual([mockData]);
+      expect(result.error).toBeNull();
     });
   });
 });

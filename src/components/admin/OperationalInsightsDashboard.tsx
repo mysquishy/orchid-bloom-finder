@@ -3,519 +3,673 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { 
-  Ticket, 
-  BookOpen, 
-  Users,
-  MessageSquare,
-  Clock,
-  CheckCircle,
-  XCircle,
+  Target, 
+  DollarSign, 
+  Users, 
   TrendingUp,
-  Star
+  BarChart3,
+  Calendar,
+  Briefcase,
+  Award,
+  Globe
 } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  LineChart, 
-  Line, 
-  PieChart,
-  Pie,
-  Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer
-} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
-interface SupportTicketData {
+interface CohortData {
+  cohort: string;
+  size: number;
+  retention_1m: number;
+  retention_3m: number;
+  retention_6m: number;
+  retention_12m: number;
+  avg_revenue: number;
+  acquisition_channel: string;
+}
+
+interface CompetitorMetric {
+  competitor: string;
+  market_share: number;
+  feature_score: number;
+  pricing_position: string;
+  customer_satisfaction: number;
+  growth_rate: number;
+}
+
+interface InvestmentMetric {
   category: string;
-  open: number;
-  resolved: number;
-  avgResolutionTime: number;
-  satisfaction: number;
-}
-
-interface ContentPerformance {
-  title: string;
-  views: number;
-  rating: number;
-  helpfulness: number;
-  lastUpdated: string;
-  category: string;
-}
-
-interface ExpertMetrics {
-  name: string;
-  consultations: number;
-  rating: number;
-  utilization: number;
-  revenue: number;
-}
-
-interface CommunityMetrics {
-  metric: string;
-  value: number;
-  change: number;
-  trend: 'up' | 'down' | 'stable';
+  invested_amount: number;
+  expected_return: number;
+  actual_return: number;
+  roi_percentage: number;
+  payback_months: number;
 }
 
 const OperationalInsightsDashboard: React.FC = () => {
-  const [ticketData, setTicketData] = useState<SupportTicketData[]>([]);
-  const [contentData, setContentData] = useState<ContentPerformance[]>([]);
-  const [expertData, setExpertData] = useState<ExpertMetrics[]>([]);
-  const [communityData, setCommunityData] = useState<CommunityMetrics[]>([]);
+  const [cohortData, setCohortData] = useState<CohortData[]>([]);
+  const [competitorData, setCompetitorData] = useState<CompetitorMetric[]>([]);
+  const [investmentData, setInvestmentData] = useState<InvestmentMetric[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const unit_economics_data = [
+    { month: 'Jan', cac: 45, ltv: 185, payback_period: 3.2 },
+    { month: 'Feb', cac: 42, ltv: 192, payback_period: 3.0 },
+    { month: 'Mar', cac: 48, ltv: 198, payback_period: 3.1 },
+    { month: 'Apr', cac: 44, ltv: 205, payback_period: 2.9 },
+    { month: 'May', cac: 41, ltv: 212, payback_period: 2.8 },
+    { month: 'Jun', cac: 39, ltv: 218, payback_period: 2.7 }
+  ];
+
+  const mrr_arr_data = [
+    { month: 'Jan 2024', mrr: 42000, arr: 504000 },
+    { month: 'Feb 2024', mrr: 45000, arr: 540000 },
+    { month: 'Mar 2024', mrr: 49000, arr: 588000 },
+    { month: 'Apr 2024', mrr: 53000, arr: 636000 },
+    { month: 'May 2024', mrr: 58000, arr: 696000 },
+    { month: 'Jun 2024', mrr: 62000, arr: 744000 }
+  ];
+
+  const feature_roi_data = [
+    { feature: 'AI Identification', investment: 85000, revenue_impact: 245000, roi: 188 },
+    { feature: 'Care Calendar', investment: 35000, revenue_impact: 95000, roi: 171 },
+    { feature: 'Expert Consultations', investment: 55000, revenue_impact: 125000, roi: 127 },
+    { feature: 'Community Features', investment: 45000, revenue_impact: 78000, roi: 73 },
+    { feature: 'Mobile App', investment: 125000, revenue_impact: 185000, roi: 48 }
+  ];
+
+  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
   useEffect(() => {
-    // Mock support ticket data
-    setTicketData([
-      { category: 'Identification Issues', open: 23, resolved: 145, avgResolutionTime: 4.2, satisfaction: 4.3 },
-      { category: 'Premium Features', open: 8, resolved: 67, avgResolutionTime: 2.8, satisfaction: 4.6 },
-      { category: 'Care Guidance', open: 15, resolved: 89, avgResolutionTime: 6.1, satisfaction: 4.1 },
-      { category: 'Technical Problems', open: 12, resolved: 34, avgResolutionTime: 8.5, satisfaction: 3.9 },
-      { category: 'Billing & Account', open: 5, resolved: 78, avgResolutionTime: 3.2, satisfaction: 4.4 }
-    ]);
-
-    // Mock content performance data
-    setContentData([
-      { title: 'Orchid Care Basics for Beginners', views: 12500, rating: 4.8, helpfulness: 92, lastUpdated: '2024-05-15', category: 'Care Guide' },
-      { title: 'Common Orchid Diseases and Treatments', views: 8200, rating: 4.6, helpfulness: 89, lastUpdated: '2024-06-01', category: 'Troubleshooting' },
-      { title: 'Phalaenopsis Identification Guide', views: 9800, rating: 4.7, helpfulness: 94, lastUpdated: '2024-04-22', category: 'Identification' },
-      { title: 'Seasonal Orchid Care Calendar', views: 6700, rating: 4.5, helpfulness: 87, lastUpdated: '2024-03-10', category: 'Care Guide' },
-      { title: 'Repotting Your Orchid: Step by Step', views: 5400, rating: 4.4, helpfulness: 85, lastUpdated: '2024-05-28', category: 'Care Guide' }
-    ]);
-
-    // Mock expert metrics data
-    setExpertData([
-      { name: 'Dr. Sarah Chen', consultations: 45, rating: 4.9, utilization: 85, revenue: 2250 },
-      { name: 'Prof. Michael Torres', consultations: 38, rating: 4.7, utilization: 76, revenue: 1900 },
-      { name: 'Dr. Emma Johnson', consultations: 42, rating: 4.8, utilization: 84, revenue: 2100 },
-      { name: 'Dr. David Kim', consultations: 29, rating: 4.6, utilization: 58, revenue: 1450 }
-    ]);
-
-    // Mock community metrics data
-    setCommunityData([
-      { metric: 'Daily Active Users', value: 1250, change: 12, trend: 'up' },
-      { metric: 'Posts per Day', value: 89, change: -5, trend: 'down' },
-      { metric: 'Comments per Post', value: 3.2, change: 8, trend: 'up' },
-      { metric: 'Moderation Actions', value: 12, change: -15, trend: 'down' },
-      { metric: 'User Reports', value: 3, change: -25, trend: 'down' },
-      { metric: 'Expert Responses', value: 45, change: 18, trend: 'up' }
-    ]);
+    loadOperationalData();
   }, []);
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-600" />;
-      case 'down': return <TrendingUp className="w-4 h-4 text-red-600 transform rotate-180" />;
-      default: return <div className="w-4 h-4 bg-gray-400 rounded-full" />;
+  const loadOperationalData = async () => {
+    try {
+      setLoading(true);
+      
+      // Mock cohort data
+      const mockCohorts: CohortData[] = [
+        {
+          cohort: 'Q1 2024',
+          size: 450,
+          retention_1m: 78,
+          retention_3m: 65,
+          retention_6m: 58,
+          retention_12m: 52,
+          avg_revenue: 145,
+          acquisition_channel: 'Organic Search'
+        },
+        {
+          cohort: 'Q4 2023',
+          size: 380,
+          retention_1m: 82,
+          retention_3m: 68,
+          retention_6m: 61,
+          retention_12m: 55,
+          avg_revenue: 162,
+          acquisition_channel: 'Social Media'
+        },
+        {
+          cohort: 'Q3 2023',
+          size: 320,
+          retention_1m: 75,
+          retention_3m: 62,
+          retention_6m: 55,
+          retention_12m: 48,
+          avg_revenue: 138,
+          acquisition_channel: 'Paid Ads'
+        }
+      ];
+
+      // Mock competitor data
+      const mockCompetitors: CompetitorMetric[] = [
+        {
+          competitor: 'PlantNet',
+          market_share: 25,
+          feature_score: 78,
+          pricing_position: 'Free',
+          customer_satisfaction: 4.2,
+          growth_rate: 15
+        },
+        {
+          competitor: 'iNaturalist',
+          market_share: 35,
+          feature_score: 82,
+          pricing_position: 'Freemium',
+          customer_satisfaction: 4.5,
+          growth_rate: 12
+        },
+        {
+          competitor: 'PlantIn',
+          market_share: 15,
+          feature_score: 85,
+          pricing_position: 'Premium',
+          customer_satisfaction: 4.1,
+          growth_rate: 28
+        }
+      ];
+
+      // Mock investment data
+      const mockInvestments: InvestmentMetric[] = [
+        {
+          category: 'Product Development',
+          invested_amount: 250000,
+          expected_return: 450000,
+          actual_return: 520000,
+          roi_percentage: 108,
+          payback_months: 8
+        },
+        {
+          category: 'Marketing & Acquisition',
+          invested_amount: 180000,
+          expected_return: 320000,
+          actual_return: 285000,
+          roi_percentage: 58,
+          payback_months: 12
+        },
+        {
+          category: 'Infrastructure',
+          invested_amount: 120000,
+          expected_return: 200000,
+          actual_return: 195000,
+          roi_percentage: 63,
+          payback_months: 10
+        }
+      ];
+
+      setCohortData(mockCohorts);
+      setCompetitorData(mockCompetitors);
+      setInvestmentData(mockInvestments);
+    } catch (error) {
+      console.error('Failed to load operational data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getTrendColor = (trend: string) => {
-    switch (trend) {
-      case 'up': return 'text-green-600';
-      case 'down': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00'];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Operational Insights</h2>
-        <Button>
-          <BookOpen className="w-4 h-4 mr-2" />
-          Generate Report
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Operational Intelligence Dashboard</h2>
+          <p className="text-gray-600">Strategic insights for business growth and competitive positioning</p>
+        </div>
+        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <Award className="w-4 h-4 mr-2" />
+          Export Strategic Report
         </Button>
       </div>
 
-      {/* Key Operational Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <Ticket className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium">Open Tickets</span>
-            </div>
-            <div className="text-2xl font-bold text-blue-600">63</div>
-            <div className="text-sm text-gray-600">-12% from last week</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <Clock className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm font-medium">Avg Resolution</span>
-            </div>
-            <div className="text-2xl font-bold text-yellow-600">4.8h</div>
-            <div className="text-sm text-gray-600">+0.3h from target</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <Star className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium">Satisfaction</span>
-            </div>
-            <div className="text-2xl font-bold text-green-600">4.4</div>
-            <div className="text-sm text-gray-600">+0.2 from last month</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <Users className="w-5 h-5 text-purple-600" />
-              <span className="text-sm font-medium">Expert Utilization</span>
-            </div>
-            <div className="text-2xl font-bold text-purple-600">76%</div>
-            <div className="text-sm text-gray-600">+8% from last month</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="support" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="support">Support Analysis</TabsTrigger>
-          <TabsTrigger value="content">Content Performance</TabsTrigger>
-          <TabsTrigger value="experts">Expert Network</TabsTrigger>
-          <TabsTrigger value="community">Community Health</TabsTrigger>
+      <Tabs defaultValue="cohorts" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="cohorts">Cohort Analysis</TabsTrigger>
+          <TabsTrigger value="competitive">Competitive Intel</TabsTrigger>
+          <TabsTrigger value="investment">Investment ROI</TabsTrigger>
+          <TabsTrigger value="unit-economics">Unit Economics</TabsTrigger>
+          <TabsTrigger value="strategic">Strategic Support</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="support">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Ticket Categories */}
+        <TabsContent value="cohorts">
+          <div className="space-y-6">
+            {/* Cohort Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                    <div className="text-2xl font-bold">1,150</div>
+                    <div className="text-sm text-gray-600">Total Cohorted Users</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <Target className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                    <div className="text-2xl font-bold">65%</div>
+                    <div className="text-sm text-gray-600">Avg 3M Retention</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <DollarSign className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                    <div className="text-2xl font-bold">$148</div>
+                    <div className="text-sm text-gray-600">Avg Revenue/User</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+                    <div className="text-2xl font-bold">+12%</div>
+                    <div className="text-sm text-gray-600">Cohort Improvement</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Detailed Cohort Analysis */}
             <Card>
               <CardHeader>
-                <CardTitle>Support Ticket Analysis</CardTitle>
+                <CardTitle>Multi-Dimensional Cohort Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cohortData.map((cohort) => (
+                    <div key={cohort.cohort} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold">{cohort.cohort}</h3>
+                          <p className="text-sm text-gray-600">
+                            {cohort.size} users • {cohort.acquisition_channel}
+                          </p>
+                        </div>
+                        <Badge className="bg-blue-100 text-blue-800">
+                          ${cohort.avg_revenue} avg revenue
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-green-600">{cohort.retention_1m}%</div>
+                          <div className="text-xs text-gray-500">1 Month</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-blue-600">{cohort.retention_3m}%</div>
+                          <div className="text-xs text-gray-500">3 Months</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-purple-600">{cohort.retention_6m}%</div>
+                          <div className="text-xs text-gray-500">6 Months</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-orange-600">{cohort.retention_12m}%</div>
+                          <div className="text-xs text-gray-500">12 Months</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="competitive">
+          <div className="space-y-6">
+            {/* Competitive Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Competitive Intelligence Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {competitorData.map((competitor) => (
+                    <div key={competitor.competitor} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold">{competitor.competitor}</h3>
+                          <p className="text-sm text-gray-600">{competitor.pricing_position} pricing model</p>
+                        </div>
+                        <Badge className={
+                          competitor.growth_rate > 20 ? 'bg-red-100 text-red-800' :
+                          competitor.growth_rate > 15 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }>
+                          {competitor.growth_rate}% growth
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-4 gap-4">
+                        <div>
+                          <div className="text-sm text-gray-600">Market Share</div>
+                          <div className="font-bold">{competitor.market_share}%</div>
+                          <Progress value={competitor.market_share} className="mt-1" />
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Feature Score</div>
+                          <div className="font-bold">{competitor.feature_score}/100</div>
+                          <Progress value={competitor.feature_score} className="mt-1" />
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Satisfaction</div>
+                          <div className="font-bold">{competitor.customer_satisfaction}/5.0</div>
+                          <Progress value={(competitor.customer_satisfaction / 5) * 100} className="mt-1" />
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Our Position</div>
+                          <div className="font-bold text-blue-600">
+                            {competitor.competitor === 'PlantNet' ? 'Better Features' :
+                             competitor.competitor === 'iNaturalist' ? 'Specialized' :
+                             'Premium Focus'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Market Share Visualization */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Market Share Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          ...competitorData.map((comp, index) => ({
+                            name: comp.competitor,
+                            value: comp.market_share,
+                            fill: COLORS[index]
+                          })),
+                          { name: 'OrchidAI', value: 18, fill: COLORS[3] },
+                          { name: 'Others', value: 7, fill: COLORS[4] }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        dataKey="value"
+                        label={({ name, value }) => `${name}: ${value}%`}
+                      >
+                        {competitorData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Competitive Positioning</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="border-l-4 border-green-500 pl-3">
+                      <div className="font-medium text-green-900">Our Advantages</div>
+                      <div className="text-sm text-green-700">• Specialized orchid focus<br/>• Expert consultation network<br/>• Premium user experience</div>
+                    </div>
+                    <div className="border-l-4 border-yellow-500 pl-3">
+                      <div className="font-medium text-yellow-900">Areas for Improvement</div>
+                      <div className="text-sm text-yellow-700">• Market share growth<br/>• Free tier expansion<br/>• Mobile app features</div>
+                    </div>
+                    <div className="border-l-4 border-blue-500 pl-3">
+                      <div className="font-medium text-blue-900">Strategic Opportunities</div>
+                      <div className="text-sm text-blue-700">• Partnership with garden centers<br/>• B2B market expansion<br/>• International markets</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="investment">
+          <div className="space-y-6">
+            {/* Investment ROI Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {investmentData.map((investment) => (
+                <Card key={investment.category}>
+                  <CardContent className="p-4">
+                    <div className="text-center mb-3">
+                      <Briefcase className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                      <h3 className="font-semibold">{investment.category}</h3>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Invested:</span>
+                        <span className="font-medium">${investment.invested_amount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Return:</span>
+                        <span className="font-medium">${investment.actual_return.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">ROI:</span>
+                        <span className={`font-bold ${
+                          investment.roi_percentage > 100 ? 'text-green-600' :
+                          investment.roi_percentage > 50 ? 'text-blue-600' :
+                          'text-yellow-600'
+                        }`}>
+                          {investment.roi_percentage}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Payback:</span>
+                        <span className="text-sm">{investment.payback_months} months</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Feature ROI Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Feature ROI Analysis & Prioritization</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={ticketData}>
+                  <BarChart data={feature_roi_data}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="category" angle={-45} textAnchor="end" height={80} />
+                    <XAxis dataKey="feature" />
                     <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="open" fill="#ff7300" name="Open Tickets" />
-                    <Bar dataKey="resolved" fill="#82ca9d" name="Resolved Tickets" />
+                    <Tooltip formatter={(value) => [`${value}%`, 'ROI']} />
+                    <Bar dataKey="roi" fill="#3B82F6" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-
-            {/* Performance Metrics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resolution Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {ticketData.map((item) => (
-                    <div key={item.category} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h5 className="font-medium">{item.category}</h5>
-                        <Badge variant="outline">
-                          {item.open} open
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm mb-2">
-                        <div>
-                          <div className="text-gray-600">Avg Resolution</div>
-                          <div className="font-medium">{item.avgResolutionTime}h</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Satisfaction</div>
-                          <div className="font-medium">{item.satisfaction}/5.0</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        <Progress value={(item.avgResolutionTime / 12) * 100} className="flex-1 h-2" />
-                        <Progress value={(item.satisfaction / 5) * 100} className="flex-1 h-2" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="content">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Content Performance Table */}
+        <TabsContent value="unit-economics">
+          <div className="space-y-6">
+            {/* Unit Economics Trends */}
             <Card>
               <CardHeader>
-                <CardTitle>Top Performing Content</CardTitle>
+                <CardTitle>Unit Economics Trends</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {contentData.map((content, index) => (
-                    <div key={content.title} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h5 className="font-medium text-sm">{content.title}</h5>
-                        <Badge variant="outline">{content.category}</Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 text-sm mb-2">
-                        <div>
-                          <div className="text-gray-600">Views</div>
-                          <div className="font-medium">{content.views.toLocaleString()}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Rating</div>
-                          <div className="font-medium">{content.rating}/5.0</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Helpful</div>
-                          <div className="font-medium">{content.helpfulness}%</div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500">
-                        Last updated: {content.lastUpdated}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={unit_economics_data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="cac" stroke="#EF4444" strokeWidth={2} name="CAC ($)" />
+                    <Line type="monotone" dataKey="ltv" stroke="#10B981" strokeWidth={2} name="LTV ($)" />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* Content Analytics */}
+            {/* MRR/ARR Growth */}
             <Card>
               <CardHeader>
-                <CardTitle>Content Effectiveness</CardTitle>
+                <CardTitle>Monthly & Annual Recurring Revenue</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-medium mb-4">Content by Category</h4>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: 'Care Guide', value: 45, fill: '#8884d8' },
-                            { name: 'Identification', value: 30, fill: '#82ca9d' },
-                            { name: 'Troubleshooting', value: 20, fill: '#ffc658' },
-                            { name: 'Advanced', value: 5, fill: '#ff7300' }
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={40}
-                          outerRadius={80}
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        />
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-3">Content Updates Needed:</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between items-center p-2 bg-yellow-50 rounded">
-                        <span>Seasonal Care Calendar</span>
-                        <Badge className="bg-yellow-100 text-yellow-800">90+ days old</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-2 bg-red-50 rounded">
-                        <span>Disease Identification</span>
-                        <Badge className="bg-red-100 text-red-800">120+ days old</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">Content Strategy Insights</h4>
-                    <div className="text-sm text-blue-800 space-y-1">
-                      <div>• Care guides have highest engagement</div>
-                      <div>• Troubleshooting content needs updating</div>
-                      <div>• Video content performs 40% better</div>
-                      <div>• Interactive tools boost retention by 65%</div>
-                    </div>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={mrr_arr_data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`$${value?.toLocaleString()}`, '']} />
+                    <Area type="monotone" dataKey="arr" stackId="1" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.3} name="ARR" />
+                    <Area type="monotone" dataKey="mrr" stackId="2" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} name="MRR" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
+
+            {/* Key Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">5.3x</div>
+                    <div className="text-sm text-gray-600">LTV:CAC Ratio</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">2.8</div>
+                    <div className="text-sm text-gray-600">Payback Months</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">22%</div>
+                    <div className="text-sm text-gray-600">MRR Growth Rate</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">$744K</div>
+                    <div className="text-sm text-gray-600">Current ARR</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="experts">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Expert Performance */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Expert Network Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {expertData.map((expert) => (
-                    <div key={expert.name} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-3">
-                        <h5 className="font-medium">{expert.name}</h5>
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 text-yellow-500" />
-                          <span className="text-sm font-medium">{expert.rating}</span>
+        <TabsContent value="strategic">
+          <div className="space-y-6">
+            {/* Strategic Decision Framework */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Partnership Opportunity Evaluation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { partner: 'Garden Centers Network', score: 92, type: 'Distribution', revenue_potential: 450000 },
+                      { partner: 'Horticultural Universities', score: 78, type: 'R&D', revenue_potential: 120000 },
+                      { partner: 'Plant Care Brands', score: 85, type: 'Product', revenue_potential: 280000 },
+                      { partner: 'International Societies', score: 71, type: 'Market Expansion', revenue_potential: 650000 }
+                    ].map((opportunity) => (
+                      <div key={opportunity.partner} className="border rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium">{opportunity.partner}</span>
+                          <Badge className={
+                            opportunity.score >= 90 ? 'bg-green-500 text-white' :
+                            opportunity.score >= 80 ? 'bg-blue-500 text-white' :
+                            'bg-yellow-500 text-white'
+                          }>
+                            {opportunity.score}/100
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {opportunity.type} • ${opportunity.revenue_potential.toLocaleString()} potential
                         </div>
                       </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 text-sm mb-3">
-                        <div>
-                          <div className="text-gray-600">Consultations</div>
-                          <div className="font-medium">{expert.consultations}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Utilization</div>
-                          <div className="font-medium">{expert.utilization}%</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600">Revenue</div>
-                          <div className="font-medium">${expert.revenue}</div>
-                        </div>
-                      </div>
-                      
-                      <Progress value={expert.utilization} className="h-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Expert Analytics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Market Expansion Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { market: 'European Union', readiness: 88, investment_needed: 250000, timeline: '6 months' },
+                      { market: 'Australia & NZ', readiness: 75, investment_needed: 180000, timeline: '4 months' },
+                      { market: 'Southeast Asia', readiness: 65, investment_needed: 320000, timeline: '8 months' },
+                      { market: 'Latin America', readiness: 58, investment_needed: 280000, timeline: '10 months' }
+                    ].map((market) => (
+                      <div key={market.market} className="border rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium">{market.market}</span>
+                          <span className="text-sm text-gray-600">{market.timeline}</span>
+                        </div>
+                        <Progress value={market.readiness} className="mb-2" />
+                        <div className="text-sm text-gray-600">
+                          {market.readiness}% market readiness • ${market.investment_needed.toLocaleString()} investment
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Exit Strategy Valuation */}
             <Card>
               <CardHeader>
-                <CardTitle>Expert Network Analytics</CardTitle>
+                <CardTitle>Exit Strategy & Valuation Modeling</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">4.8</div>
-                      <div className="text-sm text-gray-600">Average Rating</div>
-                    </div>
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">76%</div>
-                      <div className="text-sm text-gray-600">Avg Utilization</div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center border rounded-lg p-4">
+                    <Globe className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                    <div className="text-2xl font-bold text-blue-600">$12.5M</div>
+                    <div className="text-sm font-medium">Strategic Acquisition</div>
+                    <div className="text-xs text-gray-600">Revenue Multiple: 15x</div>
                   </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-3">Revenue by Expert</h4>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={expertData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
-                        <Bar dataKey="revenue" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
+
+                  <div className="text-center border rounded-lg p-4">
+                    <BarChart3 className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                    <div className="text-2xl font-bold text-green-600">$18.2M</div>
+                    <div className="text-sm font-medium">Financial Buyer</div>
+                    <div className="text-xs text-gray-600">EBITDA Multiple: 12x</div>
                   </div>
-                  
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-purple-900 mb-2">Expert Network Insights</h4>
-                    <div className="text-sm text-purple-800 space-y-1">
-                      <div>• High utilization indicates good demand</div>
-                      <div>• Need 2-3 more experts for capacity</div>
-                      <div>• Weekend availability increases bookings</div>
-                      <div>• Video consultations preferred 3:1</div>
-                    </div>
+
+                  <div className="text-center border rounded-lg p-4">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                    <div className="text-2xl font-bold text-purple-600">$25.8M</div>
+                    <div className="text-sm font-medium">IPO Valuation</div>
+                    <div className="text-xs text-gray-600">Growth Multiple: 8x</div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="community">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Community Metrics */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Community Health Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {communityData.map((metric) => (
-                    <div key={metric.metric} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <h5 className="font-medium">{metric.metric}</h5>
-                        <div className="text-2xl font-bold">{metric.value.toLocaleString()}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center space-x-1 mb-1">
-                          {getTrendIcon(metric.trend)}
-                          <span className={`text-sm font-medium ${getTrendColor(metric.trend)}`}>
-                            {metric.change > 0 ? '+' : ''}{metric.change}%
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500">vs last month</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Community Engagement */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Engagement & Moderation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-medium mb-3">Top Contributors</h4>
-                    <div className="space-y-2">
-                      {[
-                        { user: 'OrchidMaster2024', posts: 45, helpfulVotes: 189 },
-                        { user: 'PlantExpert_Sarah', posts: 38, helpfulVotes: 156 },
-                        { user: 'FlowerLover123', posts: 34, helpfulVotes: 142 },
-                        { user: 'BotanicalBob', posts: 29, helpfulVotes: 98 }
-                      ].map((contributor) => (
-                        <div key={contributor.user} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span className="font-medium text-sm">{contributor.user}</span>
-                          <div className="text-sm text-gray-600">
-                            {contributor.posts} posts • {contributor.helpfulVotes} helpful votes
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-3">Moderation Queue</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-yellow-50 p-3 rounded-lg">
-                        <div className="text-lg font-bold text-yellow-600">3</div>
-                        <div className="text-sm text-gray-600">Posts Pending Review</div>
-                      </div>
-                      <div className="bg-red-50 p-3 rounded-lg">
-                        <div className="text-lg font-bold text-red-600">1</div>
-                        <div className="text-sm text-gray-600">User Reports</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-green-900 mb-2">Community Health Status</h4>
-                    <div className="text-sm text-green-800 space-y-1">
-                      <div>✓ Engagement levels are healthy</div>
-                      <div>✓ Moderation load is manageable</div>
-                      <div>✓ Expert participation is active</div>
-                      <div>⚠ Need more beginner-friendly content</div>
-                    </div>
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <div className="font-medium text-blue-900 mb-2">Valuation Drivers</div>
+                  <div className="text-sm text-blue-700 space-y-1">
+                    <div>• Recurring revenue model with strong retention</div>
+                    <div>• Specialized market position with network effects</div>
+                    <div>• Scalable AI technology with expanding moat</div>
+                    <div>• Multiple monetization channels (B2C, B2B, partnerships)</div>
                   </div>
                 </div>
               </CardContent>

@@ -3,430 +3,460 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { 
   TrendingUp, 
+  Users, 
   DollarSign, 
-  Calendar,
-  Globe,
-  AlertTriangle,
+  AlertTriangle, 
+  Brain,
   Target,
-  BarChart3,
-  Activity
+  Calendar,
+  BarChart3
 } from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  AreaChart,
-  Area,
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer,
-  ComposedChart,
-  ReferenceLine
-} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-interface GrowthProjection {
-  month: string;
-  actual?: number;
-  predicted: number;
-  confidenceLow: number;
-  confidenceHigh: number;
-}
-
-interface RevenueForecasting {
-  period: string;
-  revenue: number;
-  forecast: number;
+interface PredictiveMetric {
+  metric: string;
+  prediction: number;
   confidence: number;
+  trend: 'up' | 'down' | 'stable';
+  timeframe: string;
+  impact: 'high' | 'medium' | 'low';
 }
 
-interface SeasonalPattern {
-  month: string;
-  historicalAvg: number;
-  currentYear: number;
-  predicted: number;
-}
-
-interface RiskAssessment {
-  category: string;
-  riskLevel: 'low' | 'medium' | 'high';
-  probability: number;
-  impact: string;
-  mitigation: string;
+interface ChurnRiskUser {
+  userId: string;
+  userName: string;
+  riskScore: number;
+  lastActivity: string;
+  interventionSuggestion: string;
+  cohort: string;
 }
 
 const PredictiveAnalyticsDashboard: React.FC = () => {
-  const [growthData, setGrowthData] = useState<GrowthProjection[]>([]);
-  const [revenueData, setRevenueData] = useState<RevenueForecasting[]>([]);
-  const [seasonalData, setSeasonalData] = useState<SeasonalPattern[]>([]);
-  const [riskData, setRiskData] = useState<RiskAssessment[]>([]);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'3m' | '6m' | '12m'>('6m');
+  const [predictions, setPredictions] = useState<PredictiveMetric[]>([]);
+  const [churnRisks, setChurnRisks] = useState<ChurnRiskUser[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const ltv_forecast_data = [
+    { month: 'Jan', predicted: 185, actual: 178, confidence_upper: 195, confidence_lower: 175 },
+    { month: 'Feb', predicted: 195, actual: 189, confidence_upper: 205, confidence_lower: 185 },
+    { month: 'Mar', predicted: 210, actual: 205, confidence_upper: 220, confidence_lower: 200 },
+    { month: 'Apr', predicted: 225, actual: null, confidence_upper: 240, confidence_lower: 210 },
+    { month: 'May', predicted: 240, actual: null, confidence_upper: 255, confidence_lower: 225 },
+    { month: 'Jun', predicted: 255, actual: null, confidence_upper: 270, confidence_lower: 240 }
+  ];
+
+  const revenue_forecast_data = [
+    { month: 'Jan', predicted: 45000, actual: 42000, confidence_upper: 48000, confidence_lower: 42000 },
+    { month: 'Feb', predicted: 52000, actual: 49000, confidence_upper: 55000, confidence_lower: 49000 },
+    { month: 'Mar', predicted: 58000, actual: 56000, confidence_upper: 62000, confidence_lower: 54000 },
+    { month: 'Apr', predicted: 65000, actual: null, confidence_upper: 70000, confidence_lower: 60000 },
+    { month: 'May', predicted: 72000, actual: null, confidence_upper: 78000, confidence_lower: 66000 },
+    { month: 'Jun', predicted: 80000, actual: null, confidence_upper: 86000, confidence_lower: 74000 }
+  ];
+
+  const seasonal_demand_data = [
+    { month: 'Jan', demand: 120, seasonal_factor: 0.8 },
+    { month: 'Feb', demand: 135, seasonal_factor: 0.9 },
+    { month: 'Mar', demand: 180, seasonal_factor: 1.2 },
+    { month: 'Apr', demand: 220, seasonal_factor: 1.5 },
+    { month: 'May', demand: 190, seasonal_factor: 1.3 },
+    { month: 'Jun', demand: 165, seasonal_factor: 1.1 },
+    { month: 'Jul', demand: 145, seasonal_factor: 1.0 },
+    { month: 'Aug', demand: 155, seasonal_factor: 1.0 },
+    { month: 'Sep', demand: 175, seasonal_factor: 1.2 },
+    { month: 'Oct', demand: 195, seasonal_factor: 1.3 },
+    { month: 'Nov', demand: 160, seasonal_factor: 1.1 },
+    { month: 'Dec', demand: 140, seasonal_factor: 0.9 }
+  ];
 
   useEffect(() => {
-    // Mock growth projection data
-    setGrowthData([
-      { month: 'Jan 2024', actual: 1000, predicted: 1000, confidenceLow: 950, confidenceHigh: 1050 },
-      { month: 'Feb 2024', actual: 1150, predicted: 1120, confidenceLow: 1050, confidenceHigh: 1200 },
-      { month: 'Mar 2024', actual: 1320, predicted: 1280, confidenceLow: 1200, confidenceHigh: 1380 },
-      { month: 'Apr 2024', actual: 1450, predicted: 1420, confidenceLow: 1350, confidenceHigh: 1520 },
-      { month: 'May 2024', actual: 1680, predicted: 1650, confidenceLow: 1580, confidenceHigh: 1750 },
-      { month: 'Jun 2024', actual: 1850, predicted: 1820, confidenceLow: 1750, confidenceHigh: 1920 },
-      { month: 'Jul 2024', predicted: 2050, confidenceLow: 1950, confidenceHigh: 2180 },
-      { month: 'Aug 2024', predicted: 2280, confidenceLow: 2150, confidenceHigh: 2450 },
-      { month: 'Sep 2024', predicted: 2520, confidenceLow: 2350, confidenceHigh: 2720 },
-      { month: 'Oct 2024', predicted: 2780, confidenceLow: 2580, confidenceHigh: 3020 },
-      { month: 'Nov 2024', predicted: 3050, confidenceLow: 2820, confidenceHigh: 3350 },
-      { month: 'Dec 2024', predicted: 3350, confidenceLow: 3080, confidenceHigh: 3680 }
-    ]);
-
-    // Mock revenue forecasting data
-    setRevenueData([
-      { period: 'Q2 2024', revenue: 28500, forecast: 28500, confidence: 100 },
-      { period: 'Q3 2024', revenue: 0, forecast: 42800, confidence: 85 },
-      { period: 'Q4 2024', revenue: 0, forecast: 58200, confidence: 78 },
-      { period: 'Q1 2025', revenue: 0, forecast: 76500, confidence: 65 },
-      { period: 'Q2 2025', revenue: 0, forecast: 95200, confidence: 58 },
-      { period: 'Q3 2025', revenue: 0, forecast: 118500, confidence: 52 }
-    ]);
-
-    // Mock seasonal pattern data
-    setSeasonalData([
-      { month: 'Jan', historicalAvg: 850, currentYear: 1000, predicted: 1200 },
-      { month: 'Feb', historicalAvg: 920, currentYear: 1150, predicted: 1380 },
-      { month: 'Mar', historicalAvg: 1200, currentYear: 1320, predicted: 1580 },
-      { month: 'Apr', historicalAvg: 1350, currentYear: 1450, predicted: 1750 },
-      { month: 'May', historicalAvg: 1480, currentYear: 1680, predicted: 2020 },
-      { month: 'Jun', historicalAvg: 1520, currentYear: 1850, predicted: 2220 },
-      { month: 'Jul', historicalAvg: 1420, currentYear: 0, predicted: 2050 },
-      { month: 'Aug', historicalAvg: 1380, currentYear: 0, predicted: 2280 },
-      { month: 'Sep', historicalAvg: 1450, currentYear: 0, predicted: 2520 },
-      { month: 'Oct', historicalAvg: 1580, currentYear: 0, predicted: 2780 },
-      { month: 'Nov', historicalAvg: 1650, currentYear: 0, predicted: 3050 },
-      { month: 'Dec', historicalAvg: 1420, currentYear: 0, predicted: 2850 }
-    ]);
-
-    // Mock risk assessment data
-    setRiskData([
-      {
-        category: 'Market Competition',
-        riskLevel: 'medium',
-        probability: 65,
-        impact: 'Potential 15-20% user acquisition slowdown',
-        mitigation: 'Enhance unique value proposition, expand feature set'
-      },
-      {
-        category: 'Technical Scalability',
-        riskLevel: 'low',
-        probability: 25,
-        impact: 'Service degradation during peak usage',
-        mitigation: 'Infrastructure scaling plan, performance monitoring'
-      },
-      {
-        category: 'Seasonal Demand Fluctuation',
-        riskLevel: 'medium',
-        probability: 80,
-        impact: '30-40% usage variation between seasons',
-        mitigation: 'Diversify offerings, indoor plant focus in winter'
-      },
-      {
-        category: 'AI Model Performance',
-        riskLevel: 'low',
-        probability: 30,
-        impact: 'Accuracy degradation affecting user trust',
-        mitigation: 'Continuous model improvement, expert validation'
-      },
-      {
-        category: 'Regulatory Changes',
-        riskLevel: 'low',
-        probability: 20,
-        impact: 'Data privacy compliance requirements',
-        mitigation: 'Legal monitoring, compliance framework'
-      }
-    ]);
+    loadPredictiveData();
   }, []);
 
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const loadPredictiveData = async () => {
+    try {
+      setLoading(true);
+      
+      // Mock predictive metrics
+      const mockPredictions: PredictiveMetric[] = [
+        {
+          metric: 'Customer Lifetime Value',
+          prediction: 245.50,
+          confidence: 92,
+          trend: 'up',
+          timeframe: '6 months',
+          impact: 'high'
+        },
+        {
+          metric: 'Monthly Churn Rate',
+          prediction: 3.2,
+          confidence: 88,
+          trend: 'down',
+          timeframe: '3 months',
+          impact: 'high'
+        },
+        {
+          metric: 'Monthly Recurring Revenue',
+          prediction: 82500,
+          confidence: 94,
+          trend: 'up',
+          timeframe: '6 months',
+          impact: 'high'
+        },
+        {
+          metric: 'Market Expansion Opportunity',
+          prediction: 35,
+          confidence: 76,
+          trend: 'up',
+          timeframe: '12 months',
+          impact: 'medium'
+        },
+        {
+          metric: 'Peak Season Revenue Multiplier',
+          prediction: 2.4,
+          confidence: 85,
+          trend: 'stable',
+          timeframe: 'Spring 2025',
+          impact: 'high'
+        }
+      ];
+
+      // Mock high-risk churn users
+      const mockChurnRisks: ChurnRiskUser[] = [
+        {
+          userId: 'user_001',
+          userName: 'Sarah Chen',
+          riskScore: 89,
+          lastActivity: '8 days ago',
+          interventionSuggestion: 'Send personalized care tips for struggling orchids',
+          cohort: 'Premium Q1 2024'
+        },
+        {
+          userId: 'user_002',
+          userName: 'Mark Rodriguez',
+          riskScore: 76,
+          lastActivity: '5 days ago',
+          interventionSuggestion: 'Offer expert consultation discount',
+          cohort: 'Free Trial Q4 2024'
+        },
+        {
+          userId: 'user_003',
+          userName: 'Emma Thompson',
+          riskScore: 71,
+          lastActivity: '12 days ago',
+          interventionSuggestion: 'Re-engagement email with success stories',
+          cohort: 'Premium Q2 2024'
+        }
+      ];
+
+      setPredictions(mockPredictions);
+      setChurnRisks(mockChurnRisks);
+    } catch (error) {
+      console.error('Failed to load predictive data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-green-600';
+    if (confidence >= 90) return 'text-green-600';
+    if (confidence >= 75) return 'text-blue-600';
     if (confidence >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'down': return <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />;
+      default: return <div className="w-4 h-4 bg-gray-400 rounded-full"></div>;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Predictive Analytics</h2>
-        <div className="flex space-x-2">
-          {(['3m', '6m', '12m'] as const).map((timeframe) => (
-            <Button
-              key={timeframe}
-              variant={selectedTimeframe === timeframe ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedTimeframe(timeframe)}
-            >
-              {timeframe.toUpperCase()}
-            </Button>
-          ))}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Predictive Analytics Engine</h2>
+          <p className="text-gray-600">AI-powered business forecasting and decision support</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Badge className="bg-purple-100 text-purple-800">
+            <Brain className="w-3 h-3 mr-1" />
+            ML Powered
+          </Badge>
         </div>
       </div>
 
-      {/* Key Predictions Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium">User Growth</span>
-            </div>
-            <div className="text-2xl font-bold text-blue-600">+82%</div>
-            <div className="text-sm text-gray-600">Predicted 6-month growth</div>
-            <div className="text-xs text-green-600 mt-1">85% confidence</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <DollarSign className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium">Revenue</span>
-            </div>
-            <div className="text-2xl font-bold text-green-600">$118.5K</div>
-            <div className="text-sm text-gray-600">Q3 2025 forecast</div>
-            <div className="text-xs text-yellow-600 mt-1">52% confidence</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <Calendar className="w-5 h-5 text-purple-600" />
-              <span className="text-sm font-medium">Peak Season</span>
-            </div>
-            <div className="text-2xl font-bold text-purple-600">May-Jun</div>
-            <div className="text-sm text-gray-600">Highest user activity</div>
-            <div className="text-xs text-green-600 mt-1">92% confidence</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm font-medium">Risk Level</span>
-            </div>
-            <div className="text-2xl font-bold text-yellow-600">Medium</div>
-            <div className="text-sm text-gray-600">Overall business risk</div>
-            <div className="text-xs text-blue-600 mt-1">Manageable</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="growth" className="space-y-6">
+      <Tabs defaultValue="predictions" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="growth">Growth Projection</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue Forecast</TabsTrigger>
-          <TabsTrigger value="seasonal">Seasonal Patterns</TabsTrigger>
-          <TabsTrigger value="risk">Risk Assessment</TabsTrigger>
+          <TabsTrigger value="predictions">Predictions</TabsTrigger>
+          <TabsTrigger value="forecasting">Revenue Forecasting</TabsTrigger>
+          <TabsTrigger value="churn">Churn Prevention</TabsTrigger>
+          <TabsTrigger value="seasonal">Seasonal Analysis</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="growth">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Growth Chart */}
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Growth Projection</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={400}>
-                    <ComposedChart data={growthData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      
-                      {/* Confidence interval */}
-                      <Area 
-                        type="monotone" 
-                        dataKey="confidenceHigh" 
-                        stackId="1"
-                        stroke="none" 
-                        fill="#e3f2fd" 
-                        fillOpacity={0.6}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="confidenceLow" 
-                        stackId="1"
-                        stroke="none" 
-                        fill="#ffffff" 
-                        fillOpacity={1}
-                      />
-                      
-                      {/* Actual data */}
-                      <Line 
-                        type="monotone" 
-                        dataKey="actual" 
-                        stroke="#2196f3" 
-                        strokeWidth={3}
-                        dot={{ r: 6 }}
-                        name="Actual Users"
-                      />
-                      
-                      {/* Predicted data */}
-                      <Line 
-                        type="monotone" 
-                        dataKey="predicted" 
-                        stroke="#ff9800" 
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={{ r: 4 }}
-                        name="Predicted Users"
-                      />
-                      
-                      <ReferenceLine x="Jun 2024" stroke="red" strokeDasharray="2 2" />
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+        <TabsContent value="predictions">
+          <div className="space-y-6">
+            {/* Key Predictions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {predictions.map((prediction, index) => (
+                <Card key={index}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-600">{prediction.metric}</span>
+                      <div className="flex items-center space-x-1">
+                        {getTrendIcon(prediction.trend)}
+                        <Badge className={
+                          prediction.impact === 'high' ? 'bg-red-100 text-red-800' :
+                          prediction.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }>
+                          {prediction.impact}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {prediction.metric.includes('Revenue') ? '$' : ''}
+                      {prediction.prediction.toLocaleString()}
+                      {prediction.metric.includes('Rate') || prediction.metric.includes('Opportunity') ? '%' : ''}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">{prediction.timeframe}</span>
+                      <span className={`text-xs font-medium ${getConfidenceColor(prediction.confidence)}`}>
+                        {prediction.confidence}% confidence
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <Progress value={prediction.confidence} className="h-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
 
-            {/* Growth Insights */}
+            {/* LTV Prediction Chart */}
             <Card>
               <CardHeader>
-                <CardTitle>Growth Insights</CardTitle>
+                <CardTitle>Customer Lifetime Value Prediction</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900">Growth Rate</h4>
-                    <div className="text-2xl font-bold text-blue-600">12.8%</div>
-                    <div className="text-sm text-blue-700">Monthly average</div>
-                  </div>
-                  
-                  <div className="p-3 bg-green-50 rounded-lg">
-                    <h4 className="font-medium text-green-900">Acceleration</h4>
-                    <div className="text-2xl font-bold text-green-600">+2.3%</div>
-                    <div className="text-sm text-green-700">Growth rate increase</div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Key Drivers:</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <div>• Organic search optimization</div>
-                      <div>• Referral program success</div>
-                      <div>• Premium feature adoption</div>
-                      <div>• Seasonal plant care interest</div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Risks to Growth:</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <div>• Market saturation (Q4 2024)</div>
-                      <div>• Increased competition</div>
-                      <div>• Seasonal slowdown (winter)</div>
-                    </div>
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={ltv_forecast_data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area 
+                      type="monotone" 
+                      dataKey="confidence_upper" 
+                      stroke="none" 
+                      fill="#E5E7EB" 
+                      fillOpacity={0.3}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="confidence_lower" 
+                      stroke="none" 
+                      fill="white" 
+                      fillOpacity={1}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="predicted" 
+                      stroke="#8B5CF6" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="actual" 
+                      stroke="#10B981" 
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="revenue">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Revenue Forecast Chart */}
+        <TabsContent value="forecasting">
+          <div className="space-y-6">
+            {/* Revenue Forecasting */}
             <Card>
               <CardHeader>
-                <CardTitle>Revenue Forecasting</CardTitle>
+                <CardTitle>Revenue Forecasting with Confidence Intervals</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={revenueData}>
+                  <AreaChart data={revenue_forecast_data}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="period" />
+                    <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']} />
-                    <Legend />
-                    <Bar dataKey="revenue" fill="#4caf50" name="Actual Revenue" />
-                    <Bar dataKey="forecast" fill="#ff9800" name="Forecasted Revenue" />
-                  </BarChart>
+                    <Tooltip formatter={(value) => [`$${value?.toLocaleString()}`, '']} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="confidence_upper" 
+                      stroke="none" 
+                      fill="#3B82F6" 
+                      fillOpacity={0.2}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="confidence_lower" 
+                      stroke="none" 
+                      fill="white" 
+                      fillOpacity={1}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="predicted" 
+                      stroke="#3B82F6" 
+                      strokeWidth={3}
+                      strokeDasharray="8 4"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="actual" 
+                      stroke="#10B981" 
+                      strokeWidth={3}
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* Revenue Metrics */}
+            {/* Forecast Accuracy Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Forecast Accuracy</p>
+                      <p className="text-2xl font-bold text-green-600">94.2%</p>
+                    </div>
+                    <Target className="w-8 h-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Mean Absolute Error</p>
+                      <p className="text-2xl font-bold text-blue-600">$2,340</p>
+                    </div>
+                    <BarChart3 className="w-8 h-8 text-blue-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Confidence Level</p>
+                      <p className="text-2xl font-bold text-purple-600">95%</p>
+                    </div>
+                    <Brain className="w-8 h-8 text-purple-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="churn">
+          <div className="space-y-6">
+            {/* Churn Risk Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="bg-red-50 border-red-200">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-red-600" />
+                    <div className="text-2xl font-bold text-red-900">23</div>
+                    <div className="text-sm text-red-700">High Risk Users</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-yellow-50 border-yellow-200">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-yellow-600" />
+                    <div className="text-2xl font-bold text-yellow-900">67</div>
+                    <div className="text-sm text-yellow-700">Medium Risk Users</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                    <div className="text-2xl font-bold text-blue-900">89%</div>
+                    <div className="text-sm text-blue-700">Prediction Accuracy</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-green-50 border-green-200">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <DollarSign className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                    <div className="text-2xl font-bold text-green-900">$12.5K</div>
+                    <div className="text-sm text-green-700">Revenue at Risk</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* High Risk Users */}
             <Card>
               <CardHeader>
-                <CardTitle>Revenue Metrics & Scenarios</CardTitle>
+                <CardTitle>High Risk Users - Immediate Intervention Required</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-3">Scenario Planning:</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                        <div>
-                          <div className="font-medium text-green-900">Optimistic</div>
-                          <div className="text-sm text-green-700">+20% from base forecast</div>
-                        </div>
-                        <div className="text-lg font-bold text-green-600">$142K</div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
-                        <div>
-                          <div className="font-medium text-blue-900">Base Case</div>
-                          <div className="text-sm text-blue-700">Current trajectory</div>
-                        </div>
-                        <div className="text-lg font-bold text-blue-600">$118K</div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center p-3 bg-yellow-50 rounded">
-                        <div>
-                          <div className="font-medium text-yellow-900">Conservative</div>
-                          <div className="text-sm text-yellow-700">-15% from base forecast</div>
-                        </div>
-                        <div className="text-lg font-bold text-yellow-600">$100K</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-2">Revenue Drivers:</h4>
-                    <div className="space-y-2">
-                      {[
-                        { driver: 'Premium Subscriptions', contribution: 65 },
-                        { driver: 'Expert Consultations', contribution: 25 },
-                        { driver: 'Course Sales', contribution: 8 },
-                        { driver: 'Partnership Revenue', contribution: 2 }
-                      ].map((item) => (
-                        <div key={item.driver} className="flex justify-between items-center">
-                          <span className="text-sm">{item.driver}</span>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={item.contribution} className="w-16 h-2" />
-                            <span className="text-sm font-medium">{item.contribution}%</span>
+                  {churnRisks.map((user) => (
+                    <div key={user.userId} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <div className="font-medium">{user.userName}</div>
+                            <div className="text-sm text-gray-600">{user.cohort}</div>
                           </div>
                         </div>
-                      ))}
+                        <div className="flex items-center space-x-2">
+                          <Badge className={
+                            user.riskScore >= 80 ? 'bg-red-500 text-white' :
+                            user.riskScore >= 60 ? 'bg-yellow-500 text-white' :
+                            'bg-green-500 text-white'
+                          }>
+                            {user.riskScore}% risk
+                          </Badge>
+                          <span className="text-xs text-gray-500">{user.lastActivity}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-700 bg-blue-50 p-2 rounded">
+                        <strong>Suggested Intervention:</strong> {user.interventionSuggestion}
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -434,180 +464,82 @@ const PredictiveAnalyticsDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="seasonal">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Seasonal Pattern Chart */}
+          <div className="space-y-6">
+            {/* Seasonal Demand Patterns */}
             <Card>
               <CardHeader>
-                <CardTitle>Seasonal Usage Patterns</CardTitle>
+                <CardTitle>Seasonal Demand Prediction & Resource Planning</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={seasonalData}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={seasonal_demand_data}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip />
-                    <Legend />
-                    <Line 
+                    <Area 
                       type="monotone" 
-                      dataKey="historicalAvg" 
-                      stroke="#9e9e9e" 
-                      strokeDasharray="5 5"
-                      name="Historical Average"
+                      dataKey="demand" 
+                      stroke="#10B981" 
+                      fill="#10B981" 
+                      fillOpacity={0.3}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="currentYear" 
-                      stroke="#2196f3" 
-                      strokeWidth={3}
-                      name="Current Year"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="predicted" 
-                      stroke="#ff9800" 
-                      strokeWidth={2}
-                      name="Predicted"
-                    />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* Seasonal Insights */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Seasonal Business Planning</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-3">Peak Seasons:</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center p-2 bg-green-50 rounded">
-                        <span className="text-sm font-medium">Spring (Mar-May)</span>
-                        <Badge className="bg-green-100 text-green-800">+45% activity</Badge>
-                      </div>
-                      <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
-                        <span className="text-sm font-medium">Early Summer (Jun-Jul)</span>
-                        <Badge className="bg-blue-100 text-blue-800">+35% activity</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-3">Low Seasons:</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <span className="text-sm font-medium">Winter (Dec-Feb)</span>
-                        <Badge variant="outline">-25% activity</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-2">Strategic Recommendations:</h4>
-                    <div className="text-sm text-gray-600 space-y-2">
-                      <div className="p-2 bg-yellow-50 rounded">
-                        <strong>Spring:</strong> Launch major marketing campaigns, introduce new features
-                      </div>
-                      <div className="p-2 bg-blue-50 rounded">
-                        <strong>Summer:</strong> Focus on retention and premium conversions
-                      </div>
-                      <div className="p-2 bg-purple-50 rounded">
-                        <strong>Winter:</strong> Develop indoor plant content, holiday promotions
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="risk">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Risk Assessment Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Business Risk Assessment</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {riskData.map((risk, index) => (
-                    <div key={risk.category} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h5 className="font-medium">{risk.category}</h5>
+            {/* Market Expansion Opportunities */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Market Expansion Opportunities</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { region: 'Asia-Pacific', opportunity: 92, confidence: 78 },
+                      { region: 'Europe', opportunity: 76, confidence: 85 },
+                      { region: 'Latin America', opportunity: 64, confidence: 71 },
+                      { region: 'Middle East', opportunity: 45, confidence: 65 }
+                    ].map((market) => (
+                      <div key={market.region} className="flex items-center justify-between">
+                        <span className="font-medium">{market.region}</span>
                         <div className="flex items-center space-x-2">
-                          <Badge className={getRiskColor(risk.riskLevel)}>
-                            {risk.riskLevel}
+                          <Progress value={market.opportunity} className="w-20" />
+                          <span className="text-sm text-gray-600">{market.opportunity}%</span>
+                          <Badge className={getConfidenceColor(market.confidence).includes('green') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                            {market.confidence}%
                           </Badge>
-                          <span className="text-sm font-medium">{risk.probability}%</span>
                         </div>
                       </div>
-                      
-                      <div className="text-sm text-gray-600 mb-2">
-                        <strong>Impact:</strong> {risk.impact}
-                      </div>
-                      
-                      <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
-                        <strong>Mitigation:</strong> {risk.mitigation}
-                      </div>
-                      
-                      <Progress value={risk.probability} className="h-2 mt-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Risk Matrix & Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Risk Management Dashboard</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div className="bg-green-100 p-2 rounded">Low Risk<br/>2 items</div>
-                    <div className="bg-yellow-100 p-2 rounded">Medium Risk<br/>2 items</div>
-                    <div className="bg-red-100 p-2 rounded">High Risk<br/>0 items</div>
-                  </div>
-                  
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-3">Immediate Actions Required:</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-start space-x-2 p-2 bg-yellow-50 rounded">
-                        <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5" />
-                        <div className="text-sm">
-                          <div className="font-medium">Monitor Competition</div>
-                          <div className="text-gray-600">Weekly competitive analysis recommended</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-2 p-2 bg-blue-50 rounded">
-                        <Target className="w-4 h-4 text-blue-600 mt-0.5" />
-                        <div className="text-sm">
-                          <div className="font-medium">Seasonal Preparation</div>
-                          <div className="text-gray-600">Winter content strategy needed by Oct</div>
-                        </div>
-                      </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Resource Planning Recommendations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="border-l-4 border-green-500 pl-3">
+                      <div className="font-medium text-green-900">Peak Season (Mar-May)</div>
+                      <div className="text-sm text-green-700">Scale customer support by 40%</div>
+                    </div>
+                    <div className="border-l-4 border-blue-500 pl-3">
+                      <div className="font-medium text-blue-900">Growth Season (Sep-Oct)</div>
+                      <div className="text-sm text-blue-700">Increase marketing budget by 25%</div>
+                    </div>
+                    <div className="border-l-4 border-yellow-500 pl-3">
+                      <div className="font-medium text-yellow-900">Low Season (Dec-Feb)</div>
+                      <div className="text-sm text-yellow-700">Focus on retention initiatives</div>
                     </div>
                   </div>
-                  
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-2">Risk Monitoring KPIs:</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <div>• User acquisition cost trends</div>
-                      <div>• Competitive feature gap analysis</div>
-                      <div>• Server performance metrics</div>
-                      <div>• AI model accuracy scores</div>
-                      <div>• Regulatory compliance status</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

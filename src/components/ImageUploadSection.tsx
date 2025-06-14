@@ -4,6 +4,12 @@ import { Camera, ArrowUp } from 'lucide-react';
 import PhotoCapture from './PhotoCapture';
 import LoadingAnalysis from './LoadingAnalysis';
 import ResultsPage from './ResultsPage';
+import PremiumGate from './PremiumGate';
+import UpgradePrompt from './UpgradePrompt';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const ImageUploadSection = () => {
   const [dragOver, setDragOver] = useState(false);
@@ -13,6 +19,10 @@ const ImageUploadSection = () => {
   const [analysisMessage, setAnalysisMessage] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+
+  const { user } = useAuth();
+  const { checkFeatureAccess } = usePremiumAccess();
+  const { refreshUsage } = useSubscription();
 
   // Mock result data - in a real app, this would come from your AI service
   const mockResult = {
@@ -57,9 +67,29 @@ const ImageUploadSection = () => {
     }
   };
 
-  const handleImageCapture = (file: File) => {
+  const handleImageCapture = async (file: File) => {
+    // Check if user can identify
+    const access = checkFeatureAccess('identification');
+    if (!access.hasAccess) {
+      return; // This should be blocked by the PremiumGate component
+    }
+
     setCapturedImage(URL.createObjectURL(file));
     setShowPhotoCapture(false);
+    
+    // Increment usage for free users
+    if (user && access.reason === 'free-limit') {
+      try {
+        await supabase.rpc('increment_identification_usage', {
+          user_id_param: user.id
+        });
+        // Refresh usage data
+        await refreshUsage();
+      } catch (error) {
+        console.error('Error updating usage:', error);
+      }
+    }
+    
     simulateAnalysis();
   };
 
@@ -139,44 +169,47 @@ const ImageUploadSection = () => {
             </p>
           </div>
 
-          {/* Upload Area */}
-          <div className="bg-gradient-to-br from-green-50 to-purple-50 rounded-3xl p-8 border-2 border-dashed border-green-200">
-            <div
-              className={`text-center py-16 transition-all duration-300 ${
-                dragOver ? 'scale-105' : ''
-              }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ArrowUp className="w-10 h-10 text-white" />
-              </div>
-              
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                Drop your orchid image here
-              </h3>
-              <p className="text-gray-600 mb-8">
-                or click to browse from your device
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => setShowPhotoCapture(true)}
-                  className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:from-green-600 hover:to-purple-700 transition-all duration-300"
-                >
-                  Choose File
-                </button>
-                <button
-                  onClick={() => setShowPhotoCapture(true)}
-                  className="flex items-center justify-center space-x-2 text-gray-700 px-8 py-3 rounded-full font-semibold border-2 border-gray-200 hover:border-green-300 hover:text-green-600 transition-all duration-300"
-                >
-                  <Camera className="w-5 h-5" />
-                  <span>Take Photo</span>
-                </button>
+          {/* Premium Gate for Identification */}
+          <PremiumGate feature="identification">
+            {/* Upload Area */}
+            <div className="bg-gradient-to-br from-green-50 to-purple-50 rounded-3xl p-8 border-2 border-dashed border-green-200">
+              <div
+                className={`text-center py-16 transition-all duration-300 ${
+                  dragOver ? 'scale-105' : ''
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ArrowUp className="w-10 h-10 text-white" />
+                </div>
+                
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                  Drop your orchid image here
+                </h3>
+                <p className="text-gray-600 mb-8">
+                  or click to browse from your device
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => setShowPhotoCapture(true)}
+                    className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:from-green-600 hover:to-purple-700 transition-all duration-300"
+                  >
+                    Choose File
+                  </button>
+                  <button
+                    onClick={() => setShowPhotoCapture(true)}
+                    className="flex items-center justify-center space-x-2 text-gray-700 px-8 py-3 rounded-full font-semibold border-2 border-gray-200 hover:border-green-300 hover:text-green-600 transition-all duration-300"
+                  >
+                    <Camera className="w-5 h-5" />
+                    <span>Take Photo</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </PremiumGate>
 
           {/* Tips */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
@@ -193,6 +226,23 @@ const ImageUploadSection = () => {
               <p className="text-gray-600 text-sm">Try different angles if first attempt isn't clear</p>
             </div>
           </div>
+
+          {/* Show upgrade prompt for free users */}
+          {user && !checkFeatureAccess('identification').hasAccess && (
+            <div className="mt-12">
+              <UpgradePrompt 
+                title="You've reached your monthly limit"
+                description="Get unlimited identifications with premium access"
+                features={[
+                  "Unlimited plant identifications",
+                  "Disease detection & treatment",
+                  "Advanced plant health analytics",
+                  "Weather-based care recommendations",
+                  "Export your plant data"
+                ]}
+              />
+            </div>
+          )}
         </div>
       </section>
 

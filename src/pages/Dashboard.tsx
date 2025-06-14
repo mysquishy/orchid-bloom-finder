@@ -6,6 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, FileImage, BookOpen, TrendingUp, Database, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import SubscriptionBanner from '@/components/SubscriptionBanner';
+import PremiumGate from '@/components/PremiumGate';
+import PremiumBadge from '@/components/PremiumBadge';
+import UpgradePrompt from '@/components/UpgradePrompt';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 
 interface Identification {
   id: string;
@@ -18,6 +23,7 @@ interface Identification {
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isPremium, checkFeatureAccess } = usePremiumAccess();
   const [identifications, setIdentifications] = useState<Identification[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -85,11 +91,16 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <SubscriptionBanner />
+        
         {/* Welcome Section */}
         <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-playfair text-gray-900 mb-4">
-            Welcome back, <span className="bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent">{userName}</span>!
-          </h1>
+          <div className="flex items-center gap-3 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold font-playfair text-gray-900">
+              Welcome back, <span className="bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent">{userName}</span>!
+            </h1>
+            {isPremium && <PremiumBadge size="lg" />}
+          </div>
           <p className="text-xl text-gray-600 mb-8">
             Ready to discover more beautiful orchids today?
           </p>
@@ -133,7 +144,9 @@ const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-              <p className="text-xs text-gray-500">All time</p>
+              <p className="text-xs text-gray-500">
+                {isPremium ? 'Unlimited' : `${checkFeatureAccess('identification').remainingUses || 0} remaining this month`}
+              </p>
             </CardContent>
           </Card>
 
@@ -144,7 +157,9 @@ const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900">{stats.gardenCount}</div>
-              <p className="text-xs text-gray-500">Orchids in collection</p>
+              <p className="text-xs text-gray-500">
+                {isPremium ? 'Unlimited collection' : 'Basic collection'}
+              </p>
             </CardContent>
           </Card>
 
@@ -171,10 +186,28 @@ const Dashboard: React.FC = () => {
           </Card>
         </div>
 
+        {/* Premium Features Grid */}
+        {!isPremium && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <PremiumGate feature="disease-detection" showUpgrade={false}>
+              <div></div>
+            </PremiumGate>
+            <PremiumGate feature="analytics" showUpgrade={false}>
+              <div></div>
+            </PremiumGate>
+            <PremiumGate feature="weather" showUpgrade={false}>
+              <div></div>
+            </PremiumGate>
+          </div>
+        )}
+
         {/* Recent Identifications */}
-        <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+        <Card className="bg-white/80 backdrop-blur-sm border-green-200 mb-8">
           <CardHeader>
-            <CardTitle className="text-xl font-playfair text-gray-900">Recent Identifications</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl font-playfair text-gray-900">Recent Identifications</CardTitle>
+              {isPremium && <PremiumBadge size="sm" />}
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -221,6 +254,22 @@ const Dashboard: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Upgrade Prompt for Free Users */}
+        {!isPremium && (
+          <UpgradePrompt 
+            title="Unlock the Full OrchidAI Experience"
+            description="Get unlimited access to all features with zero API costs"
+            features={[
+              "Unlimited plant identifications",
+              "AI-powered disease detection",
+              "Advanced health analytics",
+              "Weather-based care recommendations",
+              "Export your plant care data",
+              "Priority customer support"
+            ]}
+          />
+        )}
       </div>
     </div>
   );

@@ -81,7 +81,10 @@ const AdminPanel: React.FC = () => {
 
       if (error) throw error;
 
-      const totalIssues = data ? data.reduce((sum: number, issue: any) => sum + Number(issue.affected_count || 0), 0) : 0;
+      const validationData = Array.isArray(data) ? data : [];
+      const totalIssues = validationData.reduce((sum: number, issue: any) => {
+        return sum + Number(issue.affected_count || 0);
+      }, 0);
 
       toast({
         title: "Validation Complete",
@@ -90,7 +93,7 @@ const AdminPanel: React.FC = () => {
       });
 
       if (totalIssues > 0) {
-        console.log('Validation Issues:', data);
+        console.log('Validation Issues:', validationData);
       }
     } catch (error) {
       toast({

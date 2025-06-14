@@ -12,7 +12,6 @@ export const trackEvent = async (event: AnalyticsEvent) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Use raw SQL to insert into app_analytics table since it's not in types yet
     const { error } = await supabase.rpc('insert_analytics', {
       event_type: event.event_type,
       event_data: event.event_data || {},

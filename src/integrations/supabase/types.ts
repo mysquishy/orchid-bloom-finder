@@ -214,7 +214,41 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_rate_limit: {
+        Args: {
+          identifier_param: string
+          endpoint_param: string
+          limit_count?: number
+          window_minutes?: number
+        }
+        Returns: {
+          allowed: boolean
+          current_count: number
+          reset_time: string
+        }[]
+      }
+      insert_analytics: {
+        Args: {
+          event_type: string
+          event_data?: Json
+          user_id?: string
+          session_id?: string
+          user_agent?: string
+        }
+        Returns: undefined
+      }
+      insert_error_log: {
+        Args: {
+          error_type: string
+          error_message: string
+          stack_trace?: string
+          user_id?: string
+          url?: string
+          context?: Json
+          user_agent?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

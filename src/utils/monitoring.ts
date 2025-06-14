@@ -18,8 +18,8 @@ export const getSystemMetrics = async (): Promise<SystemMetrics | null> => {
     
     if (error) throw error;
     
-    if (data && data.length > 0) {
-      const stats = data[0];
+    if (data && Array.isArray(data) && data.length > 0) {
+      const stats = data[0] as any;
       return {
         totalSpecies: Number(stats.total_species) || 0,
         totalUsers: Number(stats.total_users) || 0,
@@ -45,7 +45,7 @@ export const validateDatabaseData = async () => {
     
     if (error) throw error;
     
-    return data || [];
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('Failed to validate database data:', error);
     return [];

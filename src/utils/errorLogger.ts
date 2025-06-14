@@ -34,7 +34,6 @@ export const logError = async (error: Error | ErrorLogEntry, context?: Record<st
       };
     }
 
-    // Use raw SQL to insert into error_logs table since it's not in types yet
     const { error: insertError } = await supabase.rpc('insert_error_log', {
       error_type: errorEntry.error_type,
       error_message: errorEntry.error_message,

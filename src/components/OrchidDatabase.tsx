@@ -2,14 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Filter, Grid, List } from 'lucide-react';
+import { Grid, List } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import OrchidCard from './OrchidCard';
+import OrchidSearch from './OrchidSearch';
 
 interface OrchidSpecies {
   id: string;
@@ -36,11 +34,17 @@ interface OrchidSpecies {
 
 const OrchidDatabase: React.FC = () => {
   const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
-  const [selectedSubfamily, setSelectedSubfamily] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [userCollection, setUserCollection] = useState<Set<string>>(new Set());
+  const [filters, setFilters] = useState({
+    searchTerm: '',
+    difficulty: 'all',
+    lightRequirements: 'all',
+    bloomingSeason: 'all',
+    flowerColors: [] as string[],
+    nativeRegion: 'all',
+    subfamily: 'all'
+  });
 
   // Fetch orchid species
   const { data: orchids = [], isLoading } = useQuery({
@@ -80,25 +84,63 @@ const OrchidDatabase: React.FC = () => {
     }
   }, [collection]);
 
-  // Filter orchids based on search and filters
+  // Advanced filtering logic
   const filteredOrchids = orchids.filter(orchid => {
-    const matchesSearch = 
-      orchid.common_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      orchid.scientific_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      orchid.description.toLowerCase().includes(searchTerm.toLowerCase());
+    // Search term filter
+    const searchLower = filters.searchTerm.toLowerCase();
+    const matchesSearch = !searchLower || 
+      orchid.common_name.toLowerCase().includes(searchLower) ||
+      orchid.scientific_name.toLowerCase().includes(searchLower) ||
+      orchid.description.toLowerCase().includes(searchLower) ||
+      orchid.care_difficulty.toLowerCase().includes(searchLower) ||
+      orchid.light_requirements.toLowerCase().includes(searchLower) ||
+      orchid.native_region.toLowerCase().includes(searchLower) ||
+      (orchid.care_tips?.some(tip => tip.toLowerCase().includes(searchLower)));
 
-    const matchesDifficulty = selectedDifficulty === 'all' || orchid.care_difficulty === selectedDifficulty;
-    const matchesSubfamily = selectedSubfamily === 'all' || orchid.subfamily === selectedSubfamily;
+    // Basic filters
+    const matchesDifficulty = filters.difficulty === 'all' || orchid.care_difficulty === filters.difficulty;
+    const matchesSubfamily = filters.subfamily === 'all' || orchid.subfamily === filters.subfamily;
+    
+    // Light requirements filter
+    const matchesLight = filters.lightRequirements === 'all' || 
+      orchid.light_requirements.toLowerCase().includes(filters.lightRequirements.toLowerCase());
+    
+    // Native region filter
+    const matchesRegion = filters.nativeRegion === 'all' || 
+      orchid.native_region.includes(filters.nativeRegion);
+    
+    // Blooming season filter
+    const matchesSeason = filters.bloomingSeason === 'all' || 
+      orchid.bloom_time.toLowerCase().includes(filters.bloomingSeason.toLowerCase()) ||
+      (filters.bloomingSeason === 'year-round' && orchid.bloom_time.toLowerCase().includes('year'));
+    
+    // Flower colors filter
+    const matchesColors = filters.flowerColors.length === 0 || 
+      filters.flowerColors.some(color => 
+        orchid.flower_colors.some(orchidColor => 
+          orchidColor.toLowerCase().includes(color.toLowerCase())
+        )
+      );
 
-    return matchesSearch && matchesDifficulty && matchesSubfamily;
+    return matchesSearch && matchesDifficulty && matchesSubfamily && 
+           matchesLight && matchesRegion && matchesSeason && matchesColors;
   });
-
-  // Get unique subfamilies for filter
-  const subfamilies = Array.from(new Set(orchids.map(o => o.subfamily).filter(Boolean)));
 
   const handleToggleCollection = () => {
     // Refetch collection data
     window.location.reload(); // Simple refresh for now
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      searchTerm: '',
+      difficulty: 'all',
+      lightRequirements: 'all',
+      bloomingSeason: 'all',
+      flowerColors: [],
+      nativeRegion: 'all',
+      subfamily: 'all'
+    });
   };
 
   if (isLoading) {
@@ -122,83 +164,34 @@ const OrchidDatabase: React.FC = () => {
           </p>
         </div>
 
-        {/* Search and Filters */}
-        <Card className="mb-8 bg-white/80 backdrop-blur-sm border-green-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="w-5 h-5" />
-              Search & Filter
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-              {/* Search Input */}
-              <div className="md:col-span-2">
-                <Input
-                  placeholder="Search by name, species, or description..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-              </div>
+        {/* Advanced Search Component */}
+        <OrchidSearch
+          filters={filters}
+          onFiltersChange={setFilters}
+          orchidCount={filteredOrchids.length}
+          totalCount={orchids.length}
+          onClearFilters={clearFilters}
+        />
 
-              {/* Difficulty Filter */}
-              <div>
-                <select
-                  value={selectedDifficulty}
-                  onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="all">All Difficulties</option>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="expert">Expert</option>
-                </select>
-              </div>
-
-              {/* Subfamily Filter */}
-              <div>
-                <select
-                  value={selectedSubfamily}
-                  onChange={(e) => setSelectedSubfamily(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="all">All Subfamilies</option>
-                  {subfamilies.map(subfamily => (
-                    <option key={subfamily} value={subfamily}>
-                      {subfamily}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">
-                  Showing {filteredOrchids.length} of {orchids.length} orchids
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* View Mode Toggle */}
+        <div className="flex justify-end items-center mb-6">
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
 
         {/* Orchid Grid/List */}
         <div className={viewMode === 'grid' 
@@ -218,11 +211,7 @@ const OrchidDatabase: React.FC = () => {
         {filteredOrchids.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-600 mb-4">No orchids match your search criteria.</p>
-            <Button onClick={() => {
-              setSearchTerm('');
-              setSelectedDifficulty('all');
-              setSelectedSubfamily('all');
-            }}>
+            <Button onClick={clearFilters}>
               Clear Filters
             </Button>
           </div>

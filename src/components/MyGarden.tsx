@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Droplets, Scissors, Flower, Heart, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import GardenDashboard from './GardenDashboard';
+import CareCalendar from './CareCalendar';
 
 interface UserOrchidCollection {
   id: string;
@@ -36,7 +38,7 @@ interface UserOrchidCollection {
 const MyGarden: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState('all');
+  const [selectedTab, setSelectedTab] = useState('dashboard');
 
   const { data: gardenOrchids = [], isLoading, refetch } = useQuery({
     queryKey: ['my-garden', user?.id],
@@ -108,6 +110,17 @@ const MyGarden: React.FC = () => {
     }
   };
 
+  const handleTaskComplete = (taskId: string) => {
+    // Parse task ID to extract orchid ID and action
+    const [action, orchidId] = taskId.split('-');
+    const orchid = gardenOrchids.find(o => o.id === orchidId);
+    
+    if (orchid && ['water', 'fertilize', 'repot'].includes(action)) {
+      const actionMap = { water: 'watered', fertilize: 'fertilized', repot: 'repotted' };
+      updateCareAction(orchid.id, actionMap[action as keyof typeof actionMap] as any);
+    }
+  };
+
   const getBloomStatusColor = (status?: string) => {
     switch (status) {
       case 'blooming': return 'bg-pink-100 text-pink-800 border-pink-200';
@@ -118,17 +131,31 @@ const MyGarden: React.FC = () => {
     }
   };
 
-  const filteredOrchids = gardenOrchids.filter(item => {
-    if (selectedTab === 'all') return true;
-    if (selectedTab === 'blooming') return item.current_bloom_status === 'blooming';
-    if (selectedTab === 'needs-care') {
-      const today = new Date();
-      const lastWatered = item.last_watered ? new Date(item.last_watered) : null;
-      const needsWater = !lastWatered || (today.getTime() - lastWatered.getTime()) > (7 * 24 * 60 * 60 * 1000);
-      return needsWater;
-    }
-    return true;
-  });
+  // Calculate dashboard stats
+  const stats = {
+    totalOrchids: gardenOrchids.length,
+    bloomingOrchids: gardenOrchids.filter(o => o.current_bloom_status === 'blooming').length,
+    healthyOrchids: gardenOrchids.filter(o => 
+      o.current_bloom_status === 'blooming' || o.current_bloom_status === 'growing'
+    ).length,
+    needsAttention: gardenOrchids.filter(o => {
+      const lastWatered = o.last_watered ? new Date(o.last_watered) : null;
+      const needsWater = !lastWatered || (Date.now() - lastWatered.getTime()) > (7 * 24 * 60 * 60 * 1000);
+      return needsWater || o.current_bloom_status === 'dormant';
+    }).length,
+    careStreak: 5, // This would be calculated based on consistent care
+    completedTasks: 12, // This would be tracked in a separate table
+    upcomingTasks: 3
+  };
+
+  // Generate recent activity (mock data for now)
+  const recentActivity = gardenOrchids.slice(0, 5).map((orchid, index) => ({
+    id: `activity-${index}`,
+    action: 'Watered',
+    orchidName: orchid.orchid_species.common_name,
+    date: new Date(Date.now() - index * 24 * 60 * 60 * 1000),
+    type: 'watering' as const
+  }));
 
   if (!user) {
     return (
@@ -176,117 +203,122 @@ const MyGarden: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          <>
-            {/* Tabs */}
-            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="mb-8">
-              <TabsList className="grid w-full grid-cols-3 md:w-auto">
-                <TabsTrigger value="all">All Plants ({gardenOrchids.length})</TabsTrigger>
-                <TabsTrigger value="blooming">
-                  Blooming ({gardenOrchids.filter(o => o.current_bloom_status === 'blooming').length})
-                </TabsTrigger>
-                <TabsTrigger value="needs-care">Needs Care</TabsTrigger>
-              </TabsList>
-            </Tabs>
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-8">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="calendar">Care Calendar</TabsTrigger>
+              <TabsTrigger value="collection">My Collection</TabsTrigger>
+            </TabsList>
 
-            {/* Garden Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredOrchids.map((item) => (
-                <Card key={item.id} className="bg-white/80 backdrop-blur-sm border-green-200">
-                  <CardHeader className="p-0">
-                    <div className="relative overflow-hidden rounded-t-lg">
-                      <img
-                        src={item.orchid_species.high_quality_image_urls?.[0] || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96'}
-                        alt={item.orchid_species.common_name}
-                        className="w-full h-40 object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96';
-                        }}
-                      />
-                      <div className="absolute top-3 right-3">
-                        <Badge className={getBloomStatusColor(item.current_bloom_status)}>
-                          {item.current_bloom_status || 'growing'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
+            <TabsContent value="dashboard">
+              <GardenDashboard stats={stats} recentActivity={recentActivity} />
+            </TabsContent>
 
-                  <CardContent className="p-4">
-                    <div className="mb-3">
-                      <h3 className="font-bold text-lg text-gray-900 mb-1">
-                        {item.orchid_species.common_name}
-                      </h3>
-                      <p className="text-sm italic text-gray-600">
-                        {item.orchid_species.scientific_name}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Added {new Date(item.date_added).toLocaleDateString()}
-                      </p>
-                    </div>
+            <TabsContent value="calendar">
+              <CareCalendar orchids={gardenOrchids} onTaskComplete={handleTaskComplete} />
+            </TabsContent>
 
-                    {/* Care Status */}
-                    <div className="grid grid-cols-3 gap-2 mb-4 text-xs">
-                      <div className="flex flex-col items-center p-2 bg-blue-50 rounded">
-                        <Droplets className="w-4 h-4 text-blue-600 mb-1" />
-                        <span className="text-gray-600">
-                          {item.last_watered ? new Date(item.last_watered).toLocaleDateString() : 'Never'}
-                        </span>
+            <TabsContent value="collection">
+              {/* Garden Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {gardenOrchids.map((item) => (
+                  <Card key={item.id} className="bg-white/80 backdrop-blur-sm border-green-200">
+                    <CardHeader className="p-0">
+                      <div className="relative overflow-hidden rounded-t-lg">
+                        <img
+                          src={item.orchid_species.high_quality_image_urls?.[0] || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96'}
+                          alt={item.orchid_species.common_name}
+                          className="w-full h-40 object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96';
+                          }}
+                        />
+                        <div className="absolute top-3 right-3">
+                          <Badge className={getBloomStatusColor(item.current_bloom_status)}>
+                            {item.current_bloom_status || 'growing'}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-center p-2 bg-green-50 rounded">
-                        <Flower className="w-4 h-4 text-green-600 mb-1" />
-                        <span className="text-gray-600">
-                          {item.last_fertilized ? new Date(item.last_fertilized).toLocaleDateString() : 'Never'}
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-center p-2 bg-purple-50 rounded">
-                        <Scissors className="w-4 h-4 text-purple-600 mb-1" />
-                        <span className="text-gray-600">
-                          {item.last_repotted ? new Date(item.last_repotted).toLocaleDateString() : 'Never'}
-                        </span>
-                      </div>
-                    </div>
+                    </CardHeader>
 
-                    {/* Care Actions */}
-                    <div className="flex gap-1 mb-3">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-xs"
-                        onClick={() => updateCareAction(item.id, 'watered')}
-                      >
-                        <Droplets className="w-3 h-3 mr-1" />
-                        Water
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-xs"
-                        onClick={() => updateCareAction(item.id, 'fertilized')}
-                      >
-                        <Flower className="w-3 h-3 mr-1" />
-                        Feed
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-xs"
-                        onClick={() => updateCareAction(item.id, 'repotted')}
-                      >
-                        <Scissors className="w-3 h-3 mr-1" />
-                        Repot
-                      </Button>
-                    </div>
-
-                    {/* Care Notes */}
-                    {item.care_notes && (
-                      <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                        <strong>Notes:</strong> {item.care_notes}
+                    <CardContent className="p-4">
+                      <div className="mb-3">
+                        <h3 className="font-bold text-lg text-gray-900 mb-1">
+                          {item.orchid_species.common_name}
+                        </h3>
+                        <p className="text-sm italic text-gray-600">
+                          {item.orchid_species.scientific_name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Added {new Date(item.date_added).toLocaleDateString()}
+                        </p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </>
+
+                      {/* Care Status */}
+                      <div className="grid grid-cols-3 gap-2 mb-4 text-xs">
+                        <div className="flex flex-col items-center p-2 bg-blue-50 rounded">
+                          <Droplets className="w-4 h-4 text-blue-600 mb-1" />
+                          <span className="text-gray-600">
+                            {item.last_watered ? new Date(item.last_watered).toLocaleDateString() : 'Never'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col items-center p-2 bg-green-50 rounded">
+                          <Flower className="w-4 h-4 text-green-600 mb-1" />
+                          <span className="text-gray-600">
+                            {item.last_fertilized ? new Date(item.last_fertilized).toLocaleDateString() : 'Never'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col items-center p-2 bg-purple-50 rounded">
+                          <Scissors className="w-4 h-4 text-purple-600 mb-1" />
+                          <span className="text-gray-600">
+                            {item.last_repotted ? new Date(item.last_repotted).toLocaleDateString() : 'Never'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Care Actions */}
+                      <div className="flex gap-1 mb-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs"
+                          onClick={() => updateCareAction(item.id, 'watered')}
+                        >
+                          <Droplets className="w-3 h-3 mr-1" />
+                          Water
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs"
+                          onClick={() => updateCareAction(item.id, 'fertilized')}
+                        >
+                          <Flower className="w-3 h-3 mr-1" />
+                          Feed
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs"
+                          onClick={() => updateCareAction(item.id, 'repotted')}
+                        >
+                          <Scissors className="w-3 h-3 mr-1" />
+                          Repot
+                        </Button>
+                      </div>
+
+                      {/* Care Notes */}
+                      {item.care_notes && (
+                        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                          <strong>Notes:</strong> {item.care_notes}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>

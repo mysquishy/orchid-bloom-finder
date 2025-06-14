@@ -213,9 +213,9 @@ class OfflineManager {
 
     try {
       const [identifications, plants, careReminders] = await Promise.all([
-        this.db.getAllFromIndex('identifications', 'by-synced', false),
-        this.db.getAllFromIndex('plants', 'by-synced', false),
-        this.db.getAllFromIndex('careReminders', 'by-synced', false)
+        this.db.getAllFromIndex('identifications', 'by-synced', IDBKeyRange.only(false)),
+        this.db.getAllFromIndex('plants', 'by-synced', IDBKeyRange.only(false)),
+        this.db.getAllFromIndex('careReminders', 'by-synced', IDBKeyRange.only(false))
       ]);
 
       return { identifications, plants, careReminders };
@@ -244,7 +244,7 @@ class OfflineManager {
     if (!this.db) return;
 
     try {
-      const unsyncedData = await this.db.getAllFromIndex('identifications', 'by-synced', false);
+      const unsyncedData = await this.db.getAllFromIndex('identifications', 'by-synced', IDBKeyRange.only(false));
       
       for (const item of unsyncedData) {
         // Here you would sync with your backend API
@@ -260,7 +260,7 @@ class OfflineManager {
     if (!this.db) return;
 
     try {
-      const unsyncedData = await this.db.getAllFromIndex('plants', 'by-synced', false);
+      const unsyncedData = await this.db.getAllFromIndex('plants', 'by-synced', IDBKeyRange.only(false));
       
       for (const item of unsyncedData) {
         // Here you would sync with your backend API
@@ -275,7 +275,7 @@ class OfflineManager {
     if (!this.db) return;
 
     try {
-      const unsyncedData = await this.db.getAllFromIndex('careReminders', 'by-synced', false);
+      const unsyncedData = await this.db.getAllFromIndex('careReminders', 'by-synced', IDBKeyRange.only(false));
       
       for (const item of unsyncedData) {
         // Here you would sync with your backend API
@@ -297,9 +297,9 @@ class OfflineManager {
 
     try {
       const [unsyncedIdentifications, unsyncedPlants, unsyncedReminders] = await Promise.all([
-        this.db.getAllFromIndex('identifications', 'by-synced', false),
-        this.db.getAllFromIndex('plants', 'by-synced', false),
-        this.db.getAllFromIndex('careReminders', 'by-synced', false)
+        this.db.getAllFromIndex('identifications', 'by-synced', IDBKeyRange.only(false)),
+        this.db.getAllFromIndex('plants', 'by-synced', IDBKeyRange.only(false)),
+        this.db.getAllFromIndex('careReminders', 'by-synced', IDBKeyRange.only(false))
       ]);
 
       const pending = unsyncedIdentifications.length + unsyncedPlants.length + unsyncedReminders.length;

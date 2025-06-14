@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Menu, X, Camera } from 'lucide-react';
+import { Menu, X, Camera, Crown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import UserMenu from './UserMenu';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { subscribed, subscriptionTier } = useSubscription();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -37,6 +39,12 @@ const Navigation = () => {
             >
               OrchidAI
             </a>
+            {subscribed && (
+              <div className="hidden sm:flex items-center gap-1 bg-gradient-to-r from-green-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs">
+                <Crown className="w-3 h-3" />
+                <span>{subscriptionTier}</span>
+              </div>
+            )}
           </div>
 
           {/* Desktop Navigation */}
@@ -61,6 +69,9 @@ const Navigation = () => {
             </button>
             <a href="/database" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
               Database
+            </a>
+            <a href="/pricing" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+              Pricing
             </a>
             {user && (
               <>
@@ -92,6 +103,12 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-green-100">
             <div className="px-2 pt-2 pb-3 space-y-1">
+              {subscribed && (
+                <div className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm mb-2 w-fit">
+                  <Crown className="w-3 h-3" />
+                  <span>{subscriptionTier}</span>
+                </div>
+              )}
               <button 
                 onClick={() => scrollToSection('features')} 
                 className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium w-full text-left"
@@ -112,6 +129,9 @@ const Navigation = () => {
               </button>
               <a href="/database" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
                 Database
+              </a>
+              <a href="/pricing" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+                Pricing
               </a>
               {user && (
                 <>

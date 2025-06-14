@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,12 +11,23 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, Crown, CreditCard } from 'lucide-react';
 import AuthModal from './auth/AuthModal';
+import { toast } from 'sonner';
 
 const UserMenu: React.FC = () => {
   const { user, signOut } = useAuth();
+  const { subscribed, subscriptionTier, openCustomerPortal } = useSubscription();
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleManageSubscription = async () => {
+    try {
+      await openCustomerPortal();
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast.error('Failed to open subscription management');
+    }
+  };
 
   if (!user) {
     return (
@@ -61,6 +73,12 @@ const UserMenu: React.FC = () => {
             <p className="w-[200px] truncate text-xs text-muted-foreground">
               {user.email}
             </p>
+            {subscribed && (
+              <div className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs w-fit">
+                <Crown className="w-3 h-3" />
+                <span>{subscriptionTier}</span>
+              </div>
+            )}
           </div>
         </div>
         <DropdownMenuSeparator />
@@ -72,6 +90,15 @@ const UserMenu: React.FC = () => {
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
+        {subscribed && (
+          <DropdownMenuItem 
+            className="cursor-pointer"
+            onClick={handleManageSubscription}
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            Manage Subscription
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer text-red-600 focus:text-red-600"

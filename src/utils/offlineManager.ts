@@ -16,6 +16,10 @@ interface OrchidAIDB extends DBSchema {
       timestamp: number;
       synced: boolean;
     };
+    indexes: {
+      timestamp: number;
+      synced: boolean;
+    };
   };
   plants: {
     key: string;
@@ -34,6 +38,10 @@ interface OrchidAIDB extends DBSchema {
       timestamp: number;
       synced: boolean;
     };
+    indexes: {
+      timestamp: number;
+      synced: boolean;
+    };
   };
   careReminders: {
     key: string;
@@ -44,6 +52,11 @@ interface OrchidAIDB extends DBSchema {
       dueDate: string;
       completed: boolean;
       timestamp: number;
+      synced: boolean;
+    };
+    indexes: {
+      plantId: string;
+      dueDate: string;
       synced: boolean;
     };
   };
@@ -185,28 +198,25 @@ class OfflineManager {
     
     // Handle identifications
     const syncedIdentifications = await db.getAllFromIndex('identifications', 'synced', true);
-    const identificationsTx = db.transaction('identifications', 'readwrite');
     for (const item of syncedIdentifications) {
       if (item.timestamp < thirtyDaysAgo) {
-        await identificationsTx.store.delete(item.id);
+        await db.delete('identifications', item.id);
       }
     }
 
     // Handle plants
     const syncedPlants = await db.getAllFromIndex('plants', 'synced', true);
-    const plantsTx = db.transaction('plants', 'readwrite');
     for (const item of syncedPlants) {
       if (item.timestamp < thirtyDaysAgo) {
-        await plantsTx.store.delete(item.id);
+        await db.delete('plants', item.id);
       }
     }
 
     // Handle care reminders
     const syncedReminders = await db.getAllFromIndex('careReminders', 'synced', true);
-    const remindersTx = db.transaction('careReminders', 'readwrite');
     for (const item of syncedReminders) {
       if (item.timestamp < thirtyDaysAgo) {
-        await remindersTx.store.delete(item.id);
+        await db.delete('careReminders', item.id);
       }
     }
   }

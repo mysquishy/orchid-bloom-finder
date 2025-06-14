@@ -116,17 +116,11 @@ const ElegantQuickActions: React.FC = () => {
       y: 20,
       transition: { duration: 0.2 }
     },
-    visible: (index: number) => ({
+    visible: {
       opacity: 1,
       scale: 1,
-      y: 0,
-      transition: {
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 300,
-        damping: 20
-      }
-    })
+      y: 0
+    }
   };
 
   const backdropVariants = {
@@ -163,7 +157,12 @@ const ElegantQuickActions: React.FC = () => {
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
-                  custom={index}
+                  transition={{
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20
+                  }}
                   onClick={action.action}
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-full

@@ -49,31 +49,15 @@ const HeroSection = () => {
 
           {/* Hero Image */}
           <div className="relative max-w-4xl mx-auto">
-            <div 
-              className="bg-gradient-to-br from-green-100 to-purple-100 rounded-3xl p-8 shadow-2xl min-h-[320px] md:min-h-[416px] bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: "url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')"
-              }}
-            >
+            <div className="rounded-3xl p-8 shadow-2xl min-h-[320px] md:min-h-[416px] bg-cover bg-center bg-no-repeat"
+                 style={{
+                   backgroundImage: "url('https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=4928&q=80')"
+                 }}>
               <img 
-                src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Beautiful collection of orchid flowers showcasing various species including Phalaenopsis and Dendrobium orchids in elegant purple, pink and white colors"
+                src="https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=4928&q=80"
+                alt="Beautiful wildflower field with orange poppies and other colorful flowers in a natural meadow setting"
                 className="w-full h-64 md:h-96 object-cover rounded-2xl shadow-lg"
                 loading="lazy"
-                onLoad={(e) => {
-                  // Hide background when image loads successfully
-                  const img = e.target as HTMLImageElement;
-                  const container = img.parentElement;
-                  if (container) {
-                    container.style.backgroundImage = 'none';
-                  }
-                }}
-                onError={(e) => {
-                  // Hide the img element if it fails, letting the background show
-                  const img = e.target as HTMLImageElement;
-                  img.style.display = 'none';
-                  console.log('Image failed to load, using background image fallback');
-                }}
               />
             </div>
             

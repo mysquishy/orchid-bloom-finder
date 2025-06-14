@@ -1,55 +1,63 @@
 
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { openDB, IDBPDatabase } from 'idb';
 
-interface OrchidAIDB extends DBSchema {
-  identifications: {
-    key: string;
-    value: {
-      id: string;
-      species: string;
-      commonName: string;
-      confidence: number;
-      description: string;
-      careInstructions: string[];
-      characteristics: string[];
-      imageUrl: string;
-      timestamp: number;
-      synced: boolean;
-    };
-    indexes: { 'by-synced': boolean; 'by-timestamp': number };
+// Define individual store interfaces
+interface IdentificationStore {
+  key: string;
+  value: {
+    id: string;
+    species: string;
+    commonName: string;
+    confidence: number;
+    description: string;
+    careInstructions: string[];
+    characteristics: string[];
+    imageUrl: string;
+    timestamp: number;
+    synced: boolean;
   };
-  plants: {
-    key: string;
-    value: {
-      id: string;
-      name: string;
-      species: string;
-      lastWatered: string;
-      lastFertilized: string;
-      notes: string;
-      imageUrl: string;
-      careSchedule: {
-        watering: number;
-        fertilizing: number;
-      };
-      timestamp: number;
-      synced: boolean;
+  indexes: { 'by-synced': boolean; 'by-timestamp': number };
+}
+
+interface PlantStore {
+  key: string;
+  value: {
+    id: string;
+    name: string;
+    species: string;
+    lastWatered: string;
+    lastFertilized: string;
+    notes: string;
+    imageUrl: string;
+    careSchedule: {
+      watering: number;
+      fertilizing: number;
     };
-    indexes: { 'by-synced': boolean; 'by-timestamp': number };
+    timestamp: number;
+    synced: boolean;
   };
-  careReminders: {
-    key: string;
-    value: {
-      id: string;
-      plantId: string;
-      type: 'watering' | 'fertilizing' | 'repotting' | 'checkup';
-      dueDate: string;
-      completed: boolean;
-      timestamp: number;
-      synced: boolean;
-    };
-    indexes: { 'by-synced': boolean; 'by-due-date': string };
+  indexes: { 'by-synced': boolean; 'by-timestamp': number };
+}
+
+interface CareReminderStore {
+  key: string;
+  value: {
+    id: string;
+    plantId: string;
+    type: 'watering' | 'fertilizing' | 'repotting' | 'checkup';
+    dueDate: string;
+    completed: boolean;
+    timestamp: number;
+    synced: boolean;
   };
+  indexes: { 'by-synced': boolean; 'by-due-date': string };
+}
+
+// Main database schema
+interface OrchidAIDB {
+  identifications: IdentificationStore;
+  plants: PlantStore;
+  careReminders: CareReminderStore;
 }
 
 class OfflineManager {

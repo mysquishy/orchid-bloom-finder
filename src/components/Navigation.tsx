@@ -44,7 +44,7 @@ const Navigation: React.FC = () => {
               <Link to="/" className="flex-shrink-0 flex items-center">
                 <Flower className="h-8 w-8 text-green-600" />
                 <span className="ml-2 text-xl font-bold text-gray-900">
-                  Or<span className="text-green-600 font-extrabold text-2xl">k</span>hidly
+                  Or<span className="bg-gradient-to-r from-green-600 via-purple-600 to-green-600 bg-clip-text text-transparent font-extrabold text-2xl">k</span>hidly
                 </span>
               </Link>
             </div>

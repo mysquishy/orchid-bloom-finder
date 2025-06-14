@@ -12,6 +12,16 @@ const Navigation = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setIsMenuOpen(false);
+    }
+  };
+
+  const isAdmin = user?.email?.includes('admin') || user?.email?.includes('@orchidai.com');
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-green-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,26 +31,51 @@ const Navigation = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center">
               <Camera className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold font-playfair bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent">
+            <a 
+              href="/" 
+              className="text-xl font-bold font-playfair bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent"
+            >
               OrchidAI
-            </span>
+            </a>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+            <button 
+              onClick={() => scrollToSection('features')} 
+              className="text-gray-700 hover:text-green-600 transition-colors font-medium"
+            >
               Features
-            </a>
-            <a href="#how-it-works" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => scrollToSection('how-it-works')} 
+              className="text-gray-700 hover:text-green-600 transition-colors font-medium"
+            >
               How It Works
-            </a>
-            <a href="#identify" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => scrollToSection('identify')} 
+              className="text-gray-700 hover:text-green-600 transition-colors font-medium"
+            >
               Identify
+            </button>
+            <a href="/database" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+              Database
             </a>
             {user && (
-              <a href="/dashboard" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
-                Dashboard
-              </a>
+              <>
+                <a href="/dashboard" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+                  Dashboard
+                </a>
+                <a href="/garden" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+                  My Garden
+                </a>
+                {isAdmin && (
+                  <a href="/admin" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+                    Admin
+                  </a>
+                )}
+              </>
             )}
             <UserMenu />
           </div>
@@ -57,19 +92,41 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-green-100">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <a href="#features" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+              <button 
+                onClick={() => scrollToSection('features')} 
+                className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium w-full text-left"
+              >
                 Features
-              </a>
-              <a href="#how-it-works" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+              </button>
+              <button 
+                onClick={() => scrollToSection('how-it-works')} 
+                className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium w-full text-left"
+              >
                 How It Works
-              </a>
-              <a href="#identify" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+              </button>
+              <button 
+                onClick={() => scrollToSection('identify')} 
+                className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium w-full text-left"
+              >
                 Identify
+              </button>
+              <a href="/database" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+                Database
               </a>
               {user && (
-                <a href="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
-                  Dashboard
-                </a>
+                <>
+                  <a href="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+                    Dashboard
+                  </a>
+                  <a href="/garden" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+                    My Garden
+                  </a>
+                  {isAdmin && (
+                    <a href="/admin" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+                      Admin
+                    </a>
+                  )}
+                </>
               )}
               <div className="px-3 py-2">
                 <UserMenu />

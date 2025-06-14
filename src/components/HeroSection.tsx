@@ -62,7 +62,8 @@ const HeroSection = () => {
                 loading="lazy"
                 onLoad={(e) => {
                   // Hide background when image loads successfully
-                  const container = e.target.parentElement;
+                  const img = e.target as HTMLImageElement;
+                  const container = img.parentElement;
                   if (container) {
                     container.style.backgroundImage = 'none';
                   }

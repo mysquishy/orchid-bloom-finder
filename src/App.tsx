@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import MyGarden from "./pages/MyGarden";
 import Analytics from "./pages/Analytics";
 import HealthMonitoring from "./pages/HealthMonitoring";
+import WeatherSystem from "./pages/WeatherSystem";
 import OrchidDatabase from "./pages/OrchidDatabase";
 import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
@@ -56,6 +57,7 @@ const App: React.FC = () => (
                 <Route path="/garden" element={<MyGarden />} />
                 <Route path="/health" element={<HealthMonitoring />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/weather" element={<WeatherSystem />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/subscription-success" element={<SubscriptionSuccess />} />
                 <Route path="/admin" element={<Admin />} />

@@ -266,6 +266,68 @@ export type Database = {
           },
         ]
       }
+      consultations: {
+        Row: {
+          consultation_type: string
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          expert_id: string
+          expert_notes: string | null
+          id: string
+          meeting_url: string | null
+          notes: string | null
+          price_cents: number
+          scheduled_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consultation_type: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          expert_id: string
+          expert_notes?: string | null
+          id?: string
+          meeting_url?: string | null
+          notes?: string | null
+          price_cents: number
+          scheduled_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consultation_type?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          expert_id?: string
+          expert_notes?: string | null
+          id?: string
+          meeting_url?: string | null
+          notes?: string | null
+          price_cents?: number
+          scheduled_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultations_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "experts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversion_funnel: {
         Row: {
           completed_at: string | null
@@ -292,6 +354,44 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      course_enrollments: {
+        Row: {
+          certificate_url: string | null
+          completed_at: string | null
+          course_id: string
+          enrolled_at: string
+          id: string
+          progress_percentage: number | null
+          user_id: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          completed_at?: string | null
+          course_id: string
+          enrolled_at?: string
+          id?: string
+          progress_percentage?: number | null
+          user_id: string
+        }
+        Update: {
+          certificate_url?: string | null
+          completed_at?: string | null
+          course_id?: string
+          enrolled_at?: string
+          id?: string
+          progress_percentage?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "expert_courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       discussion_forums: {
         Row: {
@@ -376,6 +476,151 @@ export type Database = {
           },
         ]
       }
+      expert_availability: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          expert_id: string
+          id: string
+          is_available: boolean | null
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          expert_id: string
+          id?: string
+          is_available?: boolean | null
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          expert_id?: string
+          id?: string
+          is_available?: boolean | null
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_availability_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "experts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expert_courses: {
+        Row: {
+          course_type: string
+          created_at: string
+          description: string | null
+          difficulty_level: string
+          duration_hours: number | null
+          expert_id: string
+          id: string
+          is_premium_only: boolean | null
+          is_published: boolean | null
+          max_participants: number | null
+          price_cents: number
+          syllabus: Json | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_type: string
+          created_at?: string
+          description?: string | null
+          difficulty_level: string
+          duration_hours?: number | null
+          expert_id: string
+          id?: string
+          is_premium_only?: boolean | null
+          is_published?: boolean | null
+          max_participants?: number | null
+          price_cents: number
+          syllabus?: Json | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_type?: string
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string
+          duration_hours?: number | null
+          expert_id?: string
+          id?: string
+          is_premium_only?: boolean | null
+          is_published?: boolean | null
+          max_participants?: number | null
+          price_cents?: number
+          syllabus?: Json | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_courses_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "experts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expert_reviews: {
+        Row: {
+          consultation_id: string | null
+          created_at: string
+          expert_id: string
+          id: string
+          rating: number
+          review_text: string | null
+          user_id: string
+        }
+        Insert: {
+          consultation_id?: string | null
+          created_at?: string
+          expert_id: string
+          id?: string
+          rating: number
+          review_text?: string | null
+          user_id: string
+        }
+        Update: {
+          consultation_id?: string | null
+          created_at?: string
+          expert_id?: string
+          id?: string
+          rating?: number
+          review_text?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_reviews_consultation_id_fkey"
+            columns: ["consultation_id"]
+            isOneToOne: false
+            referencedRelation: "consultations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expert_reviews_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "experts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expert_verifications: {
         Row: {
           confidence_score: number | null
@@ -423,6 +668,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      experts: {
+        Row: {
+          bio: string | null
+          created_at: string
+          credentials: string[] | null
+          hourly_rate_cents: number | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          name: string
+          profile_image_url: string | null
+          specializations: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          credentials?: string[] | null
+          hourly_rate_cents?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          name: string
+          profile_image_url?: string | null
+          specializations?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          credentials?: string[] | null
+          hourly_rate_cents?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          name?: string
+          profile_image_url?: string | null
+          specializations?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: []
       }
       forum_replies: {
         Row: {
@@ -1039,11 +1335,16 @@ export type Database = {
       support_tickets: {
         Row: {
           assigned_to: string | null
+          category: string | null
           created_at: string | null
           description: string
+          expert_id: string | null
+          first_response_at: string | null
           id: string
+          is_premium: boolean | null
           priority: string | null
           resolved_at: string | null
+          response_time_sla_hours: number | null
           status: string | null
           subject: string
           tags: string[] | null
@@ -1052,11 +1353,16 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          category?: string | null
           created_at?: string | null
           description: string
+          expert_id?: string | null
+          first_response_at?: string | null
           id?: string
+          is_premium?: boolean | null
           priority?: string | null
           resolved_at?: string | null
+          response_time_sla_hours?: number | null
           status?: string | null
           subject: string
           tags?: string[] | null
@@ -1065,18 +1371,31 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          category?: string | null
           created_at?: string | null
           description?: string
+          expert_id?: string | null
+          first_response_at?: string | null
           id?: string
+          is_premium?: boolean | null
           priority?: string | null
           resolved_at?: string | null
+          response_time_sla_hours?: number | null
           status?: string | null
           subject?: string
           tags?: string[] | null
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "experts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usage_tracking: {
         Row: {
@@ -1301,6 +1620,13 @@ export type Database = {
           priority: string
         }[]
       }
+      get_available_slots: {
+        Args: { expert_id_param: string; date_start: string; date_end: string }
+        Returns: {
+          slot_datetime: string
+          duration_minutes: number
+        }[]
+      }
       get_business_metrics: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1327,6 +1653,13 @@ export type Database = {
           user_contributed_count: number
           recent_signups_7d: number
           recent_identifications_7d: number
+        }[]
+      }
+      get_expert_rating: {
+        Args: { expert_id_param: string }
+        Returns: {
+          average_rating: number
+          total_reviews: number
         }[]
       }
       get_user_segments: {

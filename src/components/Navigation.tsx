@@ -25,6 +25,7 @@ const Navigation: React.FC = () => {
     ...(user ? [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'My Garden', href: '/garden' },
+      { name: 'Expert Consultations', href: '/expert-consultations' },
       ...(subscribed ? [
         { name: 'Analytics', href: '/analytics' },
         { name: 'Health Monitor', href: '/health' },

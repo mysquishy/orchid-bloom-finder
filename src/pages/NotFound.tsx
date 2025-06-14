@@ -34,15 +34,13 @@ const NotFound = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  const floatingVariants = {
-    animate: {
-      y: [-10, 10, -10],
-      rotate: [-5, 5, -5],
-      transition: {
-        duration: 4,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
+  const floatingAnimation = {
+    y: [-10, 10, -10],
+    rotate: [-5, 5, -5],
+    transition: {
+      duration: 4,
+      repeat: Infinity,
+      ease: "easeInOut"
     }
   };
 
@@ -57,24 +55,31 @@ const NotFound = () => {
         {/* Floating Orchid Icons */}
         <div className="relative mb-8">
           <motion.div
-            variants={floatingVariants}
-            animate="animate"
+            animate={floatingAnimation}
             className="absolute -top-4 -left-8 text-green-300"
           >
             <Flower className="w-8 h-8" />
           </motion.div>
           <motion.div
-            variants={floatingVariants}
-            animate="animate"
-            style={{ animationDelay: '1s' }}
+            animate={{
+              ...floatingAnimation,
+              transition: {
+                ...floatingAnimation.transition,
+                delay: 1
+              }
+            }}
             className="absolute -top-6 -right-6 text-purple-300"
           >
             <Flower className="w-6 h-6" />
           </motion.div>
           <motion.div
-            variants={floatingVariants}
-            animate="animate"
-            style={{ animationDelay: '2s' }}
+            animate={{
+              ...floatingAnimation,
+              transition: {
+                ...floatingAnimation.transition,
+                delay: 2
+              }
+            }}
             className="absolute -bottom-2 left-4 text-pink-300"
           >
             <Flower className="w-5 h-5" />

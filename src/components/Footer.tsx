@@ -13,11 +13,13 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <Camera className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold font-playfair">OrchidAI</span>
+              <span className="text-xl font-bold font-playfair">
+                Or<span className="text-green-400 font-extrabold text-2xl">k</span>hidly
+              </span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
               Discover and identify orchid species with the power of artificial intelligence. 
-              Join thousands of orchid enthusiasts in exploring the beauty of these magnificent flowers.
+              Join thousands of plant enthusiasts learning to care for these magnificent flowers - awkwardly but with enthusiasm!
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
@@ -61,10 +63,10 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
           <p className="text-gray-400 text-sm">
-            © 2024 OrchidAI. All rights reserved.
+            © 2024 Orkhidly. All rights reserved.
           </p>
           <p className="text-gray-400 text-sm mt-4 md:mt-0">
-            Made with ❤️ for orchid lovers worldwide
+            Made with ❤️ for orchid lovers (and anxious plant parents) worldwide
           </p>
         </div>
       </div>

@@ -7,22 +7,22 @@ const FeaturesSection = () => {
     {
       icon: Camera,
       title: "Instant Recognition",
-      description: "Upload or capture photos of orchids and get instant species identification powered by advanced AI technology."
+      description: "Upload or capture photos of orchids and get instant species identification. No plant expertise needed - we'll figure it out together!"
     },
     {
       icon: ArrowUp,
       title: "Expert Database",
-      description: "Access comprehensive information about thousands of orchid species from around the world."
+      description: "Access comprehensive information about thousands of orchid species from around the world, explained in friendly, non-intimidating language."
     },
     {
       icon: Menu,
-      title: "Detailed Profiles",
-      description: "Learn about care instructions, native habitats, and fascinating facts about each orchid species."
+      title: "Detailed Care Guides",
+      description: "Learn about care instructions, native habitats, and fascinating facts. Perfect for beginners who want to learn without feeling overwhelmed."
     },
     {
       icon: ArrowDown,
       title: "Mobile Optimized",
-      description: "Perfect for field identification with responsive design that works seamlessly on all devices."
+      description: "Perfect for field identification with responsive design that works seamlessly on all devices. Take it to the garden center with confidence!"
     }
   ];
 
@@ -33,10 +33,12 @@ const FeaturesSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold font-playfair text-gray-900 mb-6">
             Why Choose
-            <span className="bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent"> OrchidAI?</span>
+            <span className="bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent"> 
+              Or<span className="text-green-600">k</span>hidly?
+            </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Experience the most advanced orchid identification technology with features designed for both beginners and experts.
+            Experience the most approachable orchid identification technology, designed especially for beginners and anxious plant parents.
           </p>
         </div>
 
@@ -73,7 +75,7 @@ const FeaturesSection = () => {
             </div>
             <div>
               <div className="text-4xl md:text-5xl font-bold mb-2">500K+</div>
-              <div className="text-green-100 text-lg">Identifications</div>
+              <div className="text-green-100 text-lg">Happy Plant Parents</div>
             </div>
           </div>
         </div>

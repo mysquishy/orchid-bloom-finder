@@ -7,20 +7,20 @@ const HowItWorksSection = () => {
     {
       icon: Camera,
       number: "01",
-      title: "Capture or Upload",
-      description: "Take a photo of an orchid or upload an existing image from your device. Our system works with any clear photo of the flower."
+      title: "Snap a Photo",
+      description: "Take a photo of an orchid or upload an existing image from your device. Don't worry about perfect lighting - we'll work with what you've got!"
     },
     {
       icon: ArrowUp,
       number: "02", 
-      title: "AI Analysis",
-      description: "Our advanced AI analyzes the image, examining key features like petal shape, color patterns, and overall structure."
+      title: "AI Does the Work",
+      description: "Our AI analyzes the image, examining key features like petal shape, color patterns, and overall structure. No plant knowledge required on your part!"
     },
     {
       icon: Menu,
       number: "03",
-      title: "Get Results",
-      description: "Receive instant identification results with detailed information about the species, care tips, and fascinating facts."
+      title: "Learn & Grow",
+      description: "Receive instant identification results with beginner-friendly care tips, fun facts, and confidence-building guidance for your orchid journey."
     }
   ];
 
@@ -34,7 +34,7 @@ const HowItWorksSection = () => {
             <span className="bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent"> Works</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Identify any orchid species in just three simple steps. It's that easy!
+            Identify any orchid species in just three simple steps. No green thumb required - just curiosity!
           </p>
         </div>
 
@@ -80,10 +80,10 @@ const HowItWorksSection = () => {
                   <Camera className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                  See OrchidAI in Action
+                  See Orkhidly in Action
                 </h3>
                 <p className="text-gray-600">
-                  Watch how easy it is to identify orchids with our AI technology
+                  Watch how easy (and non-intimidating) orchid identification can be
                 </p>
               </div>
             </div>

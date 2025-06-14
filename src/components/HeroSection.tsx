@@ -30,8 +30,8 @@ const HeroSection = () => {
 
           {/* Hero Subtitle */}
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Instantly identify orchid species with our advanced AI technology. 
-            Simply snap a photo and unlock the secrets of these magnificent flowers.
+            Instantly identify orchid species with our AI technology. 
+            Simply snap a photo and unlock the secrets of these magnificent flowers - no green thumb required!
           </p>
 
           {/* CTA Buttons */}

@@ -1,8 +1,8 @@
 
 {
-  "name": "OrchidAI - AI-Powered Orchid Identification",
-  "short_name": "OrchidAI",
-  "description": "Identify orchid species instantly with AI-powered image recognition. Discover, learn, and explore the world of orchids.",
+  "name": "Orkhidly - AI-Powered Orchid Identification",
+  "short_name": "Orkhidly",
+  "description": "Identify orchid species instantly with AI-powered image recognition. Discover, learn, and explore the world of orchids with beginner-friendly guidance.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -34,7 +34,7 @@
       "sizes": "1280x720",
       "type": "image/svg+xml",
       "platform": "wide",
-      "label": "OrchidAI Dashboard"
+      "label": "Orkhidly Dashboard"
     }
   ]
 }

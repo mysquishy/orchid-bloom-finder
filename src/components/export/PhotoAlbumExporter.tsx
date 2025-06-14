@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -155,7 +154,7 @@ const PhotoAlbumExporter: React.FC<PhotoAlbumExporterProps> = ({ onProgress }) =
               <Checkbox
                 id="metadata"
                 checked={includeMetadata}
-                onCheckedChange={setIncludeMetadata}
+                onCheckedChange={(checked) => setIncludeMetadata(checked === true)}
               />
               <label htmlFor="metadata" className="text-sm font-medium cursor-pointer">
                 Include photo metadata (date, plant names, descriptions)

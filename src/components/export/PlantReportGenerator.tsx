@@ -11,7 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 interface PlantReportGeneratorProps {
   onProgress: (progress: number) => void;
@@ -254,7 +253,7 @@ const PlantReportGenerator: React.FC<PlantReportGeneratorProps> = ({ onProgress 
                 <Checkbox
                   id={section}
                   checked={enabled}
-                  onCheckedChange={() => handleSectionToggle(section as keyof typeof reportSections)}
+                  onCheckedChange={(checked) => handleSectionToggle(section as keyof typeof reportSections)}
                 />
                 <label htmlFor={section} className="text-sm font-medium capitalize cursor-pointer">
                   {section.replace(/([A-Z])/g, ' $1').trim()}
@@ -278,7 +277,7 @@ const PlantReportGenerator: React.FC<PlantReportGeneratorProps> = ({ onProgress 
                 <Checkbox
                   id={plant.id}
                   checked={selectedPlants.includes(plant.id)}
-                  onCheckedChange={(checked) => handlePlantSelection(plant.id, checked as boolean)}
+                  onCheckedChange={(checked) => handlePlantSelection(plant.id, checked === true)}
                 />
                 <div className="flex-1">
                   <label htmlFor={plant.id} className="text-sm font-medium cursor-pointer">

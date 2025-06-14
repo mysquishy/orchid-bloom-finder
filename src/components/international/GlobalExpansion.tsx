@@ -448,7 +448,7 @@ const GlobalExpansion: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Payment Performance & Optimization</CardTitle>
+                <CardTitle>Payment Performance &amp; Optimization</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -621,7 +621,7 @@ const GlobalExpansion: React.FC = () => {
                       <div className="text-center">
                         <TrendingUp className="w-8 h-8 mx-auto mb-2 text-purple-600" />
                         <div className="font-medium">Response Time</div>
-                        <div className="text-2xl font-bold">< 2h</div>
+                        <div className="text-2xl font-bold">&lt; 2h</div>
                         <div className="text-sm text-gray-600">Average first response</div>
                       </div>
                     </CardContent>
@@ -675,7 +675,7 @@ const GlobalExpansion: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Disaster Recovery & Business Continuity</CardTitle>
+                <CardTitle>Disaster Recovery &amp; Business Continuity</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -700,7 +700,7 @@ const GlobalExpansion: React.FC = () => {
                     <h3 className="font-medium mb-3">SLA Guarantees</h3>
                     <div className="space-y-2 text-sm">
                       <div>• 99.99% uptime guarantee</div>
-                      <div>• < 30 second failover time</div>
+                      <div>• &lt; 30 second failover time</div>
                       <div>• Real-time data synchronization</div>
                       <div>• Automated incident response</div>
                       <div>• Monthly disaster recovery testing</div>

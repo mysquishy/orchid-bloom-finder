@@ -199,6 +199,24 @@ class OfflineManager {
     }
   }
 
+  // Get unsynced data for background sync
+  async getUnsyncedData() {
+    if (!this.db) return { identifications: [], plants: [], careReminders: [] };
+
+    try {
+      const [identifications, plants, careReminders] = await Promise.all([
+        this.db.getAllFromIndex('identifications', 'by-synced', false),
+        this.db.getAllFromIndex('plants', 'by-synced', false),
+        this.db.getAllFromIndex('careReminders', 'by-synced', false)
+      ]);
+
+      return { identifications, plants, careReminders };
+    } catch (error) {
+      console.error('Failed to get unsynced data:', error);
+      return { identifications: [], plants: [], careReminders: [] };
+    }
+  }
+
   // Sync pending data when online
   private async syncPendingData() {
     if (!this.isOnline || !this.db) return;

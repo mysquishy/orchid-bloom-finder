@@ -28,18 +28,20 @@ const UserSegmentation: React.FC = () => {
       },
       userCount: 1245,
       averageValue: 45.80,
-      retentionRate: 92.5
+      retentionRate: 92.5,
+      createdAt: '2024-06-01T00:00:00Z'
     },
     {
       id: '2',
       name: 'Premium Subscribers',
       description: 'Users with active premium subscriptions',
       criteria: {
-        subscription: { tier: 'premium', status: 'active' }
+        behaviors: { subscription_tier: 'premium', subscription_status: 'active' }
       },
       userCount: 589,
       averageValue: 78.90,
-      retentionRate: 94.2
+      retentionRate: 94.2,
+      createdAt: '2024-06-01T00:00:00Z'
     },
     {
       id: '3',
@@ -50,7 +52,8 @@ const UserSegmentation: React.FC = () => {
       },
       userCount: 2150,
       averageValue: 12.30,
-      retentionRate: 65.8
+      retentionRate: 65.8,
+      createdAt: '2024-06-01T00:00:00Z'
     },
     {
       id: '4',
@@ -62,7 +65,8 @@ const UserSegmentation: React.FC = () => {
       },
       userCount: 890,
       averageValue: 23.40,
-      retentionRate: 45.2
+      retentionRate: 45.2,
+      createdAt: '2024-06-01T00:00:00Z'
     },
     {
       id: '5',
@@ -73,7 +77,8 @@ const UserSegmentation: React.FC = () => {
       },
       userCount: 456,
       averageValue: 89.60,
-      retentionRate: 88.7
+      retentionRate: 88.7,
+      createdAt: '2024-06-01T00:00:00Z'
     },
     {
       id: '6',
@@ -84,7 +89,8 @@ const UserSegmentation: React.FC = () => {
       },
       userCount: 3420,
       averageValue: 28.90,
-      retentionRate: 78.3
+      retentionRate: 78.3,
+      createdAt: '2024-06-01T00:00:00Z'
     }
   ]);
 

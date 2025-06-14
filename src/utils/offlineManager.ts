@@ -17,8 +17,8 @@ interface OrchidAIDB extends DBSchema {
       synced: boolean;
     };
     indexes: {
-      timestamp: number;
-      synced: boolean;
+      'by-timestamp': number;
+      'by-synced': boolean;
     };
   };
   plants: {
@@ -39,8 +39,8 @@ interface OrchidAIDB extends DBSchema {
       synced: boolean;
     };
     indexes: {
-      timestamp: number;
-      synced: boolean;
+      'by-timestamp': number;
+      'by-synced': boolean;
     };
   };
   careReminders: {
@@ -55,9 +55,9 @@ interface OrchidAIDB extends DBSchema {
       synced: boolean;
     };
     indexes: {
-      plantId: string;
-      dueDate: string;
-      synced: boolean;
+      'by-plantId': string;
+      'by-dueDate': string;
+      'by-synced': boolean;
     };
   };
 }
@@ -75,23 +75,23 @@ class OfflineManager {
         // Identifications store
         if (!db.objectStoreNames.contains('identifications')) {
           const identificationStore = db.createObjectStore('identifications', { keyPath: 'id' });
-          identificationStore.createIndex('timestamp', 'timestamp');
-          identificationStore.createIndex('synced', 'synced');
+          identificationStore.createIndex('by-timestamp', 'timestamp');
+          identificationStore.createIndex('by-synced', 'synced');
         }
 
         // Plants store
         if (!db.objectStoreNames.contains('plants')) {
           const plantsStore = db.createObjectStore('plants', { keyPath: 'id' });
-          plantsStore.createIndex('timestamp', 'timestamp');
-          plantsStore.createIndex('synced', 'synced');
+          plantsStore.createIndex('by-timestamp', 'timestamp');
+          plantsStore.createIndex('by-synced', 'synced');
         }
 
         // Care reminders store
         if (!db.objectStoreNames.contains('careReminders')) {
           const remindersStore = db.createObjectStore('careReminders', { keyPath: 'id' });
-          remindersStore.createIndex('plantId', 'plantId');
-          remindersStore.createIndex('dueDate', 'dueDate');
-          remindersStore.createIndex('synced', 'synced');
+          remindersStore.createIndex('by-plantId', 'plantId');
+          remindersStore.createIndex('by-dueDate', 'dueDate');
+          remindersStore.createIndex('by-synced', 'synced');
         }
       },
     });
@@ -144,7 +144,7 @@ class OfflineManager {
 
   async getPlantReminders(plantId: string) {
     const db = await this.init();
-    return db.getAllFromIndex('careReminders', 'plantId', plantId);
+    return db.getAllFromIndex('careReminders', 'by-plantId', plantId);
   }
 
   async getUpcomingReminders() {
@@ -163,9 +163,9 @@ class OfflineManager {
     const db = await this.init();
     
     const [identifications, plants, reminders] = await Promise.all([
-      db.getAllFromIndex('identifications', 'synced', false),
-      db.getAllFromIndex('plants', 'synced', false),
-      db.getAllFromIndex('careReminders', 'synced', false)
+      db.getAllFromIndex('identifications', 'by-synced', false),
+      db.getAllFromIndex('plants', 'by-synced', false),
+      db.getAllFromIndex('careReminders', 'by-synced', false)
     ]);
 
     return { identifications, plants, reminders };
@@ -197,7 +197,7 @@ class OfflineManager {
     const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
     
     // Handle identifications
-    const syncedIdentifications = await db.getAllFromIndex('identifications', 'synced', true);
+    const syncedIdentifications = await db.getAllFromIndex('identifications', 'by-synced', true);
     for (const item of syncedIdentifications) {
       if (item.timestamp < thirtyDaysAgo) {
         await db.delete('identifications', item.id);
@@ -205,7 +205,7 @@ class OfflineManager {
     }
 
     // Handle plants
-    const syncedPlants = await db.getAllFromIndex('plants', 'synced', true);
+    const syncedPlants = await db.getAllFromIndex('plants', 'by-synced', true);
     for (const item of syncedPlants) {
       if (item.timestamp < thirtyDaysAgo) {
         await db.delete('plants', item.id);
@@ -213,7 +213,7 @@ class OfflineManager {
     }
 
     // Handle care reminders
-    const syncedReminders = await db.getAllFromIndex('careReminders', 'synced', true);
+    const syncedReminders = await db.getAllFromIndex('careReminders', 'by-synced', true);
     for (const item of syncedReminders) {
       if (item.timestamp < thirtyDaysAgo) {
         await db.delete('careReminders', item.id);

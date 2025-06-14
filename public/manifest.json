@@ -1,0 +1,40 @@
+
+{
+  "name": "OrchidAI - AI-Powered Orchid Identification",
+  "short_name": "OrchidAI",
+  "description": "Identify orchid species instantly with AI-powered image recognition. Discover, learn, and explore the world of orchids.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#8B5CF6",
+  "background_color": "#F0FDF4",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/placeholder.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["education", "lifestyle", "utilities"],
+  "screenshots": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "platform": "wide",
+      "label": "OrchidAI Dashboard"
+    }
+  ]
+}

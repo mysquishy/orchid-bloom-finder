@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,8 +12,12 @@ import {
   Flower, 
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  Star,
+  Flame
 } from 'lucide-react';
+import { useGamification } from '@/hooks/useGamification';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface GardenStats {
   totalOrchids: number;
@@ -49,6 +52,8 @@ interface GardenDashboardProps {
 
 const GardenDashboard: React.FC<GardenDashboardProps> = ({ stats, recentActivity }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const { user } = useAuth();
+  const { updateCareStreak, checkAchievements } = useGamification();
 
   const achievements: Achievement[] = [
     {
@@ -109,6 +114,23 @@ const GardenDashboard: React.FC<GardenDashboardProps> = ({ stats, recentActivity
     }
   };
 
+  const handleCareAction = async () => {
+    if (!user) return;
+    
+    try {
+      // Update care streak
+      await updateCareStreak.mutateAsync();
+      
+      // Check for new achievements
+      await checkAchievements.mutateAsync({
+        total_plants_cared: stats.totalOrchids,
+        perfect_care_days: stats.healthyOrchids === stats.totalOrchids ? 1 : 0
+      });
+    } catch (error) {
+      console.error('Error updating gamification:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Garden Overview Cards */}
@@ -144,7 +166,7 @@ const GardenDashboard: React.FC<GardenDashboardProps> = ({ stats, recentActivity
                 <p className="text-sm font-medium text-blue-600">Care Streak</p>
                 <p className="text-2xl font-bold text-blue-900">{stats.careStreak} days</p>
               </div>
-              <Calendar className="w-8 h-8 text-blue-600" />
+              <Flame className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -153,16 +175,16 @@ const GardenDashboard: React.FC<GardenDashboardProps> = ({ stats, recentActivity
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">Tasks Completed</p>
-                <p className="text-2xl font-bold text-purple-900">{stats.completedTasks}</p>
+                <p className="text-sm font-medium text-purple-600">Experience Points</p>
+                <p className="text-2xl font-bold text-purple-900">1,250</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-purple-600" />
+              <Star className="w-8 h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Garden Health Status */}
+      {/* Garden Health Status with Gamification */}
       <Card className="bg-white/80 backdrop-blur-sm border-green-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -194,6 +216,18 @@ const GardenDashboard: React.FC<GardenDashboardProps> = ({ stats, recentActivity
                 <span>{stats.needsAttention} Need Attention</span>
               </div>
             </div>
+
+            {user && (
+              <div className="flex justify-center pt-2">
+                <Button 
+                  onClick={handleCareAction}
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={updateCareStreak.isPending}
+                >
+                  {updateCareStreak.isPending ? 'Updating...' : 'Log Daily Care'}
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -201,14 +235,19 @@ const GardenDashboard: React.FC<GardenDashboardProps> = ({ stats, recentActivity
       {/* Achievements */}
       <Card className="bg-white/80 backdrop-blur-sm border-green-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="w-5 h-5" />
-            Achievements
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Award className="w-5 h-5" />
+              Recent Achievements
+            </CardTitle>
+            <Button variant="outline" size="sm">
+              View All
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {achievements.map((achievement) => (
+            {achievements.slice(0, 4).map((achievement) => (
               <div
                 key={achievement.id}
                 className={`p-4 rounded-lg border ${
@@ -276,6 +315,9 @@ const GardenDashboard: React.FC<GardenDashboardProps> = ({ stats, recentActivity
                       {activity.date.toLocaleDateString()}
                     </p>
                   </div>
+                  <Badge variant="secondary" className="text-xs">
+                    +5 XP
+                  </Badge>
                 </div>
               ))}
             </div>

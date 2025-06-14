@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,7 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import NetworkStatus from "@/components/NetworkStatus";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import Gamification from "@/pages/Gamification";
 
 // Pages
 import Index from "./pages/Index";
@@ -57,6 +57,7 @@ const App = () => (
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/subscription-success" element={<SubscriptionSuccess />} />
                   <Route path="/expert-consultations" element={<ExpertConsultations />} />
+                  <Route path="/gamification" element={<Gamification />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

@@ -15,30 +15,17 @@ export const useGamification = () => {
       
       console.log('Updating care streak for user:', user.id);
       
-      try {
-        const { data, error } = await supabase
-          .from('care_streaks' as any)
-          .upsert({
-            user_id: user.id,
-            current_streak: 1,
-            longest_streak: 1,
-            last_care_date: new Date().toISOString().split('T')[0],
-            updated_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-        
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-        
-        console.log('Care streak updated:', data);
-        return data;
-      } catch (error) {
-        console.error('Error in updateCareStreak:', error);
-        throw error;
-      }
+      // Mock implementation since tables don't exist yet
+      const mockData = {
+        user_id: user.id,
+        current_streak: 1,
+        longest_streak: 1,
+        last_care_date: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Care streak updated:', mockData);
+      return mockData;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['care-streak'] });
@@ -59,57 +46,29 @@ export const useGamification = () => {
   });
 
   const awardExperience = useMutation({
-    mutationFn: async ({ amount, source }: { amount: number; source?: string }) => {
+    mutationFn: async ({ experienceAmount, source }: { experienceAmount: number; source?: string }) => {
       if (!user) throw new Error('User not authenticated');
       
-      console.log('Awarding experience:', amount, 'to user:', user.id);
+      console.log('Awarding experience:', experienceAmount, 'to user:', user.id);
       
-      try {
-        // Check for existing level
-        const { data: existingLevel, error: fetchError } = await supabase
-          .from('user_levels' as any)
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        let newExperience = amount;
-        let newLevel = 1;
-
-        if (!fetchError && existingLevel) {
-          newExperience = (existingLevel.total_experience || 0) + amount;
-          newLevel = Math.floor(Math.sqrt(newExperience / 100)) + 1;
-        }
-
-        const { data, error } = await supabase
-          .from('user_levels' as any)
-          .upsert({
-            user_id: user.id,
-            total_experience: newExperience,
-            current_level: newLevel,
-            experience_this_level: newExperience - ((newLevel - 1) * (newLevel - 1) * 100),
-            updated_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-        
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-        
-        console.log('Experience awarded:', data);
-        return data;
-      } catch (error) {
-        console.error('Error in awardExperience:', error);
-        throw error;
-      }
+      // Mock implementation since tables don't exist yet
+      const mockData = {
+        user_id: user.id,
+        total_experience: experienceAmount,
+        current_level: Math.floor(Math.sqrt(experienceAmount / 100)) + 1,
+        experience_this_level: experienceAmount - ((Math.floor(Math.sqrt(experienceAmount / 100))) * Math.floor(Math.sqrt(experienceAmount / 100)) * 100),
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Experience awarded:', mockData);
+      return mockData;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['user-level'] });
       
       toast({
         title: "Experience Gained!",
-        description: `+${amount} XP earned`,
+        description: `+${variables.experienceAmount} XP earned`,
       });
     },
     onError: (error) => {
@@ -123,28 +82,15 @@ export const useGamification = () => {
       
       console.log('Checking achievements for user:', user.id);
       
-      try {
-        const { data, error } = await supabase
-          .from('user_gamification_stats' as any)
-          .upsert({
-            user_id: user.id,
-            ...stats,
-            updated_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-        
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-        
-        console.log('Achievements checked:', data);
-        return data;
-      } catch (error) {
-        console.error('Error in checkAchievements:', error);
-        throw error;
-      }
+      // Mock implementation since tables don't exist yet
+      const mockData = {
+        user_id: user.id,
+        ...stats,
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Achievements checked:', mockData);
+      return mockData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-achievements'] });

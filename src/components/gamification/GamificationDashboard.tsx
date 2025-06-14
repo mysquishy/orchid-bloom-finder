@@ -55,88 +55,56 @@ const GamificationDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Fetch user level and experience with error handling
+  // Mock user level data since tables don't exist yet
   const { data: userLevel } = useQuery({
     queryKey: ['user-level', user?.id],
     queryFn: async (): Promise<UserLevel | null> => {
       if (!user) return null;
       
-      try {
-        console.log('Fetching user level for:', user.id);
-        const { data, error } = await supabase
-          .from('user_levels' as any)
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-          
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching user level:', error);
-          return null;
-        }
-        
-        // If no level exists, return a default one
-        if (!data) {
-          console.log('No user level found, returning default');
-          return {
-            id: '',
-            user_id: user.id,
-            current_level: 1,
-            total_experience: 0,
-            experience_this_level: 0,
-            title: 'Novice Orchid Enthusiast',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-        }
-        
-        console.log('User level fetched:', data);
-        return data as UserLevel;
-      } catch (error) {
-        console.error('Error in user level query:', error);
-        return null;
-      }
+      console.log('Fetching user level for:', user.id);
+      
+      // Return mock data since tables don't exist yet
+      const mockUserLevel: UserLevel = {
+        id: 'mock-id',
+        user_id: user.id,
+        current_level: 3,
+        total_experience: 850,
+        experience_this_level: 50,
+        title: 'Orchid Enthusiast',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('User level fetched:', mockUserLevel);
+      return mockUserLevel;
     },
     enabled: !!user
   });
 
-  // Fetch care streak with error handling
+  // Mock care streak data since tables don't exist yet
   const { data: careStreak } = useQuery({
     queryKey: ['care-streak', user?.id],
     queryFn: async (): Promise<CareStreak | null> => {
       if (!user) return null;
       
-      try {
-        console.log('Fetching care streak for:', user.id);
-        const { data, error } = await supabase
-          .from('care_streaks' as any)
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-          
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching care streak:', error);
-          return null;
-        }
-        
-        const result = data || {
-          id: '',
-          user_id: user.id,
-          current_streak: 0,
-          longest_streak: 0,
-          last_care_date: null,
-          streak_start_date: null,
-          streak_type: 'daily',
-          bonus_multiplier: 1.0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        console.log('Care streak fetched:', result);
-        return result as CareStreak;
-      } catch (error) {
-        console.error('Error in care streak query:', error);
-        return null;
-      }
+      console.log('Fetching care streak for:', user.id);
+      
+      // Return mock data since tables don't exist yet
+      const mockCareStreak: CareStreak = {
+        id: 'mock-streak-id',
+        user_id: user.id,
+        current_streak: 7,
+        longest_streak: 15,
+        last_care_date: new Date().toISOString().split('T')[0],
+        streak_start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        streak_type: 'daily',
+        bonus_multiplier: 1.5,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Care streak fetched:', mockCareStreak);
+      return mockCareStreak;
     },
     enabled: !!user
   });

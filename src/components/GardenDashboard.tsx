@@ -12,7 +12,8 @@ import {
   Droplets, 
   Flower, 
   AlertTriangle,
-  CheckCircle 
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 
 interface GardenStats {

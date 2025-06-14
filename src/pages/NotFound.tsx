@@ -34,16 +34,6 @@ const NotFound = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  const floatingAnimation = {
-    y: [-10, 10, -10],
-    rotate: [-5, 5, -5],
-    transition: {
-      duration: 4,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-purple-50 flex items-center justify-center px-4">
       <motion.div
@@ -55,7 +45,15 @@ const NotFound = () => {
         {/* Floating Orchid Icons */}
         <div className="relative mb-8">
           <motion.div
-            animate={floatingAnimation}
+            animate={{
+              y: [-10, 10, -10],
+              rotate: [-5, 5, -5]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
             className="absolute -top-4 -left-8 text-green-300"
           >
             <Flower className="w-8 h-8" />
@@ -63,13 +61,13 @@ const NotFound = () => {
           <motion.div
             animate={{
               y: [-10, 10, -10],
-              rotate: [-5, 5, -5],
-              transition: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1
-              }
+              rotate: [-5, 5, -5]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
             }}
             className="absolute -top-6 -right-6 text-purple-300"
           >
@@ -78,13 +76,13 @@ const NotFound = () => {
           <motion.div
             animate={{
               y: [-10, 10, -10],
-              rotate: [-5, 5, -5],
-              transition: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 2
-              }
+              rotate: [-5, 5, -5]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2
             }}
             className="absolute -bottom-2 left-4 text-pink-300"
           >

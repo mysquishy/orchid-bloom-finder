@@ -51,7 +51,7 @@ const HeroSection = () => {
           <div className="relative max-w-4xl mx-auto">
             <div className="bg-gradient-to-br from-green-100 to-purple-100 rounded-3xl p-8 shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80"
+                src="https://images.unsplash.com/photo-1551730459-82e5e4f06fa3?auto=format&fit=crop&w=1200&q=80"
                 alt="Beautiful collection of orchid flowers showcasing various species including Phalaenopsis and Dendrobium orchids in elegant purple, pink and white colors"
                 className="w-full h-64 md:h-96 object-cover rounded-2xl shadow-lg"
               />

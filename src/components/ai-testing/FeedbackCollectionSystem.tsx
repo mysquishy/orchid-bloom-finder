@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -321,7 +320,7 @@ const FeedbackCollectionSystem: React.FC = () => {
                         {item.userCorrection && (
                           <p className="text-xs text-blue-600">→ {item.userCorrection}</p>
                         )}
-                        <Badge className={getUserTypeColor(item.userType)} size="sm">
+                        <Badge className={getUserTypeColor(item.userType)}>
                           {item.userType}
                         </Badge>
                       </div>

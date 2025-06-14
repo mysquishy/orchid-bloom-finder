@@ -81,7 +81,10 @@ describe('Database Operations Tests', () => {
 
       const result = await supabase
         .from('user_orchid_collection')
-        .insert({});
+        .insert({
+          orchid_species_id: 'test-species',
+          user_id: 'test-user'
+        });
 
       expect(result.error).toBe(mockError);
       expect(result.data).toBeNull();

@@ -1,9 +1,12 @@
 
 import React, { useState } from 'react';
 import { Menu, X, Camera } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import UserMenu from './UserMenu';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -34,9 +37,12 @@ const Navigation = () => {
             <a href="#identify" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
               Identify
             </a>
-            <button className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-green-600 hover:to-purple-700 transition-all duration-300 font-medium">
-              Get Started
-            </button>
+            {user && (
+              <a href="/dashboard" className="text-gray-700 hover:text-green-600 transition-colors font-medium">
+                Dashboard
+              </a>
+            )}
+            <UserMenu />
           </div>
 
           {/* Mobile menu button */}
@@ -60,9 +66,14 @@ const Navigation = () => {
               <a href="#identify" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
                 Identify
               </a>
-              <button className="w-full mt-2 bg-gradient-to-r from-green-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-green-600 hover:to-purple-700 transition-all duration-300 font-medium">
-                Get Started
-              </button>
+              {user && (
+                <a href="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600 transition-colors font-medium">
+                  Dashboard
+                </a>
+              )}
+              <div className="px-3 py-2">
+                <UserMenu />
+              </div>
             </div>
           </div>
         )}

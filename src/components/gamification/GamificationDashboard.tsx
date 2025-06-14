@@ -13,6 +13,92 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Trophy, Award, Users, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface UserLevel {
+  id: string;
+  user_id: string;
+  current_level: number;
+  total_experience: number;
+  experience_this_level: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CareStreak {
+  id: string;
+  user_id: string;
+  current_streak: number;
+  longest_streak: number;
+  last_care_date: string | null;
+  streak_start_date: string | null;
+  streak_type: string;
+  bonus_multiplier: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  badge_icon: string;
+  badge_color: string;
+  category: string;
+  difficulty: 'bronze' | 'silver' | 'gold' | 'platinum' | 'legendary';
+  experience_reward: number;
+  unlock_condition: any;
+  is_active: boolean;
+  is_seasonal: boolean;
+  season_start: string | null;
+  season_end: string | null;
+  created_at: string;
+}
+
+interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  achievement_name: string;
+  achievement_type: string;
+  earned_at: string;
+  progress_data: any;
+  description: string | null;
+  metadata: any;
+  achievement_definitions: Achievement;
+}
+
+interface SeasonalChallenge {
+  id: string;
+  title: string;
+  description: string;
+  challenge_type: string;
+  start_date: string;
+  end_date: string;
+  requirements: any;
+  rewards: any;
+  max_participants: number | null;
+  current_participants: number;
+  is_active: boolean;
+  difficulty: string;
+  experience_reward: number;
+  badge_reward: string | null;
+  created_at: string;
+}
+
+interface ChallengeParticipation {
+  id: string;
+  user_id: string;
+  challenge_id: string;
+  joined_at: string;
+  progress: any;
+  completed: boolean;
+  completed_at: string | null;
+  final_score: number;
+  rank: number | null;
+  rewards_claimed: boolean;
+}
+
 const GamificationDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -20,11 +106,11 @@ const GamificationDashboard: React.FC = () => {
   // Fetch user level and experience
   const { data: userLevel } = useQuery({
     queryKey: ['user-level', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserLevel | null> => {
       if (!user) return null;
       
       const { data, error } = await supabase
-        .from('user_levels')
+        .from('user_levels' as any)
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -34,7 +120,7 @@ const GamificationDashboard: React.FC = () => {
       // If no level exists, create one
       if (!data) {
         const { data: newLevel } = await supabase
-          .from('user_levels')
+          .from('user_levels' as any)
           .insert({ user_id: user.id })
           .select()
           .single();
@@ -49,11 +135,11 @@ const GamificationDashboard: React.FC = () => {
   // Fetch care streak
   const { data: careStreak } = useQuery({
     queryKey: ['care-streak', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<CareStreak | null> => {
       if (!user) return null;
       
       const { data, error } = await supabase
-        .from('care_streaks')
+        .from('care_streaks' as any)
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -67,11 +153,11 @@ const GamificationDashboard: React.FC = () => {
   // Fetch user achievements
   const { data: userAchievements = [] } = useQuery({
     queryKey: ['user-achievements', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserAchievement[]> => {
       if (!user) return [];
       
       const { data, error } = await supabase
-        .from('user_achievements')
+        .from('user_achievements' as any)
         .select(`
           *,
           achievement_definitions (*)
@@ -87,9 +173,9 @@ const GamificationDashboard: React.FC = () => {
   // Fetch all achievement definitions
   const { data: allAchievements = [] } = useQuery({
     queryKey: ['achievement-definitions'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Achievement[]> => {
       const { data, error } = await supabase
-        .from('achievement_definitions')
+        .from('achievement_definitions' as any)
         .select('*')
         .eq('is_active', true)
         .order('difficulty', { ascending: true });
@@ -102,9 +188,9 @@ const GamificationDashboard: React.FC = () => {
   // Fetch seasonal challenges
   const { data: challenges = [] } = useQuery({
     queryKey: ['seasonal-challenges'],
-    queryFn: async () => {
+    queryFn: async (): Promise<SeasonalChallenge[]> => {
       const { data, error } = await supabase
-        .from('seasonal_challenges')
+        .from('seasonal_challenges' as any)
         .select('*')
         .eq('is_active', true)
         .order('start_date', { ascending: false });
@@ -117,11 +203,11 @@ const GamificationDashboard: React.FC = () => {
   // Fetch challenge participations
   const { data: participations = [] } = useQuery({
     queryKey: ['challenge-participations', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<ChallengeParticipation[]> => {
       if (!user) return [];
       
       const { data, error } = await supabase
-        .from('challenge_participations')
+        .from('challenge_participations' as any)
         .select('*')
         .eq('user_id', user.id);
         
@@ -155,7 +241,7 @@ const GamificationDashboard: React.FC = () => {
     
     try {
       const { error } = await supabase
-        .from('challenge_participations')
+        .from('challenge_participations' as any)
         .insert({
           user_id: user.id,
           challenge_id: challengeId

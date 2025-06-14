@@ -1,72 +1,78 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Crown, Medal, Star, Users, Trophy, Flame } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, TrendingUp, Flame, Users } from 'lucide-react';
 
 interface LeaderboardEntry {
   user_id: string;
   user_name: string;
-  avatar_url?: string;
   score: number;
   rank: number;
-  leaderboard_type: string;
 }
 
 interface LeaderboardCardProps {
-  leaderboards: Record<string, LeaderboardEntry[]>;
-  currentUserId?: string;
+  leaderboards: {
+    experience?: LeaderboardEntry[];
+    care_streak?: LeaderboardEntry[];
+    plant_count?: LeaderboardEntry[];
+    achievements?: LeaderboardEntry[];
+  };
+  currentUserId: string;
 }
 
-const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
-  leaderboards,
-  currentUserId
-}) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<'weekly' | 'monthly' | 'all_time'>('weekly');
-
+const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ leaderboards, currentUserId }) => {
   const getRankIcon = (rank: number) => {
     switch (rank) {
-      case 1: return <Crown className="w-5 h-5 text-yellow-500" />;
-      case 2: return <Medal className="w-5 h-5 text-gray-400" />;
-      case 3: return <Medal className="w-5 h-5 text-amber-600" />;
-      default: return <span className="w-5 h-5 flex items-center justify-center text-sm font-bold text-gray-500">#{rank}</span>;
+      case 1:
+        return <Trophy className="w-5 h-5 text-yellow-500" />;
+      case 2:
+        return <Trophy className="w-5 h-5 text-gray-400" />;
+      case 3:
+        return <Trophy className="w-5 h-5 text-amber-600" />;
+      default:
+        return <span className="w-5 h-5 flex items-center justify-center text-sm font-bold text-gray-600">#{rank}</span>;
     }
   };
 
-  const getLeaderboardIcon = (type: string) => {
-    switch (type) {
-      case 'experience': return <Star className="w-4 h-4" />;
-      case 'care_streak': return <Flame className="w-4 h-4" />;
-      case 'plant_count': return <Users className="w-4 h-4" />;
-      case 'achievements': return <Trophy className="w-4 h-4" />;
-      default: return <Star className="w-4 h-4" />;
-    }
-  };
-
-  const getLeaderboardTitle = (type: string) => {
-    switch (type) {
-      case 'experience': return 'Experience Leaders';
-      case 'care_streak': return 'Streak Champions';
-      case 'plant_count': return 'Collection Masters';
-      case 'achievements': return 'Achievement Hunters';
-      default: return 'Leaderboard';
-    }
-  };
-
-  const formatScore = (type: string, score: number) => {
-    switch (type) {
-      case 'experience': return `${score.toLocaleString()} XP`;
-      case 'care_streak': return `${score} days`;
-      case 'plant_count': return `${score} plants`;
-      case 'achievements': return `${score} earned`;
-      default: return score.toString();
-    }
-  };
+  const renderLeaderboard = (entries: LeaderboardEntry[] = [], scoreLabel: string) => (
+    <div className="space-y-3">
+      {entries.map((entry, index) => (
+        <div
+          key={entry.user_id}
+          className={`flex items-center gap-4 p-3 rounded-lg border ${
+            entry.user_id === currentUserId 
+              ? 'border-purple-200 bg-purple-50' 
+              : 'border-gray-200 bg-white'
+          }`}
+        >
+          <div className="flex items-center justify-center w-8">
+            {getRankIcon(entry.rank)}
+          </div>
+          
+          <div className="flex-1">
+            <p className={`font-medium ${
+              entry.user_id === currentUserId ? 'text-purple-900' : 'text-gray-900'
+            }`}>
+              {entry.user_name}
+              {entry.user_id === currentUserId && (
+                <Badge variant="secondary" className="ml-2">You</Badge>
+              )}
+            </p>
+          </div>
+          
+          <div className="text-right">
+            <p className="font-bold text-lg">{entry.score.toLocaleString()}</p>
+            <p className="text-xs text-gray-500">{scoreLabel}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
-    <Card>
+    <Card className="bg-white/80 backdrop-blur-sm border-green-200">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trophy className="w-5 h-5 text-yellow-600" />
@@ -74,59 +80,52 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={selectedPeriod} onValueChange={(value) => setSelectedPeriod(value as any)}>
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="weekly">This Week</TabsTrigger>
-            <TabsTrigger value="monthly">This Month</TabsTrigger>
-            <TabsTrigger value="all_time">All Time</TabsTrigger>
+        <Tabs defaultValue="experience" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="experience" className="flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" />
+              <span className="hidden sm:inline">XP</span>
+            </TabsTrigger>
+            <TabsTrigger value="care_streak" className="flex items-center gap-1">
+              <Flame className="w-3 h-3" />
+              <span className="hidden sm:inline">Streak</span>
+            </TabsTrigger>
+            <TabsTrigger value="plant_count" className="flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              <span className="hidden sm:inline">Collection</span>
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="flex items-center gap-1">
+              <Trophy className="w-3 h-3" />
+              <span className="hidden sm:inline">Badges</span>
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={selectedPeriod} className="space-y-4">
-            {Object.entries(leaderboards).map(([type, entries]) => (
-              <div key={type} className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  {getLeaderboardIcon(type)}
-                  <h3 className="font-semibold text-sm">{getLeaderboardTitle(type)}</h3>
-                </div>
-                
-                <div className="space-y-2">
-                  {entries.slice(0, 5).map((entry) => (
-                    <div 
-                      key={entry.user_id}
-                      className={`flex items-center gap-3 p-2 rounded ${
-                        entry.user_id === currentUserId ? 'bg-blue-100 border border-blue-300' : 'bg-white'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center w-8">
-                        {getRankIcon(entry.rank)}
-                      </div>
-                      
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={entry.avatar_url} />
-                        <AvatarFallback className="text-xs">
-                          {entry.user_name?.slice(0, 2).toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm truncate">
-                            {entry.user_name || 'Anonymous User'}
-                          </span>
-                          {entry.user_id === currentUserId && (
-                            <Badge variant="secondary" className="text-xs">You</Badge>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <Badge variant="outline" className="text-xs">
-                        {formatScore(type, entry.score)}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <TabsContent value="experience">
+            <div>
+              <h4 className="font-semibold mb-3">Top Experience Points</h4>
+              {renderLeaderboard(leaderboards.experience, 'XP')}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="care_streak">
+            <div>
+              <h4 className="font-semibold mb-3">Longest Care Streaks</h4>
+              {renderLeaderboard(leaderboards.care_streak, 'Days')}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="plant_count">
+            <div>
+              <h4 className="font-semibold mb-3">Largest Collections</h4>
+              {renderLeaderboard(leaderboards.plant_count, 'Plants')}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="achievements">
+            <div>
+              <h4 className="font-semibold mb-3">Most Achievements</h4>
+              {renderLeaderboard(leaderboards.achievements, 'Badges')}
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>

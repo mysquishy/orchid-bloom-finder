@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ScalabilityManager from '@/components/infrastructure/ScalabilityManager';
 import EnterpriseFeatures from '@/components/enterprise/EnterpriseFeatures';
 import GlobalExpansion from '@/components/international/GlobalExpansion';
 import ApiMarketplace from '@/components/integrations/ApiMarketplace';
-import { LoadBalancingManager } from '@/components/performance/LoadBalancingManager';
+import LoadBalancingManager from '@/components/performance/LoadBalancingManager';
 
 const EnterpriseScalability: React.FC = () => {
   return (

@@ -10,8 +10,8 @@ class BackgroundSyncService {
     // Register sync events
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(registration => {
-        if (registration.sync) {
-          registration.sync.register('background-sync');
+        if ('sync' in registration) {
+          (registration as any).sync.register('background-sync');
         }
       });
     }
@@ -43,6 +43,13 @@ class BackgroundSyncService {
     try {
       const unsyncedData = await offlineManager.getUnsyncedData();
       
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user logged in, skipping sync');
+        return;
+      }
+      
       // Sync identifications
       for (const identification of unsyncedData.identifications) {
         try {
@@ -50,6 +57,7 @@ class BackgroundSyncService {
             .from('identifications')
             .upsert({
               id: identification.id,
+              user_id: user.id,
               orchid_species: identification.species,
               confidence_score: identification.confidence,
               notes: identification.description,
@@ -73,6 +81,7 @@ class BackgroundSyncService {
             .from('user_orchid_collection')
             .upsert({
               id: plant.id,
+              user_id: user.id,
               orchid_species_id: plant.species,
               care_notes: plant.notes,
               last_watered: plant.lastWatered,

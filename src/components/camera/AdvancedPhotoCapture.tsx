@@ -29,16 +29,12 @@ const AdvancedPhotoCapture: React.FC<AdvancedPhotoCaptureProps> = ({ onImageCapt
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Advanced camera constraints
+  // Camera constraints without unsupported properties
   const getCameraConstraints = () => ({
     video: {
       facingMode: 'environment',
       width: { ideal: 1920 },
-      height: { ideal: 1080 },
-      zoom: cameraSettings.zoom,
-      whiteBalanceMode: 'auto',
-      focusMode: 'continuous',
-      exposureMode: 'continuous'
+      height: { ideal: 1080 }
     }
   });
 
@@ -50,16 +46,6 @@ const AdvancedPhotoCapture: React.FC<AdvancedPhotoCaptureProps> = ({ onImageCapt
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        
-        // Apply camera settings if supported
-        const videoTrack = stream.getVideoTracks()[0];
-        const capabilities = videoTrack.getCapabilities();
-        
-        if (capabilities.zoom) {
-          await videoTrack.applyConstraints({
-            advanced: [{ zoom: cameraSettings.zoom }]
-          });
-        }
       }
     } catch (error) {
       toast({
@@ -78,10 +64,10 @@ const AdvancedPhotoCapture: React.FC<AdvancedPhotoCaptureProps> = ({ onImageCapt
     setShowCamera(false);
   };
 
-  // Handle tap-to-focus
+  // Handle tap-to-focus (visual feedback only since API support varies)
   const handleVideoClick = async (event: React.MouseEvent<HTMLVideoElement>) => {
     const video = videoRef.current;
-    if (!video || !cameraStream) return;
+    if (!video) return;
 
     const rect = video.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width;
@@ -89,23 +75,6 @@ const AdvancedPhotoCapture: React.FC<AdvancedPhotoCaptureProps> = ({ onImageCapt
     
     setFocusPoint({ x: x * 100, y: y * 100 });
     
-    // Apply focus point if supported
-    const videoTrack = cameraStream.getVideoTracks()[0];
-    const capabilities = videoTrack.getCapabilities();
-    
-    if (capabilities.focusMode) {
-      try {
-        await videoTrack.applyConstraints({
-          advanced: [{ 
-            focusMode: 'single-shot',
-            pointsOfInterest: [{ x, y }]
-          }]
-        });
-      } catch (error) {
-        console.log('Focus adjustment not supported');
-      }
-    }
-
     // Clear focus indicator after 2 seconds
     setTimeout(() => setFocusPoint(null), 2000);
   };
@@ -131,19 +100,8 @@ const AdvancedPhotoCapture: React.FC<AdvancedPhotoCaptureProps> = ({ onImageCapt
     stopCamera();
   };
 
-  const updateCameraSetting = async (setting: string, value: number | string) => {
+  const updateCameraSetting = (setting: string, value: number | string) => {
     setCameraSettings(prev => ({ ...prev, [setting]: value }));
-    
-    if (cameraStream && setting === 'zoom') {
-      const videoTrack = cameraStream.getVideoTracks()[0];
-      try {
-        await videoTrack.applyConstraints({
-          advanced: [{ zoom: value as number }]
-        });
-      } catch (error) {
-        console.log('Zoom adjustment not supported');
-      }
-    }
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -304,7 +262,7 @@ const AdvancedPhotoCapture: React.FC<AdvancedPhotoCaptureProps> = ({ onImageCapt
                 
                 {/* Camera controls overlay */}
                 <div className="absolute top-2 left-2 right-2 bg-black bg-opacity-50 rounded-lg p-3 space-y-2">
-                  {/* Zoom control */}
+                  {/* Zoom control (visual only) */}
                   <div className="flex items-center space-x-2">
                     <Focus className="w-4 h-4 text-white" />
                     <Slider

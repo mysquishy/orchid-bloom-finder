@@ -1,3 +1,4 @@
+
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 interface OrchidAIDB extends DBSchema {
@@ -47,6 +48,8 @@ interface OrchidAIDB extends DBSchema {
     };
   };
 }
+
+type StoreNames = keyof OrchidAIDB;
 
 class OfflineManager {
   private db: IDBPDatabase<OrchidAIDB> | null = null;
@@ -155,7 +158,7 @@ class OfflineManager {
     return { identifications, plants, reminders };
   }
 
-  async markAsSynced(store: keyof OrchidAIDB, id: string) {
+  async markAsSynced(store: StoreNames, id: string) {
     const db = await this.init();
     const item = await db.get(store, id);
     if (item) {
@@ -165,11 +168,11 @@ class OfflineManager {
 
   async clearSyncedData() {
     const db = await this.init();
-    const stores: (keyof OrchidAIDB)[] = ['identifications', 'plants', 'careReminders'];
+    const stores: StoreNames[] = ['identifications', 'plants', 'careReminders'];
     
-    for (const store of stores) {
-      const synced = await db.getAllFromIndex(store, 'synced', true);
-      const tx = db.transaction(store, 'readwrite');
+    for (const storeName of stores) {
+      const synced = await db.getAllFromIndex(storeName, 'synced', true);
+      const tx = db.transaction(storeName, 'readwrite');
       
       for (const item of synced) {
         // Keep recent data (last 30 days)

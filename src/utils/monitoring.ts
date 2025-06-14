@@ -21,14 +21,14 @@ export const getSystemMetrics = async (): Promise<SystemMetrics | null> => {
     if (data && data.length > 0) {
       const stats = data[0];
       return {
-        totalSpecies: Number(stats.total_species),
-        totalUsers: Number(stats.total_users),
-        totalCollections: Number(stats.total_collections),
-        totalIdentifications: Number(stats.total_identifications),
-        popularSpeciesCount: Number(stats.popular_species_count),
-        userContributedCount: Number(stats.user_contributed_count),
-        recentSignups7d: Number(stats.recent_signups_7d),
-        recentIdentifications7d: Number(stats.recent_identifications_7d)
+        totalSpecies: Number(stats.total_species) || 0,
+        totalUsers: Number(stats.total_users) || 0,
+        totalCollections: Number(stats.total_collections) || 0,
+        totalIdentifications: Number(stats.total_identifications) || 0,
+        popularSpeciesCount: Number(stats.popular_species_count) || 0,
+        userContributedCount: Number(stats.user_contributed_count) || 0,
+        recentSignups7d: Number(stats.recent_signups_7d) || 0,
+        recentIdentifications7d: Number(stats.recent_identifications_7d) || 0
       };
     }
     

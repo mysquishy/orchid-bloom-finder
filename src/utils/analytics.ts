@@ -12,13 +12,18 @@ export const trackEvent = async (event: AnalyticsEvent) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     
-    await supabase.from('app_analytics').insert({
+    // Use raw SQL to insert into app_analytics table since it's not in types yet
+    const { error } = await supabase.rpc('insert_analytics', {
       event_type: event.event_type,
       event_data: event.event_data || {},
       user_id: event.user_id || user?.id,
       session_id: event.session_id || generateSessionId(),
       user_agent: navigator.userAgent
     });
+
+    if (error) {
+      console.error('Analytics tracking error:', error);
+    }
   } catch (error) {
     console.error('Failed to track event:', error);
   }

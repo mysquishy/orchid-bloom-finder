@@ -38,7 +38,7 @@ const AdminPanel: React.FC = () => {
 
       const { data, error } = await query.limit(50);
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -81,7 +81,7 @@ const AdminPanel: React.FC = () => {
 
       if (error) throw error;
 
-      const totalIssues = data?.reduce((sum: number, issue: any) => sum + Number(issue.affected_count), 0) || 0;
+      const totalIssues = data ? data.reduce((sum: number, issue: any) => sum + Number(issue.affected_count || 0), 0) : 0;
 
       toast({
         title: "Validation Complete",

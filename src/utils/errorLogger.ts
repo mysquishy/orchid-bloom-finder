@@ -34,10 +34,20 @@ export const logError = async (error: Error | ErrorLogEntry, context?: Record<st
       };
     }
 
-    await supabase.from('error_logs').insert({
-      ...errorEntry,
+    // Use raw SQL to insert into error_logs table since it's not in types yet
+    const { error: insertError } = await supabase.rpc('insert_error_log', {
+      error_type: errorEntry.error_type,
+      error_message: errorEntry.error_message,
+      stack_trace: errorEntry.stack_trace,
+      user_id: errorEntry.user_id,
+      url: errorEntry.url,
+      context: errorEntry.context,
       user_agent: navigator.userAgent
     });
+
+    if (insertError) {
+      console.error('Error logging failed:', insertError);
+    }
 
     // Also log to console in development
     if (process.env.NODE_ENV === 'development') {

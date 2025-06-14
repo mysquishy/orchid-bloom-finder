@@ -50,7 +50,7 @@ describe('Photo Upload Integration Tests', () => {
     const { getByLabelText } = render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
 
     const fileInput = getByLabelText('Choose from gallery');
-    await userEvent.upload(fileInput, invalidFile);
+    await userEvent.upload(fileInput, largeFile);
 
     await vi.waitFor(() => {
       expect(mockOnImageCapture).not.toHaveBeenCalled();

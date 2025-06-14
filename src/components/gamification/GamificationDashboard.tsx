@@ -62,6 +62,7 @@ const GamificationDashboard: React.FC = () => {
       if (!user) return null;
       
       try {
+        console.log('Fetching user level for:', user.id);
         const { data, error } = await supabase
           .from('user_levels' as any)
           .select('*')
@@ -73,8 +74,9 @@ const GamificationDashboard: React.FC = () => {
           return null;
         }
         
-        // If no level exists, create a default one
+        // If no level exists, return a default one
         if (!data) {
+          console.log('No user level found, returning default');
           return {
             id: '',
             user_id: user.id,
@@ -87,7 +89,8 @@ const GamificationDashboard: React.FC = () => {
           };
         }
         
-        return data;
+        console.log('User level fetched:', data);
+        return data as UserLevel;
       } catch (error) {
         console.error('Error in user level query:', error);
         return null;
@@ -103,6 +106,7 @@ const GamificationDashboard: React.FC = () => {
       if (!user) return null;
       
       try {
+        console.log('Fetching care streak for:', user.id);
         const { data, error } = await supabase
           .from('care_streaks' as any)
           .select('*')
@@ -114,7 +118,7 @@ const GamificationDashboard: React.FC = () => {
           return null;
         }
         
-        return data || {
+        const result = data || {
           id: '',
           user_id: user.id,
           current_streak: 0,
@@ -126,6 +130,9 @@ const GamificationDashboard: React.FC = () => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
+        
+        console.log('Care streak fetched:', result);
+        return result as CareStreak;
       } catch (error) {
         console.error('Error in care streak query:', error);
         return null;
@@ -208,6 +215,8 @@ const GamificationDashboard: React.FC = () => {
   const experienceForNextLevel = userLevel ? 
     (userLevel.current_level * userLevel.current_level * 100) - 
     ((userLevel.current_level - 1) * (userLevel.current_level - 1) * 100) : 100;
+
+  console.log('Rendering dashboard with:', { userLevel, careStreak });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

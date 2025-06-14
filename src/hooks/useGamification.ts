@@ -13,21 +13,32 @@ export const useGamification = () => {
     mutationFn: async () => {
       if (!user) throw new Error('User not authenticated');
       
-      // For now, just update/create a simple care streak record
-      const { data, error } = await supabase
-        .from('care_streaks' as any)
-        .upsert({
-          user_id: user.id,
-          current_streak: 1,
-          longest_streak: 1,
-          last_care_date: new Date().toISOString().split('T')[0],
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      console.log('Updating care streak for user:', user.id);
       
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('care_streaks' as any)
+          .upsert({
+            user_id: user.id,
+            current_streak: 1,
+            longest_streak: 1,
+            last_care_date: new Date().toISOString().split('T')[0],
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('Care streak updated:', data);
+        return data;
+      } catch (error) {
+        console.error('Error in updateCareStreak:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['care-streak'] });
@@ -51,42 +62,54 @@ export const useGamification = () => {
     mutationFn: async ({ amount, source }: { amount: number; source?: string }) => {
       if (!user) throw new Error('User not authenticated');
       
-      // For now, just update/create user level record
-      const { data: existingLevel, error: fetchError } = await supabase
-        .from('user_levels' as any)
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      let newExperience = amount;
-      let newLevel = 1;
-
-      if (!fetchError && existingLevel) {
-        newExperience = existingLevel.total_experience + amount;
-        newLevel = Math.floor(Math.sqrt(newExperience / 100)) + 1;
-      }
-
-      const { data, error } = await supabase
-        .from('user_levels' as any)
-        .upsert({
-          user_id: user.id,
-          total_experience: newExperience,
-          current_level: newLevel,
-          experience_this_level: newExperience - ((newLevel - 1) * (newLevel - 1) * 100),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      console.log('Awarding experience:', amount, 'to user:', user.id);
       
-      if (error) throw error;
-      return data;
+      try {
+        // Check for existing level
+        const { data: existingLevel, error: fetchError } = await supabase
+          .from('user_levels' as any)
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        let newExperience = amount;
+        let newLevel = 1;
+
+        if (!fetchError && existingLevel) {
+          newExperience = (existingLevel.total_experience || 0) + amount;
+          newLevel = Math.floor(Math.sqrt(newExperience / 100)) + 1;
+        }
+
+        const { data, error } = await supabase
+          .from('user_levels' as any)
+          .upsert({
+            user_id: user.id,
+            total_experience: newExperience,
+            current_level: newLevel,
+            experience_this_level: newExperience - ((newLevel - 1) * (newLevel - 1) * 100),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('Experience awarded:', data);
+        return data;
+      } catch (error) {
+        console.error('Error in awardExperience:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user-level'] });
       
       toast({
         title: "Experience Gained!",
-        description: `+${data?.experience_this_level || 0} XP earned`,
+        description: `+${amount} XP earned`,
       });
     },
     onError: (error) => {
@@ -98,19 +121,30 @@ export const useGamification = () => {
     mutationFn: async (stats: any) => {
       if (!user) throw new Error('User not authenticated');
       
-      // Simple stats update for now
-      const { data, error } = await supabase
-        .from('user_gamification_stats' as any)
-        .upsert({
-          user_id: user.id,
-          ...stats,
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      console.log('Checking achievements for user:', user.id);
       
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('user_gamification_stats' as any)
+          .upsert({
+            user_id: user.id,
+            ...stats,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('Achievements checked:', data);
+        return data;
+      } catch (error) {
+        console.error('Error in checkAchievements:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-achievements'] });

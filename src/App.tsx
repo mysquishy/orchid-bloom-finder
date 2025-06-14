@@ -11,7 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import NetworkStatus from "@/components/NetworkStatus";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import BottomNavigation from "@/components/navigation/BottomNavigation";
-import QuickActionWidget from "@/components/widgets/QuickActionWidget";
+import ElegantQuickActions from "@/components/widgets/ElegantQuickActions";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 import { useVoiceCommands } from "@/hooks/useVoiceCommands";
 import { backgroundSync } from "@/utils/backgroundSync";
@@ -104,6 +104,7 @@ const AppContent = () => {
   }, [toggleListening]);
 
   const showBottomNav = !['/admin', '/business', '/launch'].includes(location.pathname);
+  const showQuickActions = ['/', '/dashboard', '/garden'].includes(location.pathname);
 
   return (
     <>
@@ -137,7 +138,7 @@ const AppContent = () => {
       </div>
 
       {showBottomNav && <BottomNavigation />}
-      <QuickActionWidget />
+      {showQuickActions && <ElegantQuickActions />}
     </>
   );
 };

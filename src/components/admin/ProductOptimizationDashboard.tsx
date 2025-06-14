@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -539,7 +538,7 @@ const ProductOptimizationDashboard: React.FC = () => {
 
                     <div className="space-y-3">
                       {[
-                        { metric: "Must-have" responses', value: 68 },
+                        { metric: 'Must-have responses', value: 68 },
                         { metric: 'Recommendation rate', value: 74 },
                         { metric: 'Organic growth rate', value: 45 },
                         { metric: 'Feature request alignment', value: 89 }

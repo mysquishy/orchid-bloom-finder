@@ -1,12 +1,41 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Camera, ArrowUp } from 'lucide-react';
+import PhotoCapture from './PhotoCapture';
+import LoadingAnalysis from './LoadingAnalysis';
+import ResultsPage from './ResultsPage';
 
 const ImageUploadSection = () => {
   const [dragOver, setDragOver] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisMessage, setAnalysisMessage] = useState('');
+  const [showResults, setShowResults] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+
+  // Mock result data - in a real app, this would come from your AI service
+  const mockResult = {
+    species: 'Phalaenopsis amabilis',
+    commonName: 'Moon Orchid',
+    confidence: 0.92,
+    description: 'The Moon Orchid is one of the most popular orchid species, known for its elegant white flowers and graceful appearance. Native to Southeast Asia, it\'s often called the "Moth Orchid" due to its resembling a moth in flight.',
+    careInstructions: [
+      'Water weekly, allowing water to drain completely',
+      'Provide bright, indirect light',
+      'Maintain humidity between 50-70%',
+      'Keep temperature between 65-80°F (18-27°C)',
+      'Fertilize monthly with orchid fertilizer'
+    ],
+    characteristics: [
+      'Pure white petals with yellow center',
+      'Arching flower spikes',
+      'Thick, leathery leaves',
+      'Aerial roots visible',
+      'Blooms can last 2-3 months'
+    ],
+    image: '/placeholder.svg'
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -24,62 +53,94 @@ const ImageUploadSection = () => {
     
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      handleFileSelect(files[0]);
+      handleImageCapture(files[0]);
     }
   };
 
-  const handleFileSelect = (file: File) => {
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageCapture = (file: File) => {
+    setCapturedImage(URL.createObjectURL(file));
+    setShowPhotoCapture(false);
+    simulateAnalysis();
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-  };
-
-  const handleAnalyze = () => {
+  const simulateAnalysis = () => {
     setIsAnalyzing(true);
-    // Simulate AI analysis
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      // Here you would typically show results
-      alert('Analysis complete! This appears to be a Phalaenopsis orchid (Moth Orchid).');
-    }, 3000);
+    setAnalysisProgress(0);
+    setAnalysisMessage('Preparing your image for analysis...');
+
+    const messages = [
+      'Preparing your image for analysis...',
+      'Extracting visual features...',
+      'Comparing with orchid database...',
+      'Generating identification results...'
+    ];
+
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      setAnalysisProgress(prev => {
+        const newProgress = prev + 25;
+        if (newProgress <= 100) {
+          if (currentStep < messages.length) {
+            setAnalysisMessage(messages[currentStep]);
+            currentStep++;
+          }
+          return newProgress;
+        } else {
+          clearInterval(interval);
+          setIsAnalyzing(false);
+          setShowResults(true);
+          return 100;
+        }
+      });
+    }, 800);
   };
 
-  const openCamera = () => {
-    // In a real app, this would open camera
-    if (fileInputRef.current) {
-      fileInputRef.current.setAttribute('capture', 'environment');
-      fileInputRef.current.click();
-    }
+  const handleRetake = () => {
+    setShowResults(false);
+    setCapturedImage(null);
+    setAnalysisProgress(0);
   };
+
+  const handleSave = () => {
+    // In a real app, this would save to the user's collection
+    console.log('Saving orchid to collection...');
+  };
+
+  const handleBack = () => {
+    setShowResults(false);
+    setCapturedImage(null);
+    setAnalysisProgress(0);
+  };
+
+  if (showResults && capturedImage) {
+    return (
+      <ResultsPage
+        result={mockResult}
+        capturedImage={capturedImage}
+        onRetake={handleRetake}
+        onSave={handleSave}
+        onBack={handleBack}
+      />
+    );
+  }
 
   return (
-    <section id="identify" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-4xl mx-auto">
-        {/* Section Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold font-playfair text-gray-900 mb-6">
-            Start
-            <span className="bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent"> Identifying</span>
-          </h2>
-          <p className="text-xl text-gray-600">
-            Upload an image or take a photo to identify your orchid
-          </p>
-        </div>
+    <>
+      <section id="identify" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-4xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-bold font-playfair text-gray-900 mb-6">
+              Start
+              <span className="bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent"> Identifying</span>
+            </h2>
+            <p className="text-xl text-gray-600">
+              Upload an image or take a photo to identify your orchid
+            </p>
+          </div>
 
-        {/* Upload Area */}
-        <div className="bg-gradient-to-br from-green-50 to-purple-50 rounded-3xl p-8 border-2 border-dashed border-green-200">
-          {!selectedImage ? (
+          {/* Upload Area */}
+          <div className="bg-gradient-to-br from-green-50 to-purple-50 rounded-3xl p-8 border-2 border-dashed border-green-200">
             <div
               className={`text-center py-16 transition-all duration-300 ${
                 dragOver ? 'scale-105' : ''
@@ -101,80 +162,56 @@ const ImageUploadSection = () => {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => setShowPhotoCapture(true)}
                   className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:from-green-600 hover:to-purple-700 transition-all duration-300"
                 >
                   Choose File
                 </button>
                 <button
-                  onClick={openCamera}
-                  className="flex items-center space-x-2 text-gray-700 px-8 py-3 rounded-full font-semibold border-2 border-gray-200 hover:border-green-300 hover:text-green-600 transition-all duration-300"
+                  onClick={() => setShowPhotoCapture(true)}
+                  className="flex items-center justify-center space-x-2 text-gray-700 px-8 py-3 rounded-full font-semibold border-2 border-gray-200 hover:border-green-300 hover:text-green-600 transition-all duration-300"
                 >
                   <Camera className="w-5 h-5" />
                   <span>Take Photo</span>
                 </button>
               </div>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleInputChange}
-                className="hidden"
-              />
             </div>
-          ) : (
-            <div className="text-center">
-              <div className="mb-6">
-                <img
-                  src={selectedImage}
-                  alt="Selected orchid"
-                  className="max-w-full max-h-96 mx-auto rounded-2xl shadow-lg"
-                />
-              </div>
-              
-              {!isAnalyzing ? (
-                <div className="space-y-4">
-                  <button
-                    onClick={handleAnalyze}
-                    className="bg-gradient-to-r from-green-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:from-green-600 hover:to-purple-700 transition-all duration-300"
-                  >
-                    Analyze Image
-                  </button>
-                  <button
-                    onClick={() => setSelectedImage(null)}
-                    className="block mx-auto text-gray-600 hover:text-gray-800 transition-colors"
-                  >
-                    Choose Different Image
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full"></div>
-                  <p className="text-gray-600">Analyzing your orchid image...</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+          </div>
 
-        {/* Tips */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-          <div className="p-6 bg-green-50 rounded-2xl">
-            <h4 className="font-semibold text-gray-900 mb-2">Clear Photos</h4>
-            <p className="text-gray-600 text-sm">Ensure the orchid is well-lit and in focus</p>
-          </div>
-          <div className="p-6 bg-purple-50 rounded-2xl">
-            <h4 className="font-semibold text-gray-900 mb-2">Close-up Shots</h4>
-            <p className="text-gray-600 text-sm">Capture the flower details for best results</p>
-          </div>
-          <div className="p-6 bg-green-50 rounded-2xl">
-            <h4 className="font-semibold text-gray-900 mb-2">Multiple Angles</h4>
-            <p className="text-gray-600 text-sm">Try different angles if first attempt isn't clear</p>
+          {/* Tips */}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="p-6 bg-green-50 rounded-2xl">
+              <h4 className="font-semibold text-gray-900 mb-2">Clear Photos</h4>
+              <p className="text-gray-600 text-sm">Ensure the orchid is well-lit and in focus</p>
+            </div>
+            <div className="p-6 bg-purple-50 rounded-2xl">
+              <h4 className="font-semibold text-gray-900 mb-2">Close-up Shots</h4>
+              <p className="text-gray-600 text-sm">Capture the flower details for best results</p>
+            </div>
+            <div className="p-6 bg-green-50 rounded-2xl">
+              <h4 className="font-semibold text-gray-900 mb-2">Multiple Angles</h4>
+              <p className="text-gray-600 text-sm">Try different angles if first attempt isn't clear</p>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Photo Capture Modal */}
+      {showPhotoCapture && (
+        <PhotoCapture
+          onImageCapture={handleImageCapture}
+          onCancel={() => setShowPhotoCapture(false)}
+        />
+      )}
+
+      {/* Loading Analysis */}
+      {isAnalyzing && (
+        <LoadingAnalysis
+          progress={analysisProgress}
+          message={analysisMessage}
+        />
+      )}
+    </>
   );
 };
 

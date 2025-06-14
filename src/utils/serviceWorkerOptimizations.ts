@@ -1,5 +1,17 @@
 
 // Service Worker utilities for offline premium features
+
+// Type declarations for Background Sync API
+declare global {
+  interface ServiceWorkerRegistration {
+    sync?: SyncManager;
+  }
+  
+  interface SyncManager {
+    register(tag: string): Promise<void>;
+  }
+}
+
 export const registerOptimizedServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
     try {
@@ -45,9 +57,16 @@ const showUpdateNotification = () => {
 
 // Background sync for premium features
 export const scheduleBackgroundSync = (tag: string, data?: any) => {
-  if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+  if ('serviceWorker' in navigator && 'ServiceWorkerRegistration' in window) {
     navigator.serviceWorker.ready.then(registration => {
-      return registration.sync.register(tag);
+      // Check if sync is supported
+      if (registration.sync) {
+        return registration.sync.register(tag);
+      } else {
+        console.warn('Background Sync not supported, falling back to immediate execution');
+        // Fallback for browsers that don't support background sync
+        return Promise.resolve();
+      }
     }).catch(err => {
       console.error('Background sync registration failed:', err);
     });

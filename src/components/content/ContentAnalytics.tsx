@@ -125,7 +125,7 @@ const ContentAnalytics: React.FC = () => {
       bounceRate: 35.2,
       socialShares: 156
     }
-  ];
+  ]);
 
   const [acquisitionChannels] = useState<AcquisitionChannel[]>([
     {

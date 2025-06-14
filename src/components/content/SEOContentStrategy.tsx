@@ -108,7 +108,7 @@ const SEOContentStrategy: React.FC = () => {
       priority: 82,
       contentType: 'tool'
     }
-  ];
+  ]);
 
   const [seasonalTrends] = useState([
     { month: 'March', trend: 'Spring repotting', volume: '+45%' },

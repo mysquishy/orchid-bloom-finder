@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,6 +14,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import MyGarden from "./pages/MyGarden";
 import Analytics from "./pages/Analytics";
+import HealthMonitoring from "./pages/HealthMonitoring";
 import OrchidDatabase from "./pages/OrchidDatabase";
 import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
@@ -52,6 +54,7 @@ const App: React.FC = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/database" element={<OrchidDatabase />} />
                 <Route path="/garden" element={<MyGarden />} />
+                <Route path="/health" element={<HealthMonitoring />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/subscription-success" element={<SubscriptionSuccess />} />

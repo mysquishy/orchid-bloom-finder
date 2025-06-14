@@ -28,7 +28,8 @@ const Navigation: React.FC = () => {
       ...(subscribed ? [
         { name: 'Analytics', href: '/analytics' },
         { name: 'Health Monitor', href: '/health' },
-        { name: 'Weather System', href: '/weather' }
+        { name: 'Weather System', href: '/weather' },
+        { name: 'Data Export', href: '/export' }
       ] : [])
     ] : []),
     { name: 'Pricing', href: '/pricing' },

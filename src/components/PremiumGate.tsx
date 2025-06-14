@@ -37,7 +37,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({
       case 'disease-detection': return 'Disease Detection';
       case 'analytics': return 'Advanced Analytics';
       case 'weather': return 'Weather Integration';
-      case 'export': return 'Export Reports';
+      case 'export': return 'Data Export & Management';
       case 'collection': return 'Unlimited Collection';
       default: return 'Premium Feature';
     }
@@ -56,7 +56,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({
       case 'weather': 
         return 'Receive personalized care recommendations based on local weather conditions.';
       case 'export': 
-        return 'Export your plant care data and reports in various formats.';
+        return 'Export your plant care data, generate reports, create backups, and share your plants with detailed care instructions.';
       case 'collection': 
         return 'Build an unlimited collection of your favorite plants and care notes.';
       default: 

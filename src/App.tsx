@@ -21,6 +21,7 @@ import OrchidDatabase from "./pages/OrchidDatabase";
 import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import Admin from "./pages/Admin";
+import BusinessIntelligence from "./pages/BusinessIntelligence";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -63,6 +64,7 @@ const App: React.FC = () => (
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/subscription-success" element={<SubscriptionSuccess />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/business-intelligence" element={<BusinessIntelligence />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

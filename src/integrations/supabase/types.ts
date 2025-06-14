@@ -9,6 +9,143 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ab_test_assignments: {
+        Row: {
+          assigned_at: string | null
+          id: string
+          test_id: string | null
+          user_id: string | null
+          variant_name: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          id?: string
+          test_id?: string | null
+          user_id?: string | null
+          variant_name: string
+        }
+        Update: {
+          assigned_at?: string | null
+          id?: string
+          test_id?: string | null
+          user_id?: string | null
+          variant_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ab_test_assignments_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "ab_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ab_tests: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          start_date: string | null
+          status: string | null
+          target_metric: string
+          test_name: string
+          updated_at: string | null
+          variants: Json
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string | null
+          target_metric: string
+          test_name: string
+          updated_at?: string | null
+          variants: Json
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string | null
+          target_metric?: string
+          test_name?: string
+          updated_at?: string | null
+          variants?: Json
+        }
+        Relationships: []
+      }
+      api_usage_costs: {
+        Row: {
+          api_endpoint: string
+          cost_cents: number | null
+          created_at: string | null
+          id: string
+          provider: string | null
+          request_data: Json | null
+          response_time_ms: number | null
+          success: boolean | null
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          api_endpoint: string
+          cost_cents?: number | null
+          created_at?: string | null
+          id?: string
+          provider?: string | null
+          request_data?: Json | null
+          response_time_ms?: number | null
+          success?: boolean | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          api_endpoint?: string
+          cost_cents?: number | null
+          created_at?: string | null
+          id?: string
+          provider?: string | null
+          request_data?: Json | null
+          response_time_ms?: number | null
+          success?: boolean | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      conversion_funnel: {
+        Row: {
+          completed_at: string | null
+          funnel_step: string
+          id: string
+          metadata: Json | null
+          step_order: number
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          funnel_step: string
+          id?: string
+          metadata?: Json | null
+          step_order: number
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          funnel_step?: string
+          id?: string
+          metadata?: Json | null
+          step_order?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       identifications: {
         Row: {
           confidence_score: number | null
@@ -159,6 +296,45 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_analytics: {
+        Row: {
+          amount_cents: number
+          billing_period: string
+          created_at: string | null
+          currency: string | null
+          id: string
+          payment_status: string
+          stripe_payment_id: string | null
+          subscription_tier: string
+          transaction_date: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          billing_period: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_status: string
+          stripe_payment_id?: string | null
+          subscription_tier: string
+          transaction_date?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          billing_period?: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_status?: string
+          stripe_payment_id?: string | null
+          subscription_tier?: string
+          transaction_date?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -195,6 +371,48 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          description: string
+          id: string
+          priority: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          tags: string[] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          priority?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       usage_tracking: {
         Row: {
           created_at: string
@@ -218,6 +436,39 @@ export type Database = {
           identifications_count?: number | null
           month_year?: string
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_engagement: {
+        Row: {
+          created_at: string | null
+          features_used: Json | null
+          id: string
+          last_activity: string | null
+          page_visits: Json | null
+          session_id: string
+          time_spent_minutes: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          features_used?: Json | null
+          id?: string
+          last_activity?: string | null
+          page_visits?: Json | null
+          session_id: string
+          time_spent_minutes?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          features_used?: Json | null
+          id?: string
+          last_activity?: string | null
+          page_visits?: Json | null
+          session_id?: string
+          time_spent_minutes?: number | null
           user_id?: string | null
         }
         Relationships: []
@@ -302,6 +553,30 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_api_optimization_recommendations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          recommendation_type: string
+          description: string
+          potential_savings_cents: number
+          priority: string
+        }[]
+      }
+      get_business_metrics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_users: number
+          active_users_7d: number
+          active_users_30d: number
+          total_revenue_cents: number
+          mrr_cents: number
+          churn_rate_30d: number
+          avg_session_time_minutes: number
+          total_identifications: number
+          identification_success_rate: number
+          total_api_cost_cents: number
+        }[]
+      }
       get_database_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -313,6 +588,15 @@ export type Database = {
           user_contributed_count: number
           recent_signups_7d: number
           recent_identifications_7d: number
+        }[]
+      }
+      get_user_segments: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          segment_name: string
+          user_count: number
+          avg_revenue_cents: number
+          retention_rate: number
         }[]
       }
       increment_identification_usage: {

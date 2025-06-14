@@ -40,7 +40,7 @@ const NotFound = () => {
     transition: {
       duration: 4,
       repeat: Infinity,
-      ease: [0.4, 0, 0.6, 1] // cubic-bezier for easeInOut
+      ease: "easeInOut"
     }
   };
 
@@ -62,9 +62,12 @@ const NotFound = () => {
           </motion.div>
           <motion.div
             animate={{
-              ...floatingAnimation,
+              y: [-10, 10, -10],
+              rotate: [-5, 5, -5],
               transition: {
-                ...floatingAnimation.transition,
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
                 delay: 1
               }
             }}
@@ -74,9 +77,12 @@ const NotFound = () => {
           </motion.div>
           <motion.div
             animate={{
-              ...floatingAnimation,
+              y: [-10, 10, -10],
+              rotate: [-5, 5, -5],
               transition: {
-                ...floatingAnimation.transition,
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
                 delay: 2
               }
             }}

@@ -64,7 +64,7 @@ const ExpertDirectory: React.FC = () => {
         
         if (data?.[0]) {
           ratings[expert.id] = {
-            average: parseFloat(data[0].average_rating) || 0,
+            average: parseFloat(data[0].average_rating.toString()) || 0,
             total: data[0].total_reviews || 0
           };
         }
@@ -142,7 +142,7 @@ const ExpertDirectory: React.FC = () => {
                 <CardTitle className="flex items-center justify-center gap-2">
                   {expert.name}
                   {expert.is_verified && (
-                    <Award className="w-5 h-5 text-blue-500" title="Verified Expert" />
+                    <Award className="w-5 h-5 text-blue-500" />
                   )}
                 </CardTitle>
                 <p className="text-gray-600">{expert.title}</p>

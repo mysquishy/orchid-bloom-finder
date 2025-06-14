@@ -42,7 +42,12 @@ const ABTestingManager: React.FC = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as ABTest[];
+      
+      // Transform the data to match our interface
+      return (data || []).map(test => ({
+        ...test,
+        variants: test.variants as Array<{ name: string; weight: number }>
+      })) as ABTest[];
     },
     refetchInterval: 60000,
   });

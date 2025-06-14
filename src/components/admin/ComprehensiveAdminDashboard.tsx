@@ -17,7 +17,7 @@ import ApiCostOptimization from './ApiCostOptimization';
 import SupportTicketManager from './SupportTicketManager';
 import ABTestingManager from './ABTestingManager';
 import ConversionFunnelAnalysis from './ConversionFunnelAnalysis';
-import { AdminMetrics } from '@/components/AdminMetrics';
+import AdminMetrics from '@/components/AdminMetrics';
 
 const ComprehensiveAdminDashboard: React.FC = () => {
   return (

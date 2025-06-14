@@ -7,10 +7,15 @@ import HelpBreadcrumb from '@/components/ui/HelpBreadcrumb';
 import SmartSearchBar from '@/components/help/SmartSearchBar';
 import SearchResults from '@/components/help/SearchResults';
 import SearchFilters from '@/components/help/SearchFilters';
+import HelpNavigationMenu from '@/components/help/HelpNavigationMenu';
+import OrchidTypesGuide from '@/components/help/care/OrchidTypesGuide';
+import SeasonalCareCalendar from '@/components/help/care/SeasonalCareCalendar';
+import TroubleshootingHub from '@/components/help/troubleshooting/TroubleshootingHub';
+import InteractiveTools from '@/components/help/interactive/InteractiveTools';
 import useHelpSearch from '@/hooks/useHelpSearch';
 
 const HelpCenter: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('search');
+  const [activeSection, setActiveSection] = useState('main');
   
   const {
     searchQuery,
@@ -28,11 +33,8 @@ const HelpCenter: React.FC = () => {
     getRelatedArticles
   } = useHelpSearch();
 
-  const [showFilters, setShowFilters] = useState(false);
-
   const handleArticleClick = (article: any) => {
     trackArticleView(article);
-    // In a real app, this would navigate to the article page
     console.log('Navigate to article:', article.id);
   };
 
@@ -42,11 +44,24 @@ const HelpCenter: React.FC = () => {
 
   const popularQueries = ['orchid care', 'watering', 'identification', 'camera problems'];
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 space-y-8">
-      {/* Breadcrumb */}
-      <HelpBreadcrumb />
+  // Render different sections based on activeSection
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'orchid-types':
+        return <OrchidTypesGuide />;
+      case 'seasonal-calendar':
+        return <SeasonalCareCalendar />;
+      case 'troubleshooting':
+        return <TroubleshootingHub />;
+      case 'interactive-tools':
+        return <InteractiveTools />;
+      default:
+        return renderMainContent();
+    }
+  };
 
+  const renderMainContent = () => (
+    <>
       {/* Smart Search Section */}
       <div className="text-center space-y-6">
         <SmartSearchBar
@@ -86,6 +101,11 @@ const HelpCenter: React.FC = () => {
         </div>
       ) : (
         <>
+          {/* Advanced Help Navigation */}
+          <div className="mb-12">
+            <HelpNavigationMenu />
+          </div>
+
           {/* Recently Viewed Articles */}
           {recentlyViewed.length > 0 && (
             <div className="mb-8">
@@ -118,62 +138,68 @@ const HelpCenter: React.FC = () => {
             </div>
           )}
 
-          {/* Main Sections */}
+          {/* Quick Access Sections */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            {/* Getting Started */}
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
+            {/* Advanced Care Library */}
+            <Card 
+              className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => setActiveSection('orchid-types')}
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
                     <Book className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-xl text-green-900">Getting Started</CardTitle>
-                    <p className="text-green-700 text-sm">New to orchid care?</p>
+                    <CardTitle className="text-xl text-green-900">Advanced Care Library</CardTitle>
+                    <p className="text-green-700 text-sm">Comprehensive care guides</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors cursor-pointer">
-                  <span className="text-gray-800 font-medium">First Steps Guide</span>
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors">
+                  <span className="text-gray-800 font-medium">Orchid Types Guide</span>
                   <ArrowRight className="w-4 h-4 text-green-600" />
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors cursor-pointer">
-                  <span className="text-gray-800 font-medium">Setting Up Your Account</span>
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors">
+                  <span className="text-gray-800 font-medium">Seasonal Care Calendar</span>
                   <ArrowRight className="w-4 h-4 text-green-600" />
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors cursor-pointer">
-                  <span className="text-gray-800 font-medium">Taking Your First Photo</span>
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors">
+                  <span className="text-gray-800 font-medium">Repotting Masterclass</span>
                   <ArrowRight className="w-4 h-4 text-green-600" />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Plant Care Guides */}
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+            {/* Troubleshooting Center */}
+            <Card 
+              className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => setActiveSection('troubleshooting')}
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
                     <HelpCircle className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-xl text-purple-900">Plant Care Guides</CardTitle>
-                    <p className="text-purple-700 text-sm">Expert care advice</p>
+                    <CardTitle className="text-xl text-red-900">Troubleshooting Center</CardTitle>
+                    <p className="text-red-700 text-sm">Problem diagnosis & solutions</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
-                  <span className="text-gray-800 font-medium">Watering Schedule</span>
-                  <ArrowRight className="w-4 h-4 text-purple-600" />
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-red-50 transition-colors">
+                  <span className="text-gray-800 font-medium">My Orchid Won't Bloom</span>
+                  <ArrowRight className="w-4 h-4 text-red-600" />
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
-                  <span className="text-gray-800 font-medium">Light Requirements</span>
-                  <ArrowRight className="w-4 h-4 text-purple-600" />
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-red-50 transition-colors">
+                  <span className="text-gray-800 font-medium">Problem Diagnosis Guide</span>
+                  <ArrowRight className="w-4 h-4 text-red-600" />
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
-                  <span className="text-gray-800 font-medium">Disease Prevention</span>
-                  <ArrowRight className="w-4 h-4 text-purple-600" />
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-red-50 transition-colors">
+                  <span className="text-gray-800 font-medium">Emergency Care Protocol</span>
+                  <ArrowRight className="w-4 h-4 text-red-600" />
                 </div>
               </CardContent>
             </Card>
@@ -343,6 +369,27 @@ const HelpCenter: React.FC = () => {
           </Tabs>
         </>
       )}
+    </>
+  );
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 space-y-8">
+      {/* Breadcrumb */}
+      <HelpBreadcrumb />
+
+      {/* Navigation Header */}
+      {activeSection !== 'main' && (
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => setActiveSection('main')}
+            className="text-green-600 hover:text-green-700 font-medium flex items-center gap-2"
+          >
+            ← Back to Help Center
+          </button>
+        </div>
+      )}
+
+      {renderContent()}
     </div>
   );
 };

@@ -168,7 +168,7 @@ class OfflineManager {
 
   async clearSyncedData() {
     const db = await this.init();
-    const stores: StoreNames[] = ['identifications', 'plants', 'careReminders'];
+    const stores: (keyof OrchidAIDB)[] = ['identifications', 'plants', 'careReminders'];
     
     for (const storeName of stores) {
       const synced = await db.getAllFromIndex(storeName, 'synced', true);

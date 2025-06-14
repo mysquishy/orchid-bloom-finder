@@ -21,24 +21,24 @@ describe('End-to-End Identification Journey', () => {
     );
 
     // Step 1: User lands on homepage
-    expect(screen.getByText(/identify your orchid/i)).toBeInTheDocument();
+    expect(screen.getByText('Identify Your Orchid')).toBeInTheDocument();
 
     // Step 2: User uploads a photo
-    const uploadButton = screen.getByText(/upload photo/i);
+    const uploadButton = screen.getByText('Upload Photo');
     fireEvent.click(uploadButton);
 
     // Step 3: Photo is processed (mock successful identification)
     await waitFor(() => {
-      expect(screen.getByText(/analyzing/i)).toBeInTheDocument();
+      expect(screen.getByText('Analyzing')).toBeInTheDocument();
     });
 
     // Step 4: Results are displayed
     await waitFor(() => {
-      expect(screen.getByText(/identification complete/i)).toBeInTheDocument();
+      expect(screen.getByText('Identification Complete')).toBeInTheDocument();
     }, { timeout: 5000 });
 
     // Step 5: User can save to garden
-    const saveButton = screen.getByText(/save to garden/i);
+    const saveButton = screen.getByText('Save to Garden');
     expect(saveButton).toBeInTheDocument();
   });
 
@@ -52,11 +52,11 @@ describe('End-to-End Identification Journey', () => {
       </BrowserRouter>
     );
 
-    const uploadButton = screen.getByText(/upload photo/i);
+    const uploadButton = screen.getByText('Upload Photo');
     fireEvent.click(uploadButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/error/i)).toBeInTheDocument();
+      expect(screen.getByText('Error')).toBeInTheDocument();
     });
   });
 });

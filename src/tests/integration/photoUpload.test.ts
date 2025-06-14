@@ -19,7 +19,7 @@ describe('Photo Upload Integration Tests', () => {
     render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
 
     // Test file input
-    const fileInput = screen.getByLabelText(/choose from gallery/i);
+    const fileInput = screen.getByLabelText('Choose from gallery');
     fireEvent.change(fileInput, { target: { files: [mockFile] } });
 
     await waitFor(() => {
@@ -33,7 +33,7 @@ describe('Photo Upload Integration Tests', () => {
     
     render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
 
-    const fileInput = screen.getByLabelText(/choose from gallery/i);
+    const fileInput = screen.getByLabelText('Choose from gallery');
     fireEvent.change(fileInput, { target: { files: [invalidFile] } });
 
     await waitFor(() => {
@@ -48,7 +48,7 @@ describe('Photo Upload Integration Tests', () => {
     
     render(<PhotoCapture onImageCapture={mockOnImageCapture} onCancel={() => {}} />);
 
-    const fileInput = screen.getByLabelText(/choose from gallery/i);
+    const fileInput = screen.getByLabelText('Choose from gallery');
     fireEvent.change(fileInput, { target: { files: [largeFile] } });
 
     await waitFor(() => {

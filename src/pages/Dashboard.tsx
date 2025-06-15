@@ -34,78 +34,94 @@ const Dashboard: React.FC = () => {
   });
 
   useEffect(() => {
+    let isMounted = true;
+    
     if (user) {
-      console.log('Dashboard: Fetching data for user:', user.id);
-      fetchIdentifications();
-      fetchGardenStats();
+      console.log('Dashboard: User authenticated, fetching data for:', user.id);
+      fetchData(isMounted);
+    } else {
+      console.log('Dashboard: No user authenticated');
+      setLoading(false);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
-  const fetchIdentifications = async () => {
+  const fetchData = async (isMounted: boolean) => {
     if (!user) {
-      console.log('Dashboard: No user found, skipping fetch');
+      console.log('Dashboard: No user available for data fetch');
       return;
     }
 
     try {
-      console.log('Dashboard: Fetching identifications for user:', user.id);
+      console.log('Dashboard: Starting data fetch for user:', user.id);
       
-      const { data, error } = await supabase
+      // Fetch identifications
+      const { data: identificationsData, error: identError } = await supabase
         .from('identifications')
         .select('*')
-        .eq('user_id', user.id)  // Filter by current user
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (error) {
-        console.error('Dashboard: Error fetching identifications:', error);
-        throw error;
+      if (identError) {
+        console.error('Dashboard: Error fetching identifications:', identError);
+        throw identError;
       }
 
-      console.log('Dashboard: Fetched identifications:', data);
-      setIdentifications(data || []);
+      console.log('Dashboard: Raw identifications data:', identificationsData);
       
-      // Calculate stats
-      const total = data?.length || 0;
-      const saved = data?.filter(id => id.is_saved).length || 0;
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const thisWeek = data?.filter(id => new Date(id.created_at) > weekAgo).length || 0;
-      
-      console.log('Dashboard: Calculated stats:', { total, saved, thisWeek });
-      setStats(prev => ({ ...prev, total, saved, thisWeek }));
-    } catch (error: any) {
-      console.error('Dashboard: Error in fetchIdentifications:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load your identifications",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchGardenStats = async () => {
-    if (!user) return;
-
-    try {
-      console.log('Dashboard: Fetching garden stats for user:', user.id);
-      
-      const { data, error } = await supabase
+      // Fetch garden collection
+      const { data: collectionData, error: collectionError } = await supabase
         .from('user_orchid_collection')
         .select('id')
         .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Dashboard: Error fetching garden stats:', error);
-        throw error;
+      if (collectionError) {
+        console.error('Dashboard: Error fetching garden collection:', collectionError);
+        throw collectionError;
       }
 
-      console.log('Dashboard: Garden collection count:', data?.length || 0);
-      setStats(prev => ({ ...prev, gardenCount: data?.length || 0 }));
+      console.log('Dashboard: Garden collection data:', collectionData);
+
+      if (!isMounted) return;
+
+      // Process identifications
+      const processedIdentifications = identificationsData || [];
+      setIdentifications(processedIdentifications);
+      
+      // Calculate stats
+      const total = processedIdentifications.length;
+      const saved = processedIdentifications.filter(id => id.is_saved).length;
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const thisWeek = processedIdentifications.filter(id => new Date(id.created_at) > weekAgo).length;
+      const gardenCount = collectionData?.length || 0;
+      
+      console.log('Dashboard: Calculated stats:', { total, saved, thisWeek, gardenCount });
+      
+      setStats({
+        total,
+        saved,
+        thisWeek,
+        gardenCount
+      });
+
     } catch (error: any) {
-      console.error('Dashboard: Error fetching garden stats:', error);
+      console.error('Dashboard: Error in fetchData:', error);
+      if (isMounted) {
+        toast({
+          title: "Error",
+          description: "Failed to load your dashboard data. Please refresh the page.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      if (isMounted) {
+        setLoading(false);
+      }
     }
   };
 

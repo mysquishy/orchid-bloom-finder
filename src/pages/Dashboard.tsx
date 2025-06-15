@@ -56,40 +56,59 @@ const Dashboard: React.FC = () => {
     }
 
     try {
-      console.log('Dashboard: Starting data fetch for user:', user.id);
+      console.log('Dashboard: Starting comprehensive data fetch for user:', user.id);
       
-      // Fetch identifications
+      // First, let's check what's in the identifications table
+      console.log('Dashboard: Checking all identifications in database...');
+      const { data: allIdentifications, error: allIdentError } = await supabase
+        .from('identifications')
+        .select('*');
+      
+      if (allIdentError) {
+        console.error('Dashboard: Error fetching all identifications:', allIdentError);
+      } else {
+        console.log('Dashboard: All identifications in database:', allIdentifications);
+        console.log('Dashboard: Total identifications found:', allIdentifications?.length || 0);
+      }
+
+      // Now fetch only user's identifications
+      console.log('Dashboard: Fetching user identifications...');
       const { data: identificationsData, error: identError } = await supabase
         .from('identifications')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .order('created_at', { ascending: false });
 
       if (identError) {
-        console.error('Dashboard: Error fetching identifications:', identError);
+        console.error('Dashboard: Error fetching user identifications:', identError);
         throw identError;
       }
 
-      console.log('Dashboard: Raw identifications data:', identificationsData);
-      
-      // Fetch garden collection
+      console.log('Dashboard: User identifications query result:', {
+        data: identificationsData,
+        count: identificationsData?.length || 0,
+        userId: user.id
+      });
+
+      // Check garden collection
+      console.log('Dashboard: Fetching garden collection...');
       const { data: collectionData, error: collectionError } = await supabase
         .from('user_orchid_collection')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id);
 
       if (collectionError) {
         console.error('Dashboard: Error fetching garden collection:', collectionError);
-        throw collectionError;
+      } else {
+        console.log('Dashboard: Garden collection data:', collectionData);
       }
-
-      console.log('Dashboard: Garden collection data:', collectionData);
 
       if (!isMounted) return;
 
       // Process identifications
       const processedIdentifications = identificationsData || [];
+      console.log('Dashboard: Processing identifications:', processedIdentifications);
+      
       setIdentifications(processedIdentifications);
       
       // Calculate stats
@@ -100,14 +119,23 @@ const Dashboard: React.FC = () => {
       const thisWeek = processedIdentifications.filter(id => new Date(id.created_at) > weekAgo).length;
       const gardenCount = collectionData?.length || 0;
       
-      console.log('Dashboard: Calculated stats:', { total, saved, thisWeek, gardenCount });
+      const calculatedStats = { total, saved, thisWeek, gardenCount };
+      console.log('Dashboard: Calculated stats:', calculatedStats);
       
-      setStats({
-        total,
-        saved,
-        thisWeek,
-        gardenCount
-      });
+      setStats(calculatedStats);
+
+      // Also check what's in the usage_tracking table
+      console.log('Dashboard: Checking usage tracking...');
+      const { data: usageData, error: usageError } = await supabase
+        .from('usage_tracking')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (usageError) {
+        console.error('Dashboard: Error fetching usage data:', usageError);
+      } else {
+        console.log('Dashboard: Usage tracking data:', usageData);
+      }
 
     } catch (error: any) {
       console.error('Dashboard: Error in fetchData:', error);
@@ -123,6 +151,13 @@ const Dashboard: React.FC = () => {
         setLoading(false);
       }
     }
+  };
+
+  // Add a manual refresh button for debugging
+  const handleManualRefresh = async () => {
+    console.log('Dashboard: Manual refresh triggered');
+    setLoading(true);
+    await fetchData(true);
   };
 
   const userName = user?.user_metadata?.first_name || 'Orchid Enthusiast';
@@ -182,8 +217,30 @@ const Dashboard: React.FC = () => {
               <Heart className="mr-2 h-5 w-5" />
               My Garden
             </Button>
+            <Button
+              onClick={handleManualRefresh}
+              size="lg"
+              variant="outline"
+              className="px-8 py-3"
+              disabled={loading}
+            >
+              {loading ? 'Refreshing...' : 'Refresh Data'}
+            </Button>
           </div>
         </div>
+
+        {/* Debug Info */}
+        <Card className="mb-6 bg-blue-50 border-blue-200">
+          <CardContent className="p-4">
+            <h3 className="font-semibold text-blue-900 mb-2">Debug Info</h3>
+            <p className="text-sm text-blue-800">
+              User ID: {user.id}<br/>
+              Stats: Total: {stats.total}, Saved: {stats.saved}, This Week: {stats.thisWeek}, Garden: {stats.gardenCount}<br/>
+              Identifications Count: {identifications.length}<br/>
+              Loading: {loading ? 'Yes' : 'No'}
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
@@ -267,7 +324,7 @@ const Dashboard: React.FC = () => {
               </div>
             ) : identifications.length > 0 ? (
               <div className="space-y-4">
-                {identifications.map((identification) => (
+                {identifications.slice(0, 10).map((identification) => (
                   <div key={identification.id} className="flex items-center justify-between p-4 border border-green-100 rounded-lg bg-white">
                     <div>
                       <h3 className="font-semibold text-gray-900">{identification.orchid_species}</h3>

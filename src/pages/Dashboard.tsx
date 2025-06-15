@@ -35,21 +35,34 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('Dashboard: Fetching data for user:', user.id);
       fetchIdentifications();
       fetchGardenStats();
     }
   }, [user]);
 
   const fetchIdentifications = async () => {
+    if (!user) {
+      console.log('Dashboard: No user found, skipping fetch');
+      return;
+    }
+
     try {
+      console.log('Dashboard: Fetching identifications for user:', user.id);
+      
       const { data, error } = await supabase
         .from('identifications')
         .select('*')
+        .eq('user_id', user.id)  // Filter by current user
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Dashboard: Error fetching identifications:', error);
+        throw error;
+      }
 
+      console.log('Dashboard: Fetched identifications:', data);
       setIdentifications(data || []);
       
       // Calculate stats
@@ -59,8 +72,10 @@ const Dashboard: React.FC = () => {
       weekAgo.setDate(weekAgo.getDate() - 7);
       const thisWeek = data?.filter(id => new Date(id.created_at) > weekAgo).length || 0;
       
+      console.log('Dashboard: Calculated stats:', { total, saved, thisWeek });
       setStats(prev => ({ ...prev, total, saved, thisWeek }));
     } catch (error: any) {
+      console.error('Dashboard: Error in fetchIdentifications:', error);
       toast({
         title: "Error",
         description: "Failed to load your identifications",
@@ -72,21 +87,40 @@ const Dashboard: React.FC = () => {
   };
 
   const fetchGardenStats = async () => {
+    if (!user) return;
+
     try {
+      console.log('Dashboard: Fetching garden stats for user:', user.id);
+      
       const { data, error } = await supabase
         .from('user_orchid_collection')
         .select('id')
-        .eq('user_id', user!.id);
+        .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Dashboard: Error fetching garden stats:', error);
+        throw error;
+      }
 
+      console.log('Dashboard: Garden collection count:', data?.length || 0);
       setStats(prev => ({ ...prev, gardenCount: data?.length || 0 }));
     } catch (error: any) {
-      console.log('Error fetching garden stats:', error);
+      console.error('Dashboard: Error fetching garden stats:', error);
     }
   };
 
   const userName = user?.user_metadata?.first_name || 'Orchid Enthusiast';
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Please sign in</h2>
+          <p className="text-gray-600">Sign in to view your dashboard and plant identifications.</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-purple-50">

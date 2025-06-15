@@ -150,7 +150,7 @@ const App = () => (
     <HelmetProvider>
       <AuthProvider>
         <SubscriptionProvider>
-          <TooltipProvider>
+          <TooltipProvider delayDuration={300}>
             <ErrorBoundary>
               <BrowserRouter>
                 <AppContent />

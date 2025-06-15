@@ -22,14 +22,31 @@ const UploadControls: React.FC<UploadControlsProps> = ({
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  console.log('UploadControls: Rendering with props:', {
+    hasSelectedImage: !!selectedImage,
+    isAnalyzing,
+    hasUser: !!user,
+    userId: user?.id
+  });
 
-    console.log('File selected:', file.name, file.size, file.type);
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('UploadControls: File upload triggered');
+    const file = event.target.files?.[0];
+    if (!file) {
+      console.log('UploadControls: No file selected');
+      return;
+    }
+
+    console.log('UploadControls: File selected:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      userId: user?.id
+    });
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
+      console.error('UploadControls: Invalid file type:', file.type);
       toast({
         title: "Invalid file type",
         description: "Please select an image file (JPG, PNG, WebP).",
@@ -40,6 +57,7 @@ const UploadControls: React.FC<UploadControlsProps> = ({
 
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
+      console.error('UploadControls: File too large:', file.size);
       toast({
         title: "File too large",
         description: "Please select an image smaller than 10MB.",
@@ -53,7 +71,37 @@ const UploadControls: React.FC<UploadControlsProps> = ({
       fileInputRef.current.value = '';
     }
 
-    onImageSelect(file);
+    console.log('UploadControls: Calling onImageSelect with file');
+    try {
+      onImageSelect(file);
+      console.log('UploadControls: onImageSelect called successfully');
+    } catch (error) {
+      console.error('UploadControls: Error calling onImageSelect:', error);
+      toast({
+        title: "Upload Error",
+        description: "Failed to process the selected image.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleButtonClick = () => {
+    console.log('UploadControls: Upload button clicked');
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    } else {
+      console.error('UploadControls: File input ref is null');
+    }
+  };
+
+  const handleClear = () => {
+    console.log('UploadControls: Clear button clicked');
+    try {
+      onClear();
+      console.log('UploadControls: onClear called successfully');
+    } catch (error) {
+      console.error('UploadControls: Error calling onClear:', error);
+    }
   };
 
   return (
@@ -81,7 +129,7 @@ const UploadControls: React.FC<UploadControlsProps> = ({
           className="hidden"
         />
         <Button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={handleButtonClick}
           disabled={isAnalyzing}
           className="flex items-center space-x-2"
         >
@@ -91,7 +139,7 @@ const UploadControls: React.FC<UploadControlsProps> = ({
         
         {selectedImage && (
           <Button
-            onClick={onClear}
+            onClick={handleClear}
             variant="outline"
             disabled={isAnalyzing}
           >

@@ -1,12 +1,10 @@
 
 import React from "react";
 import { Helmet } from 'react-helmet-async';
-import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import ImageUploadSection from "@/components/ImageUploadSection";
-import Footer from "@/components/Footer";
 import SubscriptionBanner from "@/components/SubscriptionBanner";
 
 const Index = () => {
@@ -22,13 +20,11 @@ const Index = () => {
       </Helmet>
       
       <div className="min-h-screen bg-white">
-        <Navigation />
         <SubscriptionBanner />
         <HeroSection />
         <FeaturesSection />
         <HowItWorksSection />
         <ImageUploadSection />
-        <Footer />
       </div>
     </>
   );

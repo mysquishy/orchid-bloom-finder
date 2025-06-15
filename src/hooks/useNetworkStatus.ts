@@ -3,9 +3,13 @@ import { useState, useEffect } from 'react';
 
 export const useNetworkStatus = () => {
   const [isOnline, setIsOnline] = useState(() => {
-    // Safe check for navigator
-    if (typeof navigator !== 'undefined' && 'onLine' in navigator) {
-      return navigator.onLine;
+    // Safe check for navigator with fallback
+    try {
+      if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && 'onLine' in navigator) {
+        return navigator.onLine;
+      }
+    } catch (error) {
+      console.warn('Navigator not available:', error);
     }
     return true; // Default to online if navigator is not available
   });
@@ -14,6 +18,11 @@ export const useNetworkStatus = () => {
   useEffect(() => {
     // Check if we're in a browser environment
     if (typeof window === 'undefined') {
+      return;
+    }
+
+    // Additional safety check for event listeners
+    if (!window.addEventListener) {
       return;
     }
 
@@ -28,13 +37,17 @@ export const useNetworkStatus = () => {
       console.log('Network: Gone offline');
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    try {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
 
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    } catch (error) {
+      console.warn('Failed to add network event listeners:', error);
+    }
   }, []);
 
   return { isOnline, lastOffline };

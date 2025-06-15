@@ -86,34 +86,59 @@ class PlantIdentificationService {
       });
 
       console.log('PlantIdentificationService: API response status:', response.status);
+      console.log('PlantIdentificationService: API response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        console.error('PlantIdentificationService: API request failed:', response.status, response.statusText);
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('PlantIdentificationService: API request failed:', response.status, response.statusText, errorText);
+        
+        // Only use mock data for specific API failures
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('API authentication failed. Please check your API key.');
+        } else if (response.status === 429) {
+          throw new Error('API rate limit exceeded. Please try again later.');
+        } else if (response.status >= 500) {
+          console.warn('PlantIdentificationService: Server error, falling back to mock data');
+          isUsingMockData = true;
+          result = this.getVariedMockResult(imageFile);
+        } else {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+      } else {
+        // Try to parse the successful response
+        try {
+          const data: PlantNetResponse = await response.json();
+          console.log('PlantIdentificationService: API response data:', data);
+
+          if (!data.results || data.results.length === 0) {
+            console.warn('PlantIdentificationService: No results found from API, using mock data');
+            isUsingMockData = true;
+            result = this.getVariedMockResult(imageFile);
+          } else {
+            const bestResult = data.results[0];
+            result = this.formatResult(bestResult);
+            console.log('PlantIdentificationService: Successfully using real API result:', result);
+          }
+        } catch (parseError) {
+          console.error('PlantIdentificationService: Failed to parse API response, using mock data:', parseError);
+          isUsingMockData = true;
+          result = this.getVariedMockResult(imageFile);
+        }
       }
-
-      const data: PlantNetResponse = await response.json();
-      console.log('PlantIdentificationService: API response data:', data);
-
-      if (!data.results || data.results.length === 0) {
-        console.warn('PlantIdentificationService: No results found from API');
-        throw new Error('No plant identification results found');
+    } catch (networkError: any) {
+      // Only catch genuine network errors
+      if (networkError.message?.includes('Failed to fetch') || networkError.message?.includes('network')) {
+        console.error('PlantIdentificationService: Network error, using mock data:', networkError);
+        isUsingMockData = true;
+        result = this.getVariedMockResult(imageFile);
+      } else {
+        // Re-throw other errors (like usage limits, auth errors)
+        throw networkError;
       }
-
-      const bestResult = data.results[0];
-      result = this.formatResult(bestResult);
-      console.log('PlantIdentificationService: Using real API result:', result);
-    } catch (error) {
-      console.error('PlantIdentificationService: API failed, using mock data:', error);
-      isUsingMockData = true;
-      
-      // Generate varied mock results based on image characteristics
-      result = this.getVariedMockResult(imageFile);
-      console.log('PlantIdentificationService: Using mock result:', result);
     }
 
     // Save to database and increment usage
-    if (userId) {
+    if (userId && result) {
       try {
         const savedRecord = await this.saveIdentificationResult(result, imageFile, userId, isUsingMockData);
         result.id = savedRecord.id;
@@ -242,8 +267,10 @@ class PlantIdentificationService {
 
   private formatResult(result: PlantNetResponse['results'][0]): PlantIdResult {
     const species = result.species;
-    const commonName = species.commonNames?.[0] || 'Unknown Orchid';
+    const commonName = species.commonNames?.[0] || 'Unknown Plant';
     const scientificName = species.scientificNameWithoutAuthor;
+    
+    console.log('PlantIdentificationService: Formatting real API result:', scientificName, commonName, result.score);
     
     return {
       species: scientificName,
@@ -256,7 +283,7 @@ class PlantIdentificationService {
   }
 
   private generateDescription(scientificName: string, commonName: string): string {
-    return `${scientificName} (${commonName}) is a beautiful orchid species. This identification is based on visual analysis of the provided image.`;
+    return `${scientificName} (${commonName}) is a beautiful plant species. This identification is based on visual analysis of the provided image using PlantNet API.`;
   }
 
   private getGenericCareInstructions(): string[] {
@@ -264,17 +291,17 @@ class PlantIdentificationService {
       'Provide bright, indirect light',
       'Water when potting medium is nearly dry',
       'Maintain humidity around 50-70%',
-      'Use orchid-specific potting medium',
-      'Fertilize monthly with diluted orchid fertilizer'
+      'Use appropriate potting medium',
+      'Fertilize monthly with diluted fertilizer'
     ];
   }
 
   private getGenericCharacteristics(): string[] {
     return [
-      'Epiphytic growth habit',
-      'Pseudobulbs for water storage',
-      'Aerial root system',
-      'Bilateral flower symmetry'
+      'Visual identification from image',
+      'Species-specific growth habits',
+      'Distinctive plant features',
+      'Natural growth patterns'
     ];
   }
 

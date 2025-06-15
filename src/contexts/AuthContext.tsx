@@ -25,6 +25,12 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Ensure React is available before using hooks
+  if (!React || typeof React.useState !== 'function') {
+    console.error('React is not properly initialized');
+    return <div>Loading...</div>;
+  }
+
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);

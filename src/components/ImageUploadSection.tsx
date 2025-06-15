@@ -2,18 +2,22 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Camera, Upload, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { offlineManager } from '@/utils/offlineManager';
+import { Camera, Upload, Loader2, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { plantIdentificationService } from '@/services/plantIdentificationService';
+import { analyticsManager } from '@/utils/analyticsManager';
+import { environmentManager } from '@/utils/environmentConfig';
 
 const ImageUploadSection = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);
+    setAnalysisResult(null);
     analyzeImage(file);
   };
 
@@ -21,32 +25,38 @@ const ImageUploadSection = () => {
     setIsAnalyzing(true);
     
     try {
-      // Simulate AI analysis
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const mockResult = {
-        id: `id_${Date.now()}`,
-        species: 'Phalaenopsis orchid',
-        commonName: 'Moth Orchid',
-        confidence: 0.95,
-        description: 'A beautiful epiphytic orchid with large, moth-like flowers.',
-        careInstructions: ['Water weekly', 'Bright indirect light', 'High humidity'],
-        characteristics: ['Large flowers', 'Thick leaves', 'Aerial roots'],
-        imageUrl: URL.createObjectURL(file)
-      };
+      analyticsManager.trackUserAction('image_upload_started', {
+        fileSize: file.size,
+        fileType: file.type,
+      });
 
-      // Store identification offline
-      await offlineManager.storeIdentification(mockResult);
+      const result = await plantIdentificationService.identifyPlant(file);
+      
+      setAnalysisResult(result);
+      
+      analyticsManager.trackPlantIdentification(result.confidence, result.species);
       
       toast({
-        title: "Orchid identified!",
-        description: `Found: ${mockResult.species} with ${Math.round(mockResult.confidence * 100)}% confidence`,
+        title: "Plant identified!",
+        description: `Found: ${result.species} with ${Math.round(result.confidence * 100)}% confidence`,
       });
     } catch (error) {
+      console.error('Plant identification error:', error);
+      
+      analyticsManager.trackError(error as Error, {
+        context: 'plant_identification',
+        fileSize: file.size,
+        fileType: file.type,
+      });
+
+      const isApiConfigured = environmentManager.isFeatureEnabled('plantIdentification');
+      
       toast({
         title: "Analysis failed",
-        description: "Please try again or contact support.",
-        variant: "destructive",
+        description: isApiConfigured 
+          ? "Please try again or contact support."
+          : "Plant identification API not configured. Using demo mode.",
+        variant: isApiConfigured ? "destructive" : "default",
       });
     } finally {
       setIsAnalyzing(false);
@@ -56,8 +66,34 @@ const ImageUploadSection = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file (JPG, PNG, WebP).",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       handleImageSelect(file);
     }
+  };
+
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.8) return 'text-green-600';
+    if (confidence >= 0.6) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   return (
@@ -65,11 +101,19 @@ const ImageUploadSection = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Try Our AI Identification
+            AI Plant Identification
           </h2>
           <p className="text-lg text-gray-600">
             Upload a photo of your orchid and get instant identification with care tips
           </p>
+          {!environmentManager.isFeatureEnabled('plantIdentification') && (
+            <div className="flex items-center justify-center mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
+              <span className="text-yellow-800 text-sm">
+                Demo mode - Configure PlantNet API for real identification
+              </span>
+            </div>
+          )}
         </div>
 
         <Card className="max-w-2xl mx-auto">
@@ -79,13 +123,26 @@ const ImageUploadSection = () => {
                 <div className="space-y-4">
                   <img
                     src={URL.createObjectURL(selectedImage)}
-                    alt="Selected orchid"
+                    alt="Selected plant"
                     className="max-w-full h-64 object-cover rounded-lg mx-auto"
                   />
+                  
                   {isAnalyzing && (
                     <div className="flex items-center justify-center space-x-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Analyzing your orchid...</span>
+                      <span>Analyzing your plant...</span>
+                    </div>
+                  )}
+
+                  {analysisResult && !isAnalyzing && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
+                      <h3 className="font-semibold text-green-900 mb-2">
+                        {analysisResult.species}
+                      </h3>
+                      <p className="text-green-800 mb-2">{analysisResult.commonName}</p>
+                      <p className={`text-sm ${getConfidenceColor(analysisResult.confidence)}`}>
+                        Confidence: {Math.round(analysisResult.confidence * 100)}%
+                      </p>
                     </div>
                   )}
                 </div>
@@ -94,10 +151,10 @@ const ImageUploadSection = () => {
                   <Camera className="w-16 h-16 text-gray-400 mx-auto" />
                   <div>
                     <p className="text-lg font-medium text-gray-900">
-                      Upload an orchid photo
+                      Upload a plant photo
                     </p>
                     <p className="text-gray-500">
-                      JPG, PNG up to 10MB
+                      JPG, PNG, WebP up to 10MB
                     </p>
                   </div>
                 </div>
@@ -119,6 +176,19 @@ const ImageUploadSection = () => {
                   <Upload className="w-4 h-4" />
                   <span>Choose File</span>
                 </Button>
+                
+                {selectedImage && (
+                  <Button
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setAnalysisResult(null);
+                    }}
+                    variant="outline"
+                    disabled={isAnalyzing}
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>

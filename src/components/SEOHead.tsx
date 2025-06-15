@@ -8,6 +8,7 @@ interface SEOHeadProps {
   image?: string;
   url?: string;
   type?: string;
+  keywords?: string;
 }
 
 const SEOHead: React.FC<SEOHeadProps> = ({
@@ -15,7 +16,8 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   description = 'Discover and identify orchids using advanced AI technology. Upload photos, get instant species identification, and build your orchid collection. Perfect for beginners and anxious plant parents.',
   image = '/orchid-hero.jpg',
   url = window.location.href,
-  type = 'website'
+  type = 'website',
+  keywords
 }) => {
   const fullTitle = title.includes('Orkhidly') ? title : `${title} | Orkhidly`;
 
@@ -24,6 +26,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       {/* Basic SEO */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      {keywords && <meta name="keywords" content={keywords} />}
       <meta name="robots" content="index, follow" />
       <link rel="canonical" href={url} />
 

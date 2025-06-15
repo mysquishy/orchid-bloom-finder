@@ -30,5 +30,15 @@ export const useErrorHandler = () => {
     });
   }, [toast]);
 
-  return { handleError, handleApiError };
+  const handleDatabaseError = useCallback((error: Error, operation: string) => {
+    console.error('useErrorHandler: Database error for operation:', operation, error);
+    
+    toast({
+      title: `Database Error`,
+      description: `Failed to ${operation}. Please try again.`,
+      variant: "destructive",
+    });
+  }, [toast]);
+
+  return { handleError, handleApiError, handleDatabaseError };
 };

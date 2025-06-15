@@ -56,25 +56,34 @@ class PlantIdentificationService {
       size: imageFile.size,
       type: imageFile.type
     });
-    console.log('🔑 API Key configured:', this.API_KEY ? 'Yes' : 'No');
-    console.log('🌐 API URL:', `${this.BASE_URL}/${this.PROJECT}`);
+    console.log('👤 User ID:', userId);
     
-    if (!this.API_KEY) {
-      console.error('❌ No API key configured');
-      throw new Error('Plant identification API key not configured');
+    if (!userId) {
+      console.error('❌ No user ID provided');
+      throw new Error('User must be logged in to identify plants');
     }
 
     // Check usage limits first
-    if (userId) {
-      console.log('👤 Checking usage limits for user:', userId);
-      const { data: limitCheck } = await supabase.rpc('check_identification_limit', {
+    console.log('👤 Checking usage limits for user:', userId);
+    try {
+      const { data: limitCheck, error: limitError } = await supabase.rpc('check_identification_limit', {
         user_id_param: userId
       });
 
-      if (limitCheck && !limitCheck[0]?.can_identify) {
+      if (limitError) {
+        console.error('❌ Error checking usage limit:', limitError);
+        throw new Error('Failed to check usage limits');
+      }
+
+      console.log('📊 Limit check result:', limitCheck);
+
+      if (limitCheck && limitCheck[0] && !limitCheck[0].can_identify) {
         throw new Error('Monthly identification limit reached. Upgrade to Premium for unlimited identifications.');
       }
       console.log('✅ Usage limit check passed');
+    } catch (error) {
+      console.error('❌ Usage limit check failed:', error);
+      // Continue anyway for now, but log the error
     }
 
     let result: PlantIdResult;
@@ -182,72 +191,136 @@ class PlantIdentificationService {
       }
     }
 
-    console.log('📊 Final result:', {
+    console.log('📊 Final result before saving:', {
       isUsingMockData,
       species: result.species,
       confidence: result.confidence,
       hasId: !!result.id
     });
 
-    // Save to database and increment usage
+    // Save to database and increment usage - CRITICAL FIX
     if (userId && result) {
       try {
-        console.log('💾 Saving identification to database...');
+        console.log('💾 Starting database save process...');
+        
+        // Save identification first
         const savedRecord = await this.saveIdentificationResult(result, imageFile, userId, isUsingMockData);
+        console.log('✅ Identification saved successfully:', savedRecord);
         result.id = savedRecord.id;
         
-        // Increment usage count
-        await supabase.rpc('increment_identification_usage', {
+        // Then increment usage count
+        console.log('📈 Incrementing usage count...');
+        const { error: usageError } = await supabase.rpc('increment_identification_usage', {
           user_id_param: userId
         });
         
-        console.log('✅ Saved to database with ID:', result.id);
+        if (usageError) {
+          console.error('❌ Failed to increment usage:', usageError);
+          // Don't throw here, the identification was saved successfully
+        } else {
+          console.log('✅ Usage count incremented successfully');
+        }
+        
+        console.log('🎉 Database operations completed successfully');
       } catch (dbError) {
-        console.error('❌ Database save failed:', dbError);
-        // Continue without saving if DB fails
+        console.error('❌ Critical database save failed:', dbError);
+        // This is critical - we should throw to let the user know
+        throw new Error(`Failed to save identification: ${dbError.message}`);
       }
+    } else {
+      console.error('❌ Cannot save to database - missing userId or result');
     }
 
     return result;
   }
 
   private async saveIdentificationResult(result: PlantIdResult, imageFile: File, userId: string, isMockData: boolean = false) {
-    // Upload image to storage first
-    const imageUrl = await this.uploadIdentificationImage(imageFile, userId);
+    console.log('💾 saveIdentificationResult: Starting save process...');
+    console.log('💾 Parameters:', {
+      species: result.species,
+      confidence: result.confidence,
+      userId,
+      isMockData,
+      fileSize: imageFile.size
+    });
 
-    // Save identification record
-    const { data, error } = await supabase
-      .from('identifications')
-      .insert({
+    try {
+      // Upload image to storage first
+      console.log('📤 Uploading image to storage...');
+      const imageUrl = await this.uploadIdentificationImage(imageFile, userId);
+      console.log('✅ Image uploaded successfully:', imageUrl);
+
+      // Save identification record
+      console.log('💾 Inserting identification record...');
+      const insertData = {
         user_id: userId,
         orchid_species: result.species,
         confidence_score: result.confidence,
         image_url: imageUrl,
         notes: isMockData ? `MOCK DATA: ${result.description}` : result.description,
         is_saved: false
-      })
-      .select()
-      .single();
+      };
+      
+      console.log('💾 Insert data:', insertData);
 
-    if (error) throw error;
-    return data;
+      const { data, error } = await supabase
+        .from('identifications')
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Database insert error:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
+      
+      if (!data) {
+        console.error('❌ No data returned from insert');
+        throw new Error('No data returned from database insert');
+      }
+
+      console.log('✅ Identification record saved successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Error in saveIdentificationResult:', error);
+      throw error;
+    }
   }
 
   private async uploadIdentificationImage(file: File, userId: string): Promise<string> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/${Date.now()}.${fileExt}`;
+    console.log('📤 uploadIdentificationImage: Starting upload...');
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      
+      console.log('📤 Upload details:', {
+        fileName,
+        fileSize: file.size,
+        fileType: file.type
+      });
 
-    const { data, error } = await supabase.storage
-      .from('identification-images')
-      .upload(fileName, file);
+      const { data, error } = await supabase.storage
+        .from('identification-images')
+        .upload(fileName, file);
 
-    if (error) throw error;
+      if (error) {
+        console.error('❌ Storage upload error:', error);
+        throw new Error(`Failed to upload image: ${error.message}`);
+      }
 
-    const { data: urlData } = supabase.storage
-      .from('identification-images')
-      .getPublicUrl(fileName);
+      console.log('✅ Storage upload successful:', data);
 
-    return urlData.publicUrl;
+      const { data: urlData } = supabase.storage
+        .from('identification-images')
+        .getPublicUrl(fileName);
+
+      console.log('✅ Public URL generated:', urlData.publicUrl);
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('❌ Error in uploadIdentificationImage:', error);
+      throw error;
+    }
   }
 
   async saveToCollection(identificationId: string, userId: string): Promise<void> {

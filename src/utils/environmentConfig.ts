@@ -14,22 +14,14 @@ class EnvironmentManager {
   constructor() {
     this.config = {
       apiUrl: this.getApiUrl(),
-      supabaseUrl: this.getRequiredEnv('VITE_SUPABASE_URL'),
-      supabaseAnonKey: this.getRequiredEnv('VITE_SUPABASE_ANON_KEY'),
+      supabaseUrl: "https://lxkbialxdotzikbvjzfh.supabase.co",
+      supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4a2JpYWx4ZG90emlrYnZqemZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MTM0MjIsImV4cCI6MjA2NTQ4OTQyMn0.zLzwaDMx3vjQ46yOx54_RWRRDlRfFwezR73LR50jLQc",
       plantNetApiKey: import.meta.env.VITE_PLANTNET_API_KEY || '2b109ViD2Tp2StgPwVdDBJI2W',
       isDevelopment: import.meta.env.DEV,
       isProduction: import.meta.env.PROD,
     };
 
     this.validateConfig();
-  }
-
-  private getRequiredEnv(key: string): string {
-    const value = import.meta.env[key];
-    if (!value) {
-      throw new Error(`Required environment variable ${key} is not set`);
-    }
-    return value;
   }
 
   private getApiUrl(): string {

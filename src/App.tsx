@@ -13,7 +13,7 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import BottomNavigation from "@/components/navigation/BottomNavigation";
 import ElegantQuickActions from "@/components/widgets/ElegantQuickActions";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
-import { useVoiceCommands } from "@/hooks/useVoiceCommands.tsx";
+import { useVoiceCommands } from "@/hooks/useVoiceCommands";
 import { backgroundSync } from "@/utils/backgroundSync";
 import { useEffect } from "react";
 

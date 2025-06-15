@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface VoiceCommand {
@@ -61,12 +61,12 @@ declare global {
 }
 
 export const useVoiceCommands = (commands: VoiceCommand[]) => {
-  const [isListening, setIsListening] = React.useState(false);
-  const [recognition, setRecognition] = React.useState<SpeechRecognition | null>(null);
-  const [transcript, setTranscript] = React.useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [transcript, setTranscript] = useState('');
   const { toast } = useToast();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       console.warn('Speech recognition not supported');
       return;
@@ -126,7 +126,7 @@ export const useVoiceCommands = (commands: VoiceCommand[]) => {
     };
   }, []);
 
-  const processCommand = React.useCallback((transcript: string) => {
+  const processCommand = useCallback((transcript: string) => {
     for (const command of commands) {
       if (typeof command.command === 'string') {
         if (transcript.includes(command.command.toLowerCase())) {
@@ -150,19 +150,19 @@ export const useVoiceCommands = (commands: VoiceCommand[]) => {
     }
   }, [commands, toast]);
 
-  const startListening = React.useCallback(() => {
+  const startListening = useCallback(() => {
     if (recognition && !isListening) {
       recognition.start();
     }
   }, [recognition, isListening]);
 
-  const stopListening = React.useCallback(() => {
+  const stopListening = useCallback(() => {
     if (recognition && isListening) {
       recognition.stop();
     }
   }, [recognition, isListening]);
 
-  const toggleListening = React.useCallback(() => {
+  const toggleListening = useCallback(() => {
     if (isListening) {
       stopListening();
     } else {

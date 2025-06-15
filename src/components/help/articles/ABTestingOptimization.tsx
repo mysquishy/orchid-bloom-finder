@@ -40,14 +40,14 @@ const ABTestingOptimization: React.FC = () => {
                   <h5 className="font-medium text-gray-800 mb-2">1. Hypothesis Formation</h5>
                   <div className="text-sm text-gray-700 space-y-2">
                     <div className="p-2 bg-blue-50 rounded">
-                      <strong>Structure:</strong> "If we [change], then [metric] will [improve] because [reason]"
+                      <strong>Structure:</strong> &quot;If we [change], then [metric] will [improve] because [reason]&quot;
                     </div>
                     <div className="space-y-1">
                       <div><strong>Example:</strong></div>
                       <div className="italic text-gray-600">
-                        "If we simplify the onboarding flow from 5 steps to 3 steps, 
+                        &quot;If we simplify the onboarding flow from 5 steps to 3 steps, 
                         then completion rate will increase by 15% because users will 
-                        experience less friction and abandonment."
+                        experience less friction and abandonment.&quot;
                       </div>
                     </div>
                   </div>
@@ -154,8 +154,8 @@ const ABTestingOptimization: React.FC = () => {
                     <span className="font-medium text-green-800">Statistically Significant</span>
                   </div>
                   <div className="text-sm text-green-700 space-y-1">
-                    <div>• P-value < 0.05 (95% confidence)</div>
-                    <div>• Confidence interval doesn't include 0</div>
+                    <div>• P-value &lt; 0.05 (95% confidence)</div>
+                    <div>• Confidence interval doesn&apos;t include 0</div>
                     <div>• Sufficient sample size reached</div>
                     <div>• Effect size is practically meaningful</div>
                   </div>
@@ -186,7 +186,7 @@ const ABTestingOptimization: React.FC = () => {
                     <span className="font-medium text-red-800">No Significant Difference</span>
                   </div>
                   <div className="text-sm text-red-700 space-y-1">
-                    <div>• P-value > 0.10</div>
+                    <div>• P-value &gt; 0.10</div>
                     <div>• No clear winner</div>
                     <div>• Variants perform similarly</div>
                     <div>• Consider alternative approaches</div>
@@ -209,11 +209,11 @@ const ABTestingOptimization: React.FC = () => {
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Variant A: "Your orchid needs attention"</span>
+                      <span>Variant A: &quot;Your orchid needs attention&quot;</span>
                       <span>18.2% open rate</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Variant B: "🌺 Bloom alert for your orchid"</span>
+                      <span>Variant B: &quot;🌺 Bloom alert for your orchid&quot;</span>
                       <span>24.7% open rate</span>
                     </div>
                     <div className="p-2 bg-green-50 rounded text-xs">

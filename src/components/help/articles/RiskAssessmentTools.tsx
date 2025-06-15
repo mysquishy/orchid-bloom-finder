@@ -201,7 +201,7 @@ const RiskAssessmentTools: React.FC = () => {
                     <div>• Recovery testing: Weekly</div>
                   </div>
                   <div className="mt-2 p-2 bg-blue-100 rounded text-xs text-blue-800">
-                    <strong>RTO:</strong> < 15 minutes • <strong>RPO:</strong> < 1 minute
+                    <strong>RTO:</strong> &lt; 15 minutes • <strong>RPO:</strong> &lt; 1 minute
                   </div>
                 </div>
 
@@ -452,7 +452,7 @@ const RiskAssessmentTools: React.FC = () => {
                   <div className="space-y-1 text-sm text-blue-700">
                     <div>Query response: 45ms avg</div>
                     <div>Connection pool: 78% utilized</div>
-                    <div>Replication lag: < 1ms</div>
+                    <div>Replication lag: &lt; 1ms</div>
                     <div>Storage usage: 67%</div>
                   </div>
                 </div>
@@ -497,10 +497,10 @@ const RiskAssessmentTools: React.FC = () => {
                 <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                   <h5 className="font-medium text-red-800 mb-1">Critical Alerts</h5>
                   <div className="space-y-1 text-sm text-red-700">
-                    <div>• AI accuracy < 80%</div>
-                    <div>• Response time > 5s</div>
-                    <div>• Error rate > 1%</div>
-                    <div>• Uptime < 99.9%</div>
+                    <div>• AI accuracy &lt; 80%</div>
+                    <div>• Response time &gt; 5s</div>
+                    <div>• Error rate &gt; 1%</div>
+                    <div>• Uptime &lt; 99.9%</div>
                   </div>
                 </div>
               </div>
@@ -517,7 +517,7 @@ const RiskAssessmentTools: React.FC = () => {
             Proactive Risk Management
           </h3>
           <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
-            Effective risk management isn't about avoiding all risks - it's about understanding, 
+            Effective risk management isn&apos;t about avoiding all risks - it&apos;s about understanding, 
             monitoring, and mitigating them strategically. Build resilient systems and processes 
             that can adapt and thrive in the face of uncertainty.
           </p>

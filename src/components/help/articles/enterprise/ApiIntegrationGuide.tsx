@@ -38,8 +38,8 @@ const ApiIntegrationGuide: React.FC = () => {
               <div className="bg-white p-4 border border-green-200 rounded">
                 <h4 className="font-medium text-green-800 mb-2">Species Database API</h4>
                 <div className="font-mono text-sm space-y-2">
-                  <div><strong>GET</strong> /api/v1/species/{'{id}'}</div>
-                  <div><strong>GET</strong> /api/v1/species/search?q={'{query}'}</div>
+                  <div><strong>GET</strong> /api/v1/species/&#123;id&#125;</div>
+                  <div><strong>GET</strong> /api/v1/species/search?q=&#123;query&#125;</div>
                   <div className="text-gray-600">Access comprehensive plant species information</div>
                 </div>
               </div>

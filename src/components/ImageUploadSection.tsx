@@ -24,17 +24,46 @@ interface IdentificationResult {
 }
 
 const ImageUploadSection = () => {
+  console.log('ImageUploadSection component rendering...');
+  
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [analysisResult, setAnalysisResult] = useState<IdentificationResult | null>(null);
   const [isSavedToCollection, setIsSavedToCollection] = useState(false);
+  
   const { toast } = useToast();
+  
+  console.log('About to call useAuth...');
   const { user } = useAuth();
+  console.log('useAuth called successfully, user:', user);
+  
   const { checkFeatureAccess } = usePremiumAccess();
 
   const handleImageSelect = (file: File) => {
-    console.log('Image selected for analysis:', file.name);
+    console.log('Image selected for analysis:', file.name, file.size, file.type);
+    
+    // Additional validation
+    if (!file.type.startsWith('image/')) {
+      console.error('Invalid file type:', file.type);
+      toast({
+        title: "Invalid file type",
+        description: "Please select a valid image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      console.error('File too large:', file.size);
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSelectedImage(file);
     setAnalysisResult(null);
     setIsSavedToCollection(false);
@@ -42,7 +71,10 @@ const ImageUploadSection = () => {
   };
 
   const analyzeImage = async (file: File) => {
+    console.log('Starting analyzeImage function...');
+    
     if (!user) {
+      console.log('No user found, showing auth required message');
       toast({
         title: "Authentication Required",
         description: "Please sign in to identify plants.",
@@ -52,8 +84,10 @@ const ImageUploadSection = () => {
     }
 
     // Check feature access
+    console.log('Checking feature access...');
     const access = checkFeatureAccess('identification');
     if (!access.hasAccess) {
+      console.log('Feature access denied:', access.reason);
       toast({
         title: "Identification Limit Reached",
         description: access.reason === 'limit-exceeded' 
@@ -74,6 +108,7 @@ const ImageUploadSection = () => {
         fileType: file.type,
       });
 
+      console.log('Calling plantIdentificationService.identifyPlant...');
       const result = await plantIdentificationService.identifyPlant(file, user.id);
       
       console.log('Plant identification completed:', result);
@@ -87,6 +122,7 @@ const ImageUploadSection = () => {
       });
     } catch (error: any) {
       console.error('Plant identification error:', error);
+      console.error('Error stack:', error.stack);
       
       analyticsManager.trackError(error, {
         context: 'plant_identification',
@@ -96,7 +132,9 @@ const ImageUploadSection = () => {
 
       // Provide more specific error messages
       let errorMessage = "Please try again or contact support.";
-      if (error.message?.includes('network')) {
+      if (error.message?.includes('Failed to fetch')) {
+        errorMessage = "Network connection issue. Please check your internet connection and try again.";
+      } else if (error.message?.includes('network')) {
         errorMessage = "Network error. Please check your connection and try again.";
       } else if (error.message?.includes('limit')) {
         errorMessage = error.message;
@@ -149,6 +187,8 @@ const ImageUploadSection = () => {
     setAnalysisResult(null);
     setIsSavedToCollection(false);
   };
+
+  console.log('Rendering ImageUploadSection component');
 
   return (
     <section className="py-16 bg-gradient-to-br from-purple-50 to-green-50">

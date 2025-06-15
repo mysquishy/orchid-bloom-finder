@@ -14,32 +14,36 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ selectedImage, isAnalyzing 
   const [imageUrl, setImageUrl] = React.useState<string>('');
 
   React.useEffect(() => {
+    console.log('ImagePreview: Creating object URL for file:', selectedImage.name);
+    
     // Create object URL for the selected image
     try {
       const url = URL.createObjectURL(selectedImage);
+      console.log('ImagePreview: Object URL created successfully:', url);
       setImageUrl(url);
       setImageError(false);
       setImageLoading(true);
 
       // Cleanup function to revoke the object URL
       return () => {
+        console.log('ImagePreview: Cleaning up object URL:', url);
         URL.revokeObjectURL(url);
       };
     } catch (error) {
-      console.error('Error creating object URL:', error);
+      console.error('ImagePreview: Error creating object URL:', error);
       setImageError(true);
       setImageLoading(false);
     }
   }, [selectedImage]);
 
   const handleImageLoad = () => {
-    console.log('Image loaded successfully');
+    console.log('ImagePreview: Image loaded successfully');
     setImageLoading(false);
     setImageError(false);
   };
 
-  const handleImageError = () => {
-    console.error('Error loading image');
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error('ImagePreview: Error loading image:', event);
     setImageLoading(false);
     setImageError(true);
   };

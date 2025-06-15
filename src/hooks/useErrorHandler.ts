@@ -4,9 +4,14 @@ import { useToast } from '@/hooks/use-toast';
 import { logError } from '@/utils/errorLogger';
 
 export const useErrorHandler = () => {
+  console.log('useErrorHandler: Initializing...');
+  
   const { toast } = useToast();
 
   const handleError = useCallback((error: Error, context?: Record<string, any>) => {
+    console.log('useErrorHandler: Handling error:', error);
+    console.log('useErrorHandler: Error context:', context);
+    
     // Log the error
     logError(error, context);
 
@@ -19,6 +24,9 @@ export const useErrorHandler = () => {
   }, [toast]);
 
   const handleApiError = useCallback((error: Error, operation: string) => {
+    console.log('useErrorHandler: Handling API error for operation:', operation);
+    console.log('useErrorHandler: API error details:', error);
+    
     logError({
       error_type: 'API_ERROR',
       error_message: `${operation} failed: ${error.message}`,

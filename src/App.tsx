@@ -1,5 +1,7 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -41,48 +43,50 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <SubscriptionProvider>
-            <Router>
-              <div className="min-h-screen bg-white flex flex-col">
-                <NetworkStatus />
-                <Navigation />
-                <main className="flex-1">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/database" element={<OrchidDatabase />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/garden" element={<MyGarden />} />
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/help" element={<HelpCenter />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route path="/terms-of-service" element={<TermsOfService />} />
-                    <Route path="/server-error" element={<ServerError />} />
-                    
-                    <Route path="/analytics" element={<AnalyticsDashboard />} />
-                    <Route path="/weather" element={<WeatherDashboard />} />
-                    <Route path="/expert-consultations" element={<ExpertConsultations />} />
-                    <Route path="/gamification" element={<GamificationDashboard />} />
-                    <Route path="/health" element={<HealthDashboard />} />
-                    <Route path="/export" element={<DataExport />} />
-                    
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-                <Footer />
-                <CookieConsent />
-                <PWAInstallPrompt />
-              </div>
-              <Toaster />
-              <Sonner />
-            </Router>
-          </SubscriptionProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <Router>
+                <div className="min-h-screen bg-white flex flex-col">
+                  <NetworkStatus />
+                  <Navigation />
+                  <main className="flex-1">
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/database" element={<OrchidDatabase />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/garden" element={<MyGarden />} />
+                      <Route path="/pricing" element={<Pricing />} />
+                      <Route path="/help" element={<HelpCenter />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-of-service" element={<TermsOfService />} />
+                      <Route path="/server-error" element={<ServerError />} />
+                      
+                      <Route path="/analytics" element={<AnalyticsDashboard />} />
+                      <Route path="/weather" element={<WeatherDashboard />} />
+                      <Route path="/expert-consultations" element={<ExpertConsultations />} />
+                      <Route path="/gamification" element={<GamificationDashboard />} />
+                      <Route path="/health" element={<HealthDashboard />} />
+                      <Route path="/export" element={<DataExport />} />
+                      
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                  <CookieConsent />
+                  <PWAInstallPrompt />
+                </div>
+                <Toaster />
+                <Sonner />
+              </Router>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </HelmetProvider>
   );
 }
 

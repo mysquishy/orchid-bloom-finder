@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,8 +38,8 @@ const ApiIntegrationGuide: React.FC = () => {
               <div className="bg-white p-4 border border-green-200 rounded">
                 <h4 className="font-medium text-green-800 mb-2">Species Database API</h4>
                 <div className="font-mono text-sm space-y-2">
-                  <div><strong>GET</strong> /api/v1/species/{id}</div>
-                  <div><strong>GET</strong> /api/v1/species/search?q={query}</div>
+                  <div><strong>GET</strong> /api/v1/species/{'{id}'}</div>
+                  <div><strong>GET</strong> /api/v1/species/search?q={'{query}'}</div>
                   <div className="text-gray-600">Access comprehensive plant species information</div>
                 </div>
               </div>
@@ -324,7 +323,7 @@ const ApiIntegrationGuide: React.FC = () => {
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="font-medium text-blue-800 mb-2">Success Metrics</h4>
             <p className="text-sm text-blue-700">
-              Target 99.9% API uptime, &lt;200ms average response time, and seamless integration 
+              Target 99.9% API uptime, less than 200ms average response time, and seamless integration 
               with existing business systems within the planned timeline.
             </p>
           </div>

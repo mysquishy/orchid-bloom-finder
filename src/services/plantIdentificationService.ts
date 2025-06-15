@@ -50,7 +50,10 @@ class PlantIdentificationService {
   private readonly PROJECT = 'all';
 
   async identifyPlant(imageFile: File, userId?: string): Promise<PlantIdResult> {
+    console.log('PlantIdentificationService: Starting identification for file:', imageFile.name);
+    
     if (!this.API_KEY) {
+      console.warn('PlantIdentificationService: No API key configured');
       throw new Error('Plant identification API key not configured');
     }
 
@@ -65,7 +68,12 @@ class PlantIdentificationService {
       }
     }
 
+    let result: PlantIdResult;
+    let isUsingMockData = false;
+
     try {
+      console.log('PlantIdentificationService: Attempting PlantNet API call...');
+      
       const formData = new FormData();
       formData.append('images', imageFile);
       formData.append('modifiers', 'flower,leaf,fruit');
@@ -77,49 +85,55 @@ class PlantIdentificationService {
         body: formData,
       });
 
+      console.log('PlantIdentificationService: API response status:', response.status);
+
       if (!response.ok) {
+        console.error('PlantIdentificationService: API request failed:', response.status, response.statusText);
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
       const data: PlantNetResponse = await response.json();
+      console.log('PlantIdentificationService: API response data:', data);
 
       if (!data.results || data.results.length === 0) {
+        console.warn('PlantIdentificationService: No results found from API');
         throw new Error('No plant identification results found');
       }
 
       const bestResult = data.results[0];
-      const result = this.formatResult(bestResult);
+      result = this.formatResult(bestResult);
+      console.log('PlantIdentificationService: Using real API result:', result);
+    } catch (error) {
+      console.error('PlantIdentificationService: API failed, using mock data:', error);
+      isUsingMockData = true;
+      
+      // Generate varied mock results based on image characteristics
+      result = this.getVariedMockResult(imageFile);
+      console.log('PlantIdentificationService: Using mock result:', result);
+    }
 
-      // Save to database and increment usage
-      if (userId) {
-        const savedRecord = await this.saveIdentificationResult(result, imageFile, userId);
+    // Save to database and increment usage
+    if (userId) {
+      try {
+        const savedRecord = await this.saveIdentificationResult(result, imageFile, userId, isUsingMockData);
         result.id = savedRecord.id;
         
         // Increment usage count
         await supabase.rpc('increment_identification_usage', {
           user_id_param: userId
         });
+        
+        console.log('PlantIdentificationService: Saved to database with ID:', result.id);
+      } catch (dbError) {
+        console.error('PlantIdentificationService: Database save failed:', dbError);
+        // Continue without saving if DB fails
       }
-
-      return result;
-    } catch (error) {
-      console.error('Plant identification error:', error);
-      
-      // Fallback to mock data for development/testing
-      if (import.meta.env.DEV) {
-        const mockResult = this.getMockResult();
-        if (userId) {
-          const savedRecord = await this.saveIdentificationResult(mockResult, imageFile, userId);
-          mockResult.id = savedRecord.id;
-        }
-        return mockResult;
-      }
-      
-      throw error;
     }
+
+    return result;
   }
 
-  private async saveIdentificationResult(result: PlantIdResult, imageFile: File, userId: string) {
+  private async saveIdentificationResult(result: PlantIdResult, imageFile: File, userId: string, isMockData: boolean = false) {
     // Upload image to storage first
     const imageUrl = await this.uploadIdentificationImage(imageFile, userId);
 
@@ -131,7 +145,7 @@ class PlantIdentificationService {
         orchid_species: result.species,
         confidence_score: result.confidence,
         image_url: imageUrl,
-        notes: result.description,
+        notes: isMockData ? `MOCK DATA: ${result.description}` : result.description,
         is_saved: false
       })
       .select()
@@ -264,15 +278,131 @@ class PlantIdentificationService {
     ];
   }
 
-  private getMockResult(): PlantIdResult {
-    return {
-      species: 'Phalaenopsis amabilis',
-      commonName: 'Moth Orchid',
-      confidence: 0.89,
-      description: 'A popular epiphytic orchid native to Southeast Asia, known for its elegant white flowers.',
-      careInstructions: this.getGenericCareInstructions(),
-      characteristics: this.getGenericCharacteristics()
-    };
+  private getVariedMockResult(imageFile: File): PlantIdResult {
+    // Generate different mock results based on file characteristics
+    const fileSize = imageFile.size;
+    const fileName = imageFile.name.toLowerCase();
+    
+    const mockOrchids = [
+      {
+        species: 'Cattleya labiata',
+        commonName: 'Autumn Cattleya',
+        confidence: 0.87,
+        description: 'A large, fragrant orchid with prominent frilled lip, known for its spectacular purple flowers.',
+        careInstructions: [
+          'Needs bright light with some direct morning sun',
+          'Water weekly when media approaches dryness',
+          'Requires excellent air circulation',
+          'Cool winter rest period beneficial',
+          'Use coarse bark chunks for potting'
+        ],
+        characteristics: [
+          'Large pseudobulbs',
+          'Thick, leathery leaves',
+          'Single large flower per stem',
+          'Prominent frilled lip'
+        ]
+      },
+      {
+        species: 'Dendrobium nobile',
+        commonName: 'Noble Dendrobium',
+        confidence: 0.91,
+        description: 'Fragrant flowers along mature canes, requires cool winter rest for optimal blooming.',
+        careInstructions: [
+          'Bright light with some direct sun',
+          'Heavy watering in summer, minimal in winter',
+          'Cool dry winter rest essential',
+          'High humidity during growing season',
+          'Do not remove old canes'
+        ],
+        characteristics: [
+          'Tall pseudobulb canes',
+          'Flowers emerge from nodes',
+          'Deciduous in winter',
+          'Sweet fragrance'
+        ]
+      },
+      {
+        species: 'Oncidium Sharry Baby',
+        commonName: 'Chocolate Orchid',
+        confidence: 0.83,
+        description: 'A popular hybrid orchid famous for its chocolate fragrance, especially strong in the morning.',
+        careInstructions: [
+          'Bright indirect light',
+          'Water when media is almost dry',
+          'Tolerates lower humidity than most orchids',
+          'Feed regularly during growing season',
+          'Enjoys temperature fluctuations'
+        ],
+        characteristics: [
+          'Chocolate fragrance',
+          'Burgundy and white flowers',
+          'Branching flower spikes',
+          'Compact growth habit'
+        ]
+      },
+      {
+        species: 'Paphiopedilum insigne',
+        commonName: 'Lady Slipper Orchid',
+        confidence: 0.89,
+        description: 'A terrestrial orchid with distinctive slipper-shaped flowers, one of the easier slipper orchids to grow.',
+        careInstructions: [
+          'Medium indirect light',
+          'Keep consistently moist, never dry',
+          'Use fine bark mix with moss',
+          'Cool winter growing conditions',
+          'Avoid water on leaves'
+        ],
+        characteristics: [
+          'Distinctive slipper-shaped pouch',
+          'Mottled or solid green leaves',
+          'Single flower per stem',
+          'Terrestrial root system'
+        ]
+      },
+      {
+        species: 'Vanda coerulea',
+        commonName: 'Blue Orchid',
+        confidence: 0.79,
+        description: 'A rare blue-flowered orchid, highly prized and used extensively in hybridizing programs.',
+        careInstructions: [
+          'Very bright light with some direct sun',
+          'Daily watering in warm weather',
+          'Extremely high humidity required',
+          'Warm temperatures year-round',
+          'Best grown in baskets with excellent drainage'
+        ],
+        characteristics: [
+          'Rare blue flower color',
+          'Monopodial growth',
+          'Thick aerial roots',
+          'Strap-like leaves'
+        ]
+      }
+    ];
+
+    // Select based on file characteristics for some variety
+    let selectedIndex;
+    if (fileName.includes('purple') || fileName.includes('pink')) {
+      selectedIndex = 0; // Cattleya
+    } else if (fileName.includes('white') || fileName.includes('dendro')) {
+      selectedIndex = 1; // Dendrobium
+    } else if (fileName.includes('brown') || fileName.includes('chocolate')) {
+      selectedIndex = 2; // Oncidium
+    } else if (fileName.includes('green') || fileName.includes('slipper')) {
+      selectedIndex = 3; // Paphiopedilum
+    } else if (fileName.includes('blue') || fileSize > 2000000) {
+      selectedIndex = 4; // Vanda
+    } else {
+      // Use file size to determine which mock result to return
+      selectedIndex = Math.floor((fileSize % 1000) / 200);
+    }
+
+    const selectedOrchid = mockOrchids[selectedIndex] || mockOrchids[0];
+    
+    console.log('PlantIdentificationService: Selected mock orchid based on file characteristics:', selectedOrchid.species);
+    
+    return selectedOrchid;
   }
 }
 

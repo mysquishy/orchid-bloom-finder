@@ -295,7 +295,7 @@ const ImageUploadSection = () => {
                 />
                 <Button
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isAnalyzing || (!user && selectedImage)}
+                  disabled={isAnalyzing || (!user && !!selectedImage)}
                   className="flex items-center space-x-2"
                 >
                   <Upload className="w-4 h-4" />

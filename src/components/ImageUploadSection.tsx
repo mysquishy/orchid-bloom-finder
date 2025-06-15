@@ -34,6 +34,7 @@ const ImageUploadSection = () => {
   const { checkFeatureAccess } = usePremiumAccess();
 
   const handleImageSelect = (file: File) => {
+    console.log('Image selected for analysis:', file.name);
     setSelectedImage(file);
     setAnalysisResult(null);
     setIsSavedToCollection(false);
@@ -66,6 +67,8 @@ const ImageUploadSection = () => {
     setIsAnalyzing(true);
     
     try {
+      console.log('Starting plant identification analysis...');
+      
       analyticsManager.trackUserAction('image_upload_started', {
         fileSize: file.size,
         fileType: file.type,
@@ -73,6 +76,7 @@ const ImageUploadSection = () => {
 
       const result = await plantIdentificationService.identifyPlant(file, user.id);
       
+      console.log('Plant identification completed:', result);
       setAnalysisResult(result);
       
       analyticsManager.trackPlantIdentification(result.confidence, result.species);
@@ -90,9 +94,19 @@ const ImageUploadSection = () => {
         fileType: file.type,
       });
 
+      // Provide more specific error messages
+      let errorMessage = "Please try again or contact support.";
+      if (error.message?.includes('network')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.message?.includes('limit')) {
+        errorMessage = error.message;
+      } else if (error.message?.includes('API')) {
+        errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+      }
+
       toast({
         title: "Analysis failed",
-        description: error.message || "Please try again or contact support.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -118,6 +132,7 @@ const ImageUploadSection = () => {
         confidence: analysisResult.confidence,
       });
     } catch (error: any) {
+      console.error('Save to collection error:', error);
       toast({
         title: "Save Failed",
         description: error.message || "Failed to save to collection. Please try again.",
@@ -129,6 +144,7 @@ const ImageUploadSection = () => {
   };
 
   const handleClear = () => {
+    console.log('Clearing image upload section');
     setSelectedImage(null);
     setAnalysisResult(null);
     setIsSavedToCollection(false);

@@ -11,11 +11,43 @@ interface ImagePreviewProps {
 const ImagePreview: React.FC<ImagePreviewProps> = ({ selectedImage, isAnalyzing }) => {
   const [imageLoading, setImageLoading] = React.useState(true);
   const [imageError, setImageError] = React.useState(false);
+  const [imageUrl, setImageUrl] = React.useState<string>('');
+
+  React.useEffect(() => {
+    // Create object URL for the selected image
+    try {
+      const url = URL.createObjectURL(selectedImage);
+      setImageUrl(url);
+      setImageError(false);
+      setImageLoading(true);
+
+      // Cleanup function to revoke the object URL
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } catch (error) {
+      console.error('Error creating object URL:', error);
+      setImageError(true);
+      setImageLoading(false);
+    }
+  }, [selectedImage]);
+
+  const handleImageLoad = () => {
+    console.log('Image loaded successfully');
+    setImageLoading(false);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    console.error('Error loading image');
+    setImageLoading(false);
+    setImageError(true);
+  };
 
   return (
     <div className="space-y-4">
       <div className="relative">
-        {imageLoading && (
+        {imageLoading && !imageError && (
           <LoadingSkeleton className="w-full h-64 flex items-center justify-center">
             <ImageIcon className="w-8 h-8 text-gray-400" />
           </LoadingSkeleton>
@@ -26,21 +58,21 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ selectedImage, isAnalyzing 
             <div className="text-center">
               <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm text-gray-600">Failed to load image</p>
+              <p className="text-xs text-gray-500 mt-1">Please try a different image</p>
             </div>
           </div>
         ) : (
-          <img
-            src={URL.createObjectURL(selectedImage)}
-            alt="Selected plant"
-            className={`max-w-full h-64 object-cover rounded-lg mx-auto transition-opacity duration-200 ${
-              imageLoading ? 'opacity-0' : 'opacity-100'
-            }`}
-            onLoad={() => setImageLoading(false)}
-            onError={() => {
-              setImageLoading(false);
-              setImageError(true);
-            }}
-          />
+          imageUrl && (
+            <img
+              src={imageUrl}
+              alt="Selected plant"
+              className={`max-w-full h-64 object-cover rounded-lg mx-auto transition-opacity duration-200 ${
+                imageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+            />
+          )
         )}
       </div>
       

@@ -24,29 +24,36 @@ const UploadControls: React.FC<UploadControlsProps> = ({
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select an image file (JPG, PNG, WebP).",
-          variant: "destructive",
-        });
-        return;
-      }
+    if (!file) return;
 
-      // Validate file size (10MB limit)
-      if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select an image smaller than 10MB.",
-          variant: "destructive",
-        });
-        return;
-      }
+    console.log('File selected:', file.name, file.size, file.type);
 
-      onImageSelect(file);
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file (JPG, PNG, WebP).",
+        variant: "destructive",
+      });
+      return;
     }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Clear the input to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    onImageSelect(file);
   };
 
   return (
@@ -75,7 +82,7 @@ const UploadControls: React.FC<UploadControlsProps> = ({
         />
         <Button
           onClick={() => fileInputRef.current?.click()}
-          disabled={isAnalyzing || (!user && !!selectedImage)}
+          disabled={isAnalyzing}
           className="flex items-center space-x-2"
         >
           <Upload className="w-4 h-4" />

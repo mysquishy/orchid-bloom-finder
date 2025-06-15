@@ -2,26 +2,65 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Camera, Upload, Loader2, AlertCircle } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Camera, Upload, Loader2, AlertCircle, Heart, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { plantIdentificationService } from '@/services/plantIdentificationService';
 import { analyticsManager } from '@/utils/analyticsManager';
 import { environmentManager } from '@/utils/environmentConfig';
+import { useAuth } from '@/contexts/AuthContext';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+
+interface IdentificationResult {
+  id?: string;
+  species: string;
+  commonName: string;
+  confidence: number;
+  description: string;
+  careInstructions: string[];
+  characteristics: string[];
+}
 
 const ImageUploadSection = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<IdentificationResult | null>(null);
+  const [isSavedToCollection, setIsSavedToCollection] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { checkFeatureAccess, remainingIdentifications } = usePremiumAccess();
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);
     setAnalysisResult(null);
+    setIsSavedToCollection(false);
     analyzeImage(file);
   };
 
   const analyzeImage = async (file: File) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to identify plants.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check feature access
+    const access = checkFeatureAccess('identification');
+    if (!access.hasAccess) {
+      toast({
+        title: "Identification Limit Reached",
+        description: access.reason === 'limit-exceeded' 
+          ? "You've reached your monthly limit. Upgrade to Premium for unlimited identifications."
+          : "Premium subscription required for plant identification.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     
     try {
@@ -30,7 +69,7 @@ const ImageUploadSection = () => {
         fileType: file.type,
       });
 
-      const result = await plantIdentificationService.identifyPlant(file);
+      const result = await plantIdentificationService.identifyPlant(file, user.id);
       
       setAnalysisResult(result);
       
@@ -40,26 +79,50 @@ const ImageUploadSection = () => {
         title: "Plant identified!",
         description: `Found: ${result.species} with ${Math.round(result.confidence * 100)}% confidence`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Plant identification error:', error);
       
-      analyticsManager.trackError(error as Error, {
+      analyticsManager.trackError(error, {
         context: 'plant_identification',
         fileSize: file.size,
         fileType: file.type,
       });
 
-      const isApiConfigured = environmentManager.isFeatureEnabled('plantIdentification');
-      
       toast({
         title: "Analysis failed",
-        description: isApiConfigured 
-          ? "Please try again or contact support."
-          : "Plant identification API not configured. Using demo mode.",
-        variant: isApiConfigured ? "destructive" : "default",
+        description: error.message || "Please try again or contact support.",
+        variant: "destructive",
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleSaveToCollection = async () => {
+    if (!analysisResult?.id || !user) return;
+
+    setIsSaving(true);
+    try {
+      await plantIdentificationService.saveToCollection(analysisResult.id, user.id);
+      setIsSavedToCollection(true);
+      
+      toast({
+        title: "Saved to Collection!",
+        description: `${analysisResult.commonName} has been added to your garden.`,
+      });
+
+      analyticsManager.trackUserAction('plant_saved_to_collection', {
+        species: analysisResult.species,
+        confidence: analysisResult.confidence,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save to collection. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -106,6 +169,25 @@ const ImageUploadSection = () => {
           <p className="text-lg text-gray-600">
             Upload a photo of your orchid and get instant identification with care tips
           </p>
+          
+          {/* Usage indicator for authenticated users */}
+          {user && !checkFeatureAccess('identification').hasAccess && (
+            <div className="flex items-center justify-center mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
+              <span className="text-yellow-800 text-sm">
+                Monthly limit reached - Upgrade to Premium for unlimited identifications
+              </span>
+            </div>
+          )}
+          
+          {user && remainingIdentifications !== undefined && remainingIdentifications >= 0 && (
+            <div className="flex items-center justify-center mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <span className="text-blue-800 text-sm">
+                {remainingIdentifications} free identifications remaining this month
+              </span>
+            </div>
+          )}
+
           {!environmentManager.isFeatureEnabled('plantIdentification') && (
             <div className="flex items-center justify-center mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
@@ -135,14 +217,57 @@ const ImageUploadSection = () => {
                   )}
 
                   {analysisResult && !isAnalyzing && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
-                      <h3 className="font-semibold text-green-900 mb-2">
-                        {analysisResult.species}
-                      </h3>
-                      <p className="text-green-800 mb-2">{analysisResult.commonName}</p>
-                      <p className={`text-sm ${getConfidenceColor(analysisResult.confidence)}`}>
-                        Confidence: {Math.round(analysisResult.confidence * 100)}%
-                      </p>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-left">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-green-900 text-xl">
+                          {analysisResult.species}
+                        </h3>
+                        <span className={`text-sm font-medium ${getConfidenceColor(analysisResult.confidence)}`}>
+                          {Math.round(analysisResult.confidence * 100)}% confident
+                        </span>
+                      </div>
+                      
+                      <p className="text-green-800 mb-2 text-lg">{analysisResult.commonName}</p>
+                      <p className="text-gray-700 mb-4">{analysisResult.description}</p>
+                      
+                      {/* Care Instructions Preview */}
+                      <div className="bg-white rounded-lg p-4 mb-4">
+                        <h4 className="font-medium text-gray-900 mb-2">Quick Care Tips:</h4>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          {analysisResult.careInstructions.slice(0, 3).map((tip, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="text-green-600 mr-2">•</span>
+                              {tip}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Save to Collection Button */}
+                      {user && analysisResult.id && (
+                        <Button
+                          onClick={handleSaveToCollection}
+                          disabled={isSaving || isSavedToCollection}
+                          className={`w-full ${isSavedToCollection ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                        >
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : isSavedToCollection ? (
+                            <>
+                              <Check className="w-4 h-4 mr-2" />
+                              Saved to Garden!
+                            </>
+                          ) : (
+                            <>
+                              <Heart className="w-4 h-4 mr-2" />
+                              Save to My Garden
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -170,11 +295,11 @@ const ImageUploadSection = () => {
                 />
                 <Button
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isAnalyzing}
+                  disabled={isAnalyzing || (!user && selectedImage)}
                   className="flex items-center space-x-2"
                 >
                   <Upload className="w-4 h-4" />
-                  <span>Choose File</span>
+                  <span>{selectedImage ? 'Choose Different Photo' : 'Choose File'}</span>
                 </Button>
                 
                 {selectedImage && (
@@ -182,6 +307,7 @@ const ImageUploadSection = () => {
                     onClick={() => {
                       setSelectedImage(null);
                       setAnalysisResult(null);
+                      setIsSavedToCollection(false);
                     }}
                     variant="outline"
                     disabled={isAnalyzing}
@@ -190,6 +316,15 @@ const ImageUploadSection = () => {
                   </Button>
                 )}
               </div>
+
+              {!user && (
+                <p className="text-sm text-gray-600">
+                  <a href="/auth" className="text-green-600 hover:text-green-700 font-medium">
+                    Sign in
+                  </a>
+                  {' '}to save identifications and track your garden
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

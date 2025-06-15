@@ -41,11 +41,11 @@ const SystemMonitoringTroubleshooting: React.FC = () => {
               <div className="space-y-2">
                 <div><strong>Key Performance Indicators:</strong></div>
                 <ul className="text-sm text-green-700 space-y-1">
-                  <li>• Overall accuracy score: Target >85%</li>
-                  <li>• Average confidence score: Target >75%</li>
+                  <li>• Overall accuracy score: Target &gt;85%</li>
+                  <li>• Average confidence score: Target &gt;75%</li>
                   <li>• Response time: Target &lt;3 seconds</li>
-                  <li>• Model drift coefficient: Alert if >0.1</li>
-                  <li>• Community validation agreement: Target >90%</li>
+                  <li>• Model drift coefficient: Alert if &gt;0.1</li>
+                  <li>• Community validation agreement: Target &gt;90%</li>
                 </ul>
                 <div><strong>Automated Monitoring:</strong></div>
                 <ul className="text-sm text-green-700 space-y-1">
@@ -68,11 +68,11 @@ const SystemMonitoringTroubleshooting: React.FC = () => {
               <div className="space-y-2">
                 <div><strong>Content Quality Metrics:</strong></div>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Expert validation rate: Target >80%</li>
+                  <li>• Expert validation rate: Target &gt;80%</li>
                   <li>• Content moderation queue: &lt;4 hours</li>
-                  <li>• Community engagement score: Target >70%</li>
-                  <li>• Spam detection accuracy: Target >95%</li>
-                  <li>• User satisfaction ratings: Target >4.0/5</li>
+                  <li>• Community engagement score: Target &gt;70%</li>
+                  <li>• Spam detection accuracy: Target &gt;95%</li>
+                  <li>• User satisfaction ratings: Target &gt;4.0/5</li>
                 </ul>
                 <div><strong>Quality Assurance Tools:</strong></div>
                 <ul className="text-sm text-blue-700 space-y-1">

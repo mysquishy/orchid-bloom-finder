@@ -264,10 +264,10 @@ const EnterpriseFeaturesTroubleshooting: React.FC = () => {
                 <div>
                   <div><strong>Scaling Triggers:</strong></div>
                   <ul className="text-sm text-orange-700 space-y-1">
-                    <li>• CPU utilization > 70% for 5 minutes</li>
-                    <li>• Memory usage > 80% for 5 minutes</li>
-                    <li>• Request queue length > 100</li>
-                    <li>• Response time > 2 seconds</li>
+                    <li>• CPU utilization &gt; 70% for 5 minutes</li>
+                    <li>• Memory usage &gt; 80% for 5 minutes</li>
+                    <li>• Request queue length &gt; 100</li>
+                    <li>• Response time &gt; 2 seconds</li>
                   </ul>
                 </div>
                 <div>

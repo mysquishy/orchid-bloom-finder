@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +10,7 @@ const ForecastingPlanning: React.FC = () => {
       {/* Hero Section */}
       <div className="text-center space-y-4">
         <div className="flex justify-center">
-          <Crystal className="w-16 h-16 text-indigo-600" />
+          <TrendingUp className="w-16 h-16 text-indigo-600" />
         </div>
         <h1 className="text-4xl font-bold text-gray-900">
           Forecasting & Planning
@@ -565,7 +564,7 @@ const ForecastingPlanning: React.FC = () => {
       {/* Call to Action */}
       <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
         <CardContent className="py-8 text-center">
-          <Crystal className="w-12 h-12 text-indigo-600 mx-auto mb-4" />
+          <TrendingUp className="w-12 h-12 text-indigo-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-4">
             Strategic Foresight & Planning
           </h3>

@@ -16,7 +16,7 @@ class EnvironmentManager {
       apiUrl: this.getApiUrl(),
       supabaseUrl: this.getRequiredEnv('VITE_SUPABASE_URL'),
       supabaseAnonKey: this.getRequiredEnv('VITE_SUPABASE_ANON_KEY'),
-      plantNetApiKey: import.meta.env.VITE_PLANTNET_API_KEY,
+      plantNetApiKey: import.meta.env.VITE_PLANTNET_API_KEY || '2b109ViD2Tp2StgPwVdDBJI2W',
       isDevelopment: import.meta.env.DEV,
       isProduction: import.meta.env.PROD,
     };
@@ -53,7 +53,7 @@ class EnvironmentManager {
       errors.push('Supabase anon key is required');
     }
 
-    if (this.config.isProduction && !this.config.plantNetApiKey) {
+    if (!this.config.plantNetApiKey) {
       console.warn('PlantNet API key not configured - plant identification will use fallback');
     }
 
@@ -68,7 +68,7 @@ class EnvironmentManager {
 
   public isFeatureEnabled(feature: string): boolean {
     const featureFlags = {
-      plantIdentification: !!this.config.plantNetApiKey || this.config.isDevelopment,
+      plantIdentification: !!this.config.plantNetApiKey,
       analytics: this.config.isProduction,
       debugging: this.config.isDevelopment,
     };

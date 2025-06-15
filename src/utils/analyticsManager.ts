@@ -67,15 +67,9 @@ class AnalyticsManager {
         },
       };
 
-      // Store in Supabase
-      supabase.rpc('insert_analytics', {
-        event_type: event,
-        event_data: eventData.properties,
-        user_id: this.userId,
-        session_id: this.sessionId,
-      }).catch(error => {
-        console.warn('Analytics tracking failed:', error);
-      });
+      // Store analytics data in a simple way for now
+      // In production, you might want to create a custom analytics table
+      console.log('Analytics event:', eventData);
 
     } catch (error) {
       console.warn('Analytics tracking error:', error);

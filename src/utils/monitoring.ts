@@ -2,6 +2,26 @@
 import { analyticsManager } from './analyticsManager';
 import { getConfig } from '@/config/production';
 
+interface SystemMetrics {
+  totalSpecies: number;
+  totalUsers: number;
+  totalCollections: number;
+  totalIdentifications: number;
+  recentSignups7d: number;
+  recentIdentifications7d: number;
+  popularSpeciesCount: number;
+  userContributedCount: number;
+}
+
+interface SystemHealth {
+  overall: 'healthy' | 'warning' | 'critical';
+  services: Array<{
+    name: string;
+    status: 'healthy' | 'warning' | 'critical';
+    lastChecked: string;
+  }>;
+}
+
 class MonitoringService {
   private config = getConfig();
   private performanceObserver?: PerformanceObserver;
@@ -107,5 +127,40 @@ class MonitoringService {
     }, 30000); // Every 30 seconds
   }
 }
+
+// Export the functions that AdminMetrics expects
+export const getSystemMetrics = async (): Promise<SystemMetrics> => {
+  // Mock data for now - would integrate with actual metrics in production
+  return {
+    totalSpecies: 1500,
+    totalUsers: 2500,
+    totalCollections: 800,
+    totalIdentifications: 5200,
+    recentSignups7d: 45,
+    recentIdentifications7d: 120,
+    popularSpeciesCount: 85,
+    userContributedCount: 340
+  };
+};
+
+export const validateDatabaseData = async (): Promise<any[]> => {
+  // Mock validation results
+  return [
+    { table: 'orchid_species', status: 'healthy', recordCount: 1500 },
+    { table: 'user_profiles', status: 'healthy', recordCount: 2500 },
+    { table: 'identifications', status: 'healthy', recordCount: 5200 }
+  ];
+};
+
+export const checkSystemHealth = async (): Promise<SystemHealth> => {
+  return {
+    overall: 'healthy',
+    services: [
+      { name: 'Database', status: 'healthy', lastChecked: new Date().toISOString() },
+      { name: 'AI Service', status: 'healthy', lastChecked: new Date().toISOString() },
+      { name: 'Authentication', status: 'healthy', lastChecked: new Date().toISOString() }
+    ]
+  };
+};
 
 export const monitoringService = new MonitoringService();

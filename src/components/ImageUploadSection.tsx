@@ -71,10 +71,10 @@ const ImageUploadSection = () => {
   };
 
   const analyzeImage = async (file: File) => {
-    console.log('Starting analyzeImage function...');
+    console.log('🔬 Starting analyzeImage function...');
     
     if (!user) {
-      console.log('No user found, showing auth required message');
+      console.log('❌ No user found, showing auth required message');
       toast({
         title: "Authentication Required",
         description: "Please sign in to identify plants.",
@@ -84,10 +84,10 @@ const ImageUploadSection = () => {
     }
 
     // Check feature access
-    console.log('Checking feature access...');
+    console.log('🔍 Checking feature access...');
     const access = checkFeatureAccess('identification');
     if (!access.hasAccess) {
-      console.log('Feature access denied:', access.reason);
+      console.log('❌ Feature access denied:', access.reason);
       toast({
         title: "Identification Limit Reached",
         description: access.reason === 'limit-exceeded' 
@@ -101,17 +101,28 @@ const ImageUploadSection = () => {
     setIsAnalyzing(true);
     
     try {
-      console.log('Starting plant identification analysis...');
+      console.log('🚀 Starting plant identification analysis...');
+      console.log('📋 Analysis parameters:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        userId: user.id
+      });
       
       analyticsManager.trackUserAction('image_upload_started', {
         fileSize: file.size,
         fileType: file.type,
       });
 
-      console.log('Calling plantIdentificationService.identifyPlant...');
+      console.log('📞 Calling plantIdentificationService.identifyPlant...');
       const result = await plantIdentificationService.identifyPlant(file, user.id);
       
-      console.log('Plant identification completed:', result);
+      console.log('✅ Plant identification completed successfully:', {
+        species: result.species,
+        confidence: result.confidence,
+        hasId: !!result.id
+      });
+      
       setAnalysisResult(result);
       
       analyticsManager.trackPlantIdentification(result.confidence, result.species);
@@ -121,13 +132,18 @@ const ImageUploadSection = () => {
         description: `Found: ${result.species} with ${Math.round(result.confidence * 100)}% confidence`,
       });
     } catch (error: any) {
-      console.error('Plant identification error:', error);
-      console.error('Error stack:', error.stack);
+      console.error('❌ Plant identification error:', error);
+      console.error('📍 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       analyticsManager.trackError(error, {
         context: 'plant_identification',
         fileSize: file.size,
         fileType: file.type,
+        userId: user.id
       });
 
       // Provide more specific error messages
@@ -140,6 +156,10 @@ const ImageUploadSection = () => {
         errorMessage = error.message;
       } else if (error.message?.includes('API')) {
         errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+      } else if (error.message?.includes('save') || error.message?.includes('database')) {
+        errorMessage = "Failed to save identification. Please try again.";
+      } else {
+        errorMessage = error.message || "Analysis failed. Please try again.";
       }
 
       toast({
@@ -182,13 +202,18 @@ const ImageUploadSection = () => {
   };
 
   const handleClear = () => {
-    console.log('Clearing image upload section');
+    console.log('🧹 Clearing image upload section');
     setSelectedImage(null);
     setAnalysisResult(null);
     setIsSavedToCollection(false);
   };
 
-  console.log('Rendering ImageUploadSection component');
+  console.log('🖼️ Rendering ImageUploadSection component', {
+    hasSelectedImage: !!selectedImage,
+    isAnalyzing,
+    hasResult: !!analysisResult,
+    hasUser: !!user
+  });
 
   return (
     <section className="py-16 bg-gradient-to-br from-purple-50 to-green-50">

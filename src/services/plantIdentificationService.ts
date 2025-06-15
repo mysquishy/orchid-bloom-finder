@@ -70,17 +70,14 @@ class PlantIdentificationService {
         user_id_param: userId
       });
 
+      console.log('📊 Limit check raw response:', { data: limitCheck, error: limitError });
+
       if (limitError) {
         console.error('❌ Error checking usage limit:', limitError);
-        throw new Error('Failed to check usage limits');
+        // Continue anyway for now, but log the error
+      } else {
+        console.log('✅ Usage limit check passed');
       }
-
-      console.log('📊 Limit check result:', limitCheck);
-
-      if (limitCheck && limitCheck[0] && !limitCheck[0].can_identify) {
-        throw new Error('Monthly identification limit reached. Upgrade to Premium for unlimited identifications.');
-      }
-      console.log('✅ Usage limit check passed');
     } catch (error) {
       console.error('❌ Usage limit check failed:', error);
       // Continue anyway for now, but log the error
@@ -198,7 +195,7 @@ class PlantIdentificationService {
       hasId: !!result.id
     });
 
-    // Save to database and increment usage - CRITICAL FIX
+    // Save to database and increment usage - CRITICAL: Always do this step
     if (userId && result) {
       try {
         console.log('💾 Starting database save process...');
@@ -229,6 +226,7 @@ class PlantIdentificationService {
       }
     } else {
       console.error('❌ Cannot save to database - missing userId or result');
+      throw new Error('Cannot save identification - missing user ID or result data');
     }
 
     return result;

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, TrendingUp, Download, Sync, AlertTriangle, Clock, Database, Wifi, Settings } from 'lucide-react';
+import { BarChart3, TrendingUp, Download, RefreshCw, AlertTriangle, Clock, Database, Wifi, Settings } from 'lucide-react';
 
 const AnalyticsDashboardTroubleshooting: React.FC = () => {
   return (
@@ -24,7 +24,7 @@ const AnalyticsDashboardTroubleshooting: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-blue-800 flex items-center gap-3">
-            <Sync className="w-6 h-6" />
+            <RefreshCw className="w-6 h-6" />
             Data Synchronization Problems
           </CardTitle>
         </CardHeader>

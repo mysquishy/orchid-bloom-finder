@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -117,11 +118,11 @@ const ApiIntegrationGuide: React.FC = () => {
               <div>curl -X POST https://api.orkhidly.com/v1/webhooks \</div>
               <div>  -H "Authorization: Bearer YOUR_API_KEY" \</div>
               <div>  -H "Content-Type: application/json" \</div>
-              <div>  -d '{</div>
+              <div>  -d &apos;&#123;</div>
               <div>    "url": "https://your-app.com/webhooks/orkhidly",</div>
               <div>    "events": ["plant.identification.completed"],</div>
               <div>    "secret": "your_webhook_secret"</div>
-              <div>  }'</div>
+              <div>  &#125;&apos;</div>
             </div>
           </div>
         </CardContent>

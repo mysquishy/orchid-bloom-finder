@@ -26,6 +26,7 @@ const Dashboard: React.FC = () => {
   const { isPremium, checkFeatureAccess } = usePremiumAccess();
   const [identifications, setIdentifications] = useState<Identification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<any>({});
   const [stats, setStats] = useState({
     total: 0,
     saved: 0,
@@ -58,20 +59,52 @@ const Dashboard: React.FC = () => {
     try {
       console.log('Dashboard: Starting comprehensive data fetch for user:', user.id);
       
-      // First, let's check what's in the identifications table
-      console.log('Dashboard: Checking all identifications in database...');
-      const { data: allIdentifications, error: allIdentError } = await supabase
+      // Test database connection first
+      console.log('Dashboard: Testing database connection...');
+      const { data: testData, error: testError } = await supabase
         .from('identifications')
-        .select('*');
+        .select('count')
+        .limit(1);
       
-      if (allIdentError) {
-        console.error('Dashboard: Error fetching all identifications:', allIdentError);
+      if (testError) {
+        console.error('Dashboard: Database connection test failed:', testError);
+        setDebugInfo(prev => ({ ...prev, connectionError: testError }));
       } else {
-        console.log('Dashboard: All identifications in database:', allIdentifications);
-        console.log('Dashboard: Total identifications found:', allIdentifications?.length || 0);
+        console.log('Dashboard: Database connection successful');
       }
 
-      // Now fetch only user's identifications
+      // Check RLS policies by trying to access the table
+      console.log('Dashboard: Testing RLS access...');
+      const { data: rlsTest, error: rlsError } = await supabase
+        .from('identifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .limit(1);
+      
+      if (rlsError) {
+        console.error('Dashboard: RLS test failed:', rlsError);
+        setDebugInfo(prev => ({ ...prev, rlsError }));
+      } else {
+        console.log('Dashboard: RLS test passed, found records:', rlsTest?.length || 0);
+        setDebugInfo(prev => ({ ...prev, rlsTestResults: rlsTest }));
+      }
+
+      // Try to fetch all identifications without user filter to see if data exists
+      console.log('Dashboard: Checking for any identifications in the system...');
+      const { data: allIds, error: allIdsError } = await supabase
+        .from('identifications')
+        .select('id, user_id, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (allIdsError) {
+        console.error('Dashboard: Error fetching all identifications:', allIdsError);
+      } else {
+        console.log('Dashboard: All identifications in system:', allIds);
+        setDebugInfo(prev => ({ ...prev, allIdentifications: allIds }));
+      }
+
+      // Now fetch user's identifications
       console.log('Dashboard: Fetching user identifications...');
       const { data: identificationsData, error: identError } = await supabase
         .from('identifications')
@@ -81,6 +114,7 @@ const Dashboard: React.FC = () => {
 
       if (identError) {
         console.error('Dashboard: Error fetching user identifications:', identError);
+        setDebugInfo(prev => ({ ...prev, userIdentError: identError }));
         throw identError;
       }
 
@@ -89,6 +123,21 @@ const Dashboard: React.FC = () => {
         count: identificationsData?.length || 0,
         userId: user.id
       });
+
+      // Check usage tracking
+      console.log('Dashboard: Fetching usage tracking...');
+      const { data: usageData, error: usageError } = await supabase
+        .from('usage_tracking')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (usageError) {
+        console.error('Dashboard: Error fetching usage data:', usageError);
+        setDebugInfo(prev => ({ ...prev, usageError }));
+      } else {
+        console.log('Dashboard: Usage tracking data:', usageData);
+        setDebugInfo(prev => ({ ...prev, usageData }));
+      }
 
       // Check garden collection
       console.log('Dashboard: Fetching garden collection...');
@@ -99,8 +148,10 @@ const Dashboard: React.FC = () => {
 
       if (collectionError) {
         console.error('Dashboard: Error fetching garden collection:', collectionError);
+        setDebugInfo(prev => ({ ...prev, collectionError }));
       } else {
         console.log('Dashboard: Garden collection data:', collectionData);
+        setDebugInfo(prev => ({ ...prev, collectionData }));
       }
 
       if (!isMounted) return;
@@ -124,21 +175,9 @@ const Dashboard: React.FC = () => {
       
       setStats(calculatedStats);
 
-      // Also check what's in the usage_tracking table
-      console.log('Dashboard: Checking usage tracking...');
-      const { data: usageData, error: usageError } = await supabase
-        .from('usage_tracking')
-        .select('*')
-        .eq('user_id', user.id);
-      
-      if (usageError) {
-        console.error('Dashboard: Error fetching usage data:', usageError);
-      } else {
-        console.log('Dashboard: Usage tracking data:', usageData);
-      }
-
     } catch (error: any) {
       console.error('Dashboard: Error in fetchData:', error);
+      setDebugInfo(prev => ({ ...prev, fetchError: error }));
       if (isMounted) {
         toast({
           title: "Error",
@@ -153,10 +192,10 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Add a manual refresh button for debugging
   const handleManualRefresh = async () => {
     console.log('Dashboard: Manual refresh triggered');
     setLoading(true);
+    setDebugInfo({});
     await fetchData(true);
   };
 
@@ -229,16 +268,34 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Debug Info */}
+        {/* Enhanced Debug Info */}
         <Card className="mb-6 bg-blue-50 border-blue-200">
           <CardContent className="p-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Debug Info</h3>
-            <p className="text-sm text-blue-800">
-              User ID: {user.id}<br/>
-              Stats: Total: {stats.total}, Saved: {stats.saved}, This Week: {stats.thisWeek}, Garden: {stats.gardenCount}<br/>
-              Identifications Count: {identifications.length}<br/>
-              Loading: {loading ? 'Yes' : 'No'}
-            </p>
+            <h3 className="font-semibold text-blue-900 mb-2">Debug Information</h3>
+            <div className="text-sm text-blue-800 space-y-1">
+              <p><strong>User ID:</strong> {user.id}</p>
+              <p><strong>Stats:</strong> Total: {stats.total}, Saved: {stats.saved}, This Week: {stats.thisWeek}, Garden: {stats.gardenCount}</p>
+              <p><strong>Identifications Count:</strong> {identifications.length}</p>
+              <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
+              
+              {debugInfo.allIdentifications && (
+                <p><strong>Total IDs in System:</strong> {debugInfo.allIdentifications.length}</p>
+              )}
+              
+              {debugInfo.rlsTestResults && (
+                <p><strong>RLS Test Results:</strong> {debugInfo.rlsTestResults.length} accessible records</p>
+              )}
+              
+              {debugInfo.usageData && (
+                <p><strong>Usage Data:</strong> {JSON.stringify(debugInfo.usageData)}</p>
+              )}
+              
+              {Object.keys(debugInfo).filter(key => key.includes('Error')).map(errorKey => (
+                <p key={errorKey} className="text-red-700">
+                  <strong>{errorKey}:</strong> {JSON.stringify(debugInfo[errorKey])}
+                </p>
+              ))}
+            </div>
           </CardContent>
         </Card>
 

@@ -74,4 +74,3 @@ class EnvironmentManager {
 
 export const environmentManager = new EnvironmentManager();
 export const environment = environmentManager.getConfig();
-

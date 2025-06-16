@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, Scissors, Flower, Heart, Edit, Camera } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Calendar, Droplets, Scissors, Flower, Heart, Edit, Camera, ZoomIn, ZoomOut, Maximize2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import GardenDashboard from './GardenDashboard';
 import CareCalendar from './CareCalendar';
@@ -43,10 +44,204 @@ interface UserOrchidCollection {
   };
 }
 
+// Image Zoom Component
+const ZoomableImage: React.FC<{
+  src: string;
+  alt: string;
+  className?: string;
+  onImageClick?: () => void;
+}> = ({ src, alt, className, onImageClick }) => {
+  const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoom(prev => Math.min(prev + 0.25, 3));
+  };
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoom(prev => Math.max(prev - 0.25, 1));
+    if (zoom <= 1.25) {
+      setPosition({ x: 0, y: 0 });
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoom > 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoom > 1) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const resetZoom = () => {
+    setZoom(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  return (
+    <div className="relative group overflow-hidden">
+      <div 
+        className={`relative overflow-hidden ${className}`}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{ cursor: zoom > 1 ? 'grab' : 'pointer' }}
+        onClick={zoom === 1 ? onImageClick : undefined}
+      >
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover transition-transform duration-300"
+          style={{
+            transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
+            cursor: isDragging ? 'grabbing' : zoom > 1 ? 'grab' : 'pointer'
+          }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96';
+          }}
+          draggable={false}
+        />
+      </div>
+      
+      {/* Zoom Controls */}
+      <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          size="sm"
+          variant="secondary"
+          className="w-8 h-8 p-0 bg-black/50 hover:bg-black/70 text-white border-none"
+          onClick={handleZoomIn}
+          disabled={zoom >= 3}
+        >
+          <ZoomIn className="w-3 h-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="w-8 h-8 p-0 bg-black/50 hover:bg-black/70 text-white border-none"
+          onClick={handleZoomOut}
+          disabled={zoom <= 1}
+        >
+          <ZoomOut className="w-3 h-3" />
+        </Button>
+        {onImageClick && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-8 h-8 p-0 bg-black/50 hover:bg-black/70 text-white border-none"
+            onClick={onImageClick}
+          >
+            <Maximize2 className="w-3 h-3" />
+          </Button>
+        )}
+        {zoom > 1 && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-8 h-8 p-0 bg-black/50 hover:bg-black/70 text-white border-none"
+            onClick={resetZoom}
+          >
+            <X className="w-3 h-3" />
+          </Button>
+        )}
+      </div>
+
+      {/* Zoom Indicator */}
+      {zoom > 1 && (
+        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+          {Math.round(zoom * 100)}%
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Full Screen Image Modal
+const ImageModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  src: string;
+  alt: string;
+  orchid: UserOrchidCollection;
+}> = ({ isOpen, onClose, src, alt, orchid }) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh] p-0 overflow-hidden">
+        <DialogHeader className="p-4 pb-0">
+          <DialogTitle className="text-xl font-bold">
+            {orchid.orchid_species.common_name}
+          </DialogTitle>
+          <p className="text-sm text-gray-600 italic">
+            {orchid.orchid_species.scientific_name}
+          </p>
+        </DialogHeader>
+        
+        <div className="relative">
+          <ZoomableImage
+            src={src}
+            alt={alt}
+            className="w-full h-[70vh] rounded-b-lg"
+          />
+          
+          {/* Modal Image Info */}
+          <div className="absolute bottom-4 left-4 right-4 bg-black/70 text-white p-4 rounded-lg backdrop-blur-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <p className="font-medium">Added</p>
+                <p className="text-gray-200">{new Date(orchid.date_added).toLocaleDateString()}</p>
+              </div>
+              {orchid.identifications && (
+                <>
+                  <div>
+                    <p className="font-medium">Confidence</p>
+                    <p className="text-gray-200">{(orchid.identifications.confidence_score * 100).toFixed(0)}%</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Identified</p>
+                    <p className="text-gray-200">{new Date(orchid.identifications.created_at).toLocaleDateString()}</p>
+                  </div>
+                </>
+              )}
+              <div>
+                <p className="font-medium">Status</p>
+                <p className="text-gray-200 capitalize">{orchid.current_bloom_status || 'Growing'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const MyGarden: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState('dashboard');
+  const [selectedImage, setSelectedImage] = useState<{
+    src: string;
+    alt: string;
+    orchid: UserOrchidCollection;
+  } | null>(null);
 
   const { data: gardenOrchids = [], isLoading, refetch } = useQuery({
     queryKey: ['my-garden', user?.id],
@@ -248,21 +443,23 @@ const MyGarden: React.FC = () => {
                 {gardenOrchids.map((item) => (
                   <Card key={item.id} className="bg-white/80 backdrop-blur-sm border-green-200 overflow-hidden">
                     <CardHeader className="p-0">
-                      <div className="relative overflow-hidden rounded-t-lg group">
-                        <img
+                      <div className="relative overflow-hidden rounded-t-lg">
+                        <ZoomableImage
                           src={getOrchidImage(item)}
                           alt={item.orchid_species.common_name}
-                          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96';
-                          }}
+                          className="w-full h-64"
+                          onImageClick={() => setSelectedImage({
+                            src: getOrchidImage(item),
+                            alt: item.orchid_species.common_name,
+                            orchid: item
+                          })}
                         />
                         
                         {/* Gradient overlay for better text visibility */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"></div>
                         
                         {/* Image Source Indicator */}
-                        <div className="absolute top-3 left-3">
+                        <div className="absolute top-3 left-3 z-10">
                           {item.identifications?.image_url ? (
                             <Badge className="bg-blue-500/90 text-white border-blue-400 text-xs backdrop-blur-sm">
                               <Camera className="w-3 h-3 mr-1" />
@@ -276,7 +473,7 @@ const MyGarden: React.FC = () => {
                         </div>
 
                         {/* Bloom Status Badge */}
-                        <div className="absolute top-3 right-3">
+                        <div className="absolute top-3 right-3 z-10" style={{ right: '50px' }}>
                           <Badge className={`${getBloomStatusColor(item.current_bloom_status)} backdrop-blur-sm`}>
                             {item.current_bloom_status || 'growing'}
                           </Badge>
@@ -284,7 +481,7 @@ const MyGarden: React.FC = () => {
 
                         {/* Identification Info */}
                         {item.identifications && (
-                          <div className="absolute bottom-3 left-3 right-3">
+                          <div className="absolute bottom-3 left-3 right-3 z-10">
                             <div className="bg-black/70 text-white text-xs p-3 rounded-lg backdrop-blur-sm">
                               <div className="flex justify-between items-center">
                                 <span className="font-medium">Identified: {(item.identifications.confidence_score * 100).toFixed(0)}% confidence</span>
@@ -377,6 +574,17 @@ const MyGarden: React.FC = () => {
               </div>
             </TabsContent>
           </Tabs>
+        )}
+
+        {/* Full Screen Image Modal */}
+        {selectedImage && (
+          <ImageModal
+            isOpen={!!selectedImage}
+            onClose={() => setSelectedImage(null)}
+            src={selectedImage.src}
+            alt={selectedImage.alt}
+            orchid={selectedImage.orchid}
+          />
         )}
       </div>
     </div>

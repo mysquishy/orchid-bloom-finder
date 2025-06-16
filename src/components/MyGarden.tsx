@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Droplets, Scissors, Flower, Heart, Edit } from 'lucide-react';
+import { Calendar, Droplets, Scissors, Flower, Heart, Edit, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import GardenDashboard from './GardenDashboard';
 import CareCalendar from './CareCalendar';
@@ -15,6 +15,7 @@ import CareCalendar from './CareCalendar';
 interface UserOrchidCollection {
   id: string;
   orchid_species_id: string;
+  identification_id?: string;
   date_added: string;
   care_notes?: string;
   last_watered?: string;
@@ -32,6 +33,13 @@ interface UserOrchidCollection {
     fertilizer_schedule: string;
     repotting_frequency: string;
     high_quality_image_urls?: string[];
+  };
+  identifications?: {
+    id: string;
+    image_url: string;
+    orchid_species: string;
+    confidence_score: number;
+    created_at: string;
   };
 }
 
@@ -60,6 +68,13 @@ const MyGarden: React.FC = () => {
             fertilizer_schedule,
             repotting_frequency,
             high_quality_image_urls
+          ),
+          identifications:identification_id (
+            id,
+            image_url,
+            orchid_species,
+            confidence_score,
+            created_at
           )
         `)
         .eq('user_id', user.id)
@@ -131,6 +146,15 @@ const MyGarden: React.FC = () => {
     }
   };
 
+  // Function to get the best image to display
+  const getOrchidImage = (item: UserOrchidCollection) => {
+    // Priority: User's uploaded image > Species stock image > Fallback
+    if (item.identifications?.image_url) {
+      return item.identifications.image_url;
+    }
+    return item.orchid_species.high_quality_image_urls?.[0] || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96';
+  };
+
   // Calculate dashboard stats
   const stats = {
     totalOrchids: gardenOrchids.length,
@@ -195,10 +219,10 @@ const MyGarden: React.FC = () => {
               <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Your garden is empty</h3>
               <p className="text-gray-600 mb-6">
-                Start building your collection by browsing our orchid database and saving your favorites.
+                Start building your collection by identifying orchids with our camera feature.
               </p>
-              <Button onClick={() => window.location.href = '/database'}>
-                Browse Orchids
+              <Button onClick={() => window.location.href = '/'}>
+                Identify Your First Orchid
               </Button>
             </CardContent>
           </Card>
@@ -226,18 +250,46 @@ const MyGarden: React.FC = () => {
                     <CardHeader className="p-0">
                       <div className="relative overflow-hidden rounded-t-lg">
                         <img
-                          src={item.orchid_species.high_quality_image_urls?.[0] || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96'}
+                          src={getOrchidImage(item)}
                           alt={item.orchid_species.common_name}
                           className="w-full h-40 object-cover"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96';
                           }}
                         />
+                        
+                        {/* Image Source Indicator */}
+                        <div className="absolute top-3 left-3">
+                          {item.identifications?.image_url ? (
+                            <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
+                              <Camera className="w-3 h-3 mr-1" />
+                              Your Photo
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-600 border-gray-200 text-xs">
+                              Stock Photo
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Bloom Status Badge */}
                         <div className="absolute top-3 right-3">
                           <Badge className={getBloomStatusColor(item.current_bloom_status)}>
                             {item.current_bloom_status || 'growing'}
                           </Badge>
                         </div>
+
+                        {/* Identification Info */}
+                        {item.identifications && (
+                          <div className="absolute bottom-2 left-2 right-2">
+                            <div className="bg-black/50 text-white text-xs p-2 rounded backdrop-blur-sm">
+                              <div className="flex justify-between items-center">
+                                <span>Identified: {(item.identifications.confidence_score * 100).toFixed(0)}% confidence</span>
+                                <span>{new Date(item.identifications.created_at).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardHeader>
 

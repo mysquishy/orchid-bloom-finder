@@ -246,27 +246,30 @@ const MyGarden: React.FC = () => {
               {/* Garden Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {gardenOrchids.map((item) => (
-                  <Card key={item.id} className="bg-white/80 backdrop-blur-sm border-green-200">
+                  <Card key={item.id} className="bg-white/80 backdrop-blur-sm border-green-200 overflow-hidden">
                     <CardHeader className="p-0">
-                      <div className="relative overflow-hidden rounded-t-lg">
+                      <div className="relative overflow-hidden rounded-t-lg group">
                         <img
                           src={getOrchidImage(item)}
                           alt={item.orchid_species.common_name}
-                          className="w-full h-40 object-cover"
+                          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96';
                           }}
                         />
                         
+                        {/* Gradient overlay for better text visibility */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                        
                         {/* Image Source Indicator */}
                         <div className="absolute top-3 left-3">
                           {item.identifications?.image_url ? (
-                            <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
+                            <Badge className="bg-blue-500/90 text-white border-blue-400 text-xs backdrop-blur-sm">
                               <Camera className="w-3 h-3 mr-1" />
                               Your Photo
                             </Badge>
                           ) : (
-                            <Badge className="bg-gray-100 text-gray-600 border-gray-200 text-xs">
+                            <Badge className="bg-gray-500/90 text-white border-gray-400 text-xs backdrop-blur-sm">
                               Stock Photo
                             </Badge>
                           )}
@@ -274,18 +277,18 @@ const MyGarden: React.FC = () => {
 
                         {/* Bloom Status Badge */}
                         <div className="absolute top-3 right-3">
-                          <Badge className={getBloomStatusColor(item.current_bloom_status)}>
+                          <Badge className={`${getBloomStatusColor(item.current_bloom_status)} backdrop-blur-sm`}>
                             {item.current_bloom_status || 'growing'}
                           </Badge>
                         </div>
 
                         {/* Identification Info */}
                         {item.identifications && (
-                          <div className="absolute bottom-2 left-2 right-2">
-                            <div className="bg-black/50 text-white text-xs p-2 rounded backdrop-blur-sm">
+                          <div className="absolute bottom-3 left-3 right-3">
+                            <div className="bg-black/70 text-white text-xs p-3 rounded-lg backdrop-blur-sm">
                               <div className="flex justify-between items-center">
-                                <span>Identified: {(item.identifications.confidence_score * 100).toFixed(0)}% confidence</span>
-                                <span>{new Date(item.identifications.created_at).toLocaleDateString()}</span>
+                                <span className="font-medium">Identified: {(item.identifications.confidence_score * 100).toFixed(0)}% confidence</span>
+                                <span className="text-gray-200">{new Date(item.identifications.created_at).toLocaleDateString()}</span>
                               </div>
                             </div>
                           </div>
@@ -293,76 +296,79 @@ const MyGarden: React.FC = () => {
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-4">
-                      <div className="mb-3">
-                        <h3 className="font-bold text-lg text-gray-900 mb-1">
+                    <CardContent className="p-5">
+                      <div className="mb-4">
+                        <h3 className="font-bold text-xl text-gray-900 mb-1">
                           {item.orchid_species.common_name}
                         </h3>
-                        <p className="text-sm italic text-gray-600">
+                        <p className="text-sm italic text-gray-600 mb-1">
                           {item.orchid_species.scientific_name}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500">
                           Added {new Date(item.date_added).toLocaleDateString()}
                         </p>
                       </div>
 
                       {/* Care Status */}
-                      <div className="grid grid-cols-3 gap-2 mb-4 text-xs">
-                        <div className="flex flex-col items-center p-2 bg-blue-50 rounded">
-                          <Droplets className="w-4 h-4 text-blue-600 mb-1" />
-                          <span className="text-gray-600">
+                      <div className="grid grid-cols-3 gap-3 mb-4 text-xs">
+                        <div className="flex flex-col items-center p-3 bg-blue-50 rounded-lg transition-colors hover:bg-blue-100">
+                          <Droplets className="w-5 h-5 text-blue-600 mb-2" />
+                          <span className="text-gray-600 font-medium">
                             {item.last_watered ? new Date(item.last_watered).toLocaleDateString() : 'Never'}
                           </span>
+                          <span className="text-gray-400 text-xs">Watered</span>
                         </div>
-                        <div className="flex flex-col items-center p-2 bg-green-50 rounded">
-                          <Flower className="w-4 h-4 text-green-600 mb-1" />
-                          <span className="text-gray-600">
+                        <div className="flex flex-col items-center p-3 bg-green-50 rounded-lg transition-colors hover:bg-green-100">
+                          <Flower className="w-5 h-5 text-green-600 mb-2" />
+                          <span className="text-gray-600 font-medium">
                             {item.last_fertilized ? new Date(item.last_fertilized).toLocaleDateString() : 'Never'}
                           </span>
+                          <span className="text-gray-400 text-xs">Fed</span>
                         </div>
-                        <div className="flex flex-col items-center p-2 bg-purple-50 rounded">
-                          <Scissors className="w-4 h-4 text-purple-600 mb-1" />
-                          <span className="text-gray-600">
+                        <div className="flex flex-col items-center p-3 bg-purple-50 rounded-lg transition-colors hover:bg-purple-100">
+                          <Scissors className="w-5 h-5 text-purple-600 mb-2" />
+                          <span className="text-gray-600 font-medium">
                             {item.last_repotted ? new Date(item.last_repotted).toLocaleDateString() : 'Never'}
                           </span>
+                          <span className="text-gray-400 text-xs">Repotted</span>
                         </div>
                       </div>
 
                       {/* Care Actions */}
-                      <div className="flex gap-1 mb-3">
+                      <div className="flex gap-2 mb-4">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-xs"
+                          className="flex-1 text-xs hover:bg-blue-50 hover:border-blue-200"
                           onClick={() => updateCareAction(item.id, 'watered')}
                         >
-                          <Droplets className="w-3 h-3 mr-1" />
+                          <Droplets className="w-4 h-4 mr-1" />
                           Water
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-xs"
+                          className="flex-1 text-xs hover:bg-green-50 hover:border-green-200"
                           onClick={() => updateCareAction(item.id, 'fertilized')}
                         >
-                          <Flower className="w-3 h-3 mr-1" />
+                          <Flower className="w-4 h-4 mr-1" />
                           Feed
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-xs"
+                          className="flex-1 text-xs hover:bg-purple-50 hover:border-purple-200"
                           onClick={() => updateCareAction(item.id, 'repotted')}
                         >
-                          <Scissors className="w-3 h-3 mr-1" />
+                          <Scissors className="w-4 h-4 mr-1" />
                           Repot
                         </Button>
                       </div>
 
                       {/* Care Notes */}
                       {item.care_notes && (
-                        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                          <strong>Notes:</strong> {item.care_notes}
+                        <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border-l-4 border-green-400">
+                          <strong className="text-gray-800">Notes:</strong> {item.care_notes}
                         </div>
                       )}
                     </CardContent>
